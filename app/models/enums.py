@@ -25,15 +25,15 @@ class UserTokenType(str, Enum):
 
 # --- НОВЫЕ КАТЕГОРИИ ---
 class AchievementCategory(str, Enum):
-    SPORT = "sport"
-    SCIENCE = "science"
-    ART = "art"
-    VOLUNTEERING = "volunteering"
-    OTHER = "other"
+    SPORT = "Спорт"
+    SCIENCE = "Наука"
+    ART = "Искусство"
+    VOLUNTEERING = "Волонтёрство"
+    OTHER = "Другое"
 
 class AchievementLevel(str, Enum):
-    SCHOOL = "school"
-    MUNICIPAL = "municipal"
-    REGIONAL = "regional"
-    FEDERAL = "federal"
-    INTERNATIONAL = "international"
+    SCHOOL = "Школьный"
+    MUNICIPAL = "Муниципальный"
+    REGIONAL = "Региональный"
+    FEDERAL = "Федеральный"
+    INTERNATIONAL = "Международный"
