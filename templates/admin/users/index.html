@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-[1400px] mx-auto">
+    <div class="flex justify-between items-end mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Пользователи</h2>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-8">
+        <form action="/admin/users" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/admin/api/users/search')">
+
+            <div class="md:col-span-3 relative">
+                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Поиск пользователя</label>
+                <div class="relative">
+                    <div class="absolute left-3 top-2.5 text-gray-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
+                    <input type="text" name="query" x-model="query" @input.debounce.300ms="fetchSuggestions" @keydown.escape="suggestions=[]"
+                           placeholder="Имя, Email..." autocomplete="off" value="{{ query or '' }}"
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm h-[42px]">
+                </div>
+                <ul x-show="suggestions.length > 0" @click.outside="suggestions = []" class="absolute z-50 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto" style="display: none;" x-cloak>
+                    <template x-for="item in suggestions"><li @click="selectItem(item.value)" class="px-4 py-2 hover:bg-indigo-50 cursor-pointer text-sm border-b last:border-0"><span x-text="item.text"></span></li></template>
+                </ul>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Роль</label>
+                <select name="role" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer h-[42px]">
+                    <option value="">Все роли</option>
+                    {% for r in roles %}
+                    <option value="{{ r.value }}" {{ 'selected' if role == r.value else '' }}>{{ r.value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="md:col-span-3">
+                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Статус</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer h-[42px]">
+                    <option value="">Все статусы</option>
+                    {% for s in statuses %}
+                    <option value="{{ s.value }}" {{ 'selected' if status == s.value else '' }}>
+                        {% if s.value == 'active' %}Активен / Одобрен
+                        {% elif s.value == 'pending' %}Ожидает подтверждения
+                        {% elif s.value == 'rejected' %}Заблокирован / Отклонен
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="md:col-span-3">
+                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Сортировка</label>
+                <select name="sort_by" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer h-[42px]">
+                    <option value="newest" {{ 'selected' if sort_by == 'newest' else '' }}>Сначала новые</option>
+                    <option value="oldest" {{ 'selected' if sort_by == 'oldest' else '' }}>Сначала старые</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-1 flex gap-2 justify-end w-full">
+                <button type="submit" class="bg-indigo-600 text-white w-full rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-sm transition-colors h-[42px] flex items-center justify-center">Найти</button>
+                <a href="/admin/users" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left text-sm text-gray-600">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-100">
+                <tr><th class="px-6 py-4">Пользователь</th><th class="px-6 py-4">Email</th><th class="px-6 py-4">Роль</th><th class="px-6 py-4">Статус</th><th class="px-6 py-4 text-right">Действия</th></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for u in users %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-bold text-gray-800">{{ u.first_name }} {{ u.last_name }}</td>
+                    <td class="px-6 py-4">{{ u.email }}</td>
+                    <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs border border-indigo-100">{{ u.role.value }}</span></td>
+                    <td class="px-6 py-4">
+                        {% if u.status.value == 'active' %}<span class="text-green-600 bg-green-50 px-2 py-1 rounded text-xs font-bold">Активен</span>
+                        {% elif u.status.value == 'pending' %}<span class="text-yellow-600 bg-yellow-50 px-2 py-1 rounded text-xs font-bold">Ожидает</span>
+                        {% else %}<span class="text-red-500 bg-red-50 px-2 py-1 rounded text-xs font-bold">Блок</span>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right text-indigo-600 hover:underline cursor-pointer">
+                        <form action="/admin/users/{{ u.id }}/delete" method="POST" onsubmit="return confirm('Удалить?');"><button type="submit">Удалить</button></form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function autocomplete(url) {
+            return {
+                query: new URLSearchParams(window.location.search).get('query') || '',
+                suggestions: [],
+                async fetchSuggestions() {
+                    if (this.query.length < 1) { this.suggestions = []; return; }
+                    try { const res = await fetch(`${url}?q=${this.query}`); if(res.ok) this.suggestions = await res.json(); } catch(e) {}
+                },
+                selectItem(val) { this.query = val; this.suggestions = []; }
+            }
+        }
+    </script>
+</div>
+{% endblock %}

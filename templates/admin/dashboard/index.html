@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <div class="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800">Обзор статистики</h2>
+            <p class="text-gray-500">
+                {% if period == 'day' %}Данные за последние 24 часа
+                {% elif period == 'week' %}Данные за последние 7 дней
+                {% elif period == 'month' %}Данные за последние 30 дней
+                {% else %}Данные за весь период работы{% endif %}
+            </p>
+        </div>
+
+        {% if user.role.value in ['admin', 'moderator', 'super_admin'] %}
+        <div class="bg-white p-1 rounded-lg border border-gray-200 flex text-sm shadow-sm">
+            <a href="?period=day" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'day' else 'text-gray-600 hover:bg-gray-50' }}">День</a>
+            <a href="?period=week" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'week' else 'text-gray-600 hover:bg-gray-50' }}">Неделя</a>
+            <a href="?period=month" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'month' else 'text-gray-600 hover:bg-gray-50' }}">Месяц</a>
+            <a href="?period=all" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'all' else 'text-gray-600 hover:bg-gray-50' }}">Всё время</a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if user.role.value in ['admin', 'moderator', 'super_admin'] %}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Новых пользователей</p>
+                <p class="text-3xl font-bold text-gray-800 mt-2">+{{ stats.new_users }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Загружено документов</p>
+                <p class="text-3xl font-bold text-indigo-600 mt-2">+{{ stats.total_docs }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Одобрено модераторами</p>
+                <p class="text-3xl font-bold text-green-600 mt-2">{{ stats.approved_docs }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Ожидают проверки</p>
+                <p class="text-3xl font-bold text-yellow-600 mt-2">{{ stats.pending_docs }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">Динамика загрузки документов</h3>
+                <div class="h-80 w-full">
+                    <canvas id="adminChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Лидеры периода</h3>
+                <div class="overflow-y-auto max-h-80">
+                    <table class="w-full text-left">
+                        <tbody class="divide-y divide-gray-50">
+                            {% for row in stats.top_students %}
+                            <tr>
+                                <td class="py-3">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600 mr-3">
+                                            {{ loop.index }}
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800">{{ row[0].first_name }} {{ row[0].last_name[:1] }}.</div>
+                                            <div class="text-xs text-gray-400">{{ row[0].email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-right font-bold text-green-600 text-sm">+{{ row[1] | int }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td class="text-center text-gray-400 text-sm py-4">Нет данных</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h3 class="font-bold text-gray-700">Последние загруженные документы</h3>
+                <a href="/admin/documents" class="text-xs text-indigo-600 font-bold hover:underline">ВСЕ ДОКУМЕНТЫ →</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-white text-gray-500 border-b border-gray-100">
+                        <tr>
+                            <th class="px-6 py-3 font-medium">Дата</th>
+                            <th class="px-6 py-3 font-medium">Название</th>
+                            <th class="px-6 py-3 font-medium">Пользователь</th>
+                            <th class="px-6 py-3 font-medium">Категория</th>
+                            <th class="px-6 py-3 font-medium">Уровень</th>
+                            <th class="px-6 py-3 font-medium text-right">Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        {% for doc in stats.recent_docs %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-3 text-gray-500">{{ doc.created_at.strftime('%d.%m %H:%M') }}</td>
+                            <td class="px-6 py-3 font-medium text-gray-800">{{ doc.title }}</td>
+                            <td class="px-6 py-3 text-gray-600">{{ doc.user.first_name }} {{ doc.user.last_name }}</td>
+                            <td class="px-6 py-3"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">{{ doc.category.value }}</span></td>
+                            <td class="px-6 py-3"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">{{ doc.level.value }}</span></td>
+                            <td class="px-6 py-3 text-right">
+                                {% if doc.status.value == 'approved' %}<span class="text-green-600 font-bold text-xs">Одобрено</span>
+                                {% elif doc.status.value == 'rejected' %}<span class="text-red-600 font-bold text-xs">Отклонено</span>
+                                {% else %}<span class="text-yellow-600 font-bold text-xs">На проверке</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('adminChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ stats.chart_labels | safe }},
+                        datasets: [{
+                            label: 'Загружено документов',
+                            data: {{ stats.chart_data | safe }},
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#4f46e5',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { borderDash: [4, 4] } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            });
+        </script>
+
+    {% else %}
+        <div class="bg-white p-8 rounded-2xl shadow-sm text-center">
+            <h3 class="text-xl font-bold text-gray-800">Ваша статистика</h3>
+            <div class="h-64 mt-6">
+                <canvas id="studentChart"></canvas>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('studentChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: {{ stats.chart_labels | safe }},
+                        datasets: [{
+                            data: {{ stats.chart_data | safe }},
+                            backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#3b82f6']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            });
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

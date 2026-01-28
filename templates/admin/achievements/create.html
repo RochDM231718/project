@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100" x-data="imageCropper()">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Добавить достижение</h2>
+
+    <form action="{{ url_for('admin.achievements.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6" @submit.prevent="submitForm">
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
+            <input type="text" name="title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Категория</label>
+                <select name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                    {% for cat in categories %}<option value="{{cat.value}}">{{cat.value}}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Уровень</label>
+                <select name="level" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                    {% for lvl in levels %}<option value="{{lvl.value}}">{{lvl.value}}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+            <textarea name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Документ (Фото можно обрезать)</label>
+            <input type="file" id="fileInput" name="file" accept="image/*,application/pdf" @change="fileChosen"
+                   class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+        </div>
+
+        <div class="pt-4 flex justify-end gap-3">
+            <a href="/admin/achievements" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Отмена</a>
+            <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md">Сохранить</button>
+        </div>
+    </form>
+
+    <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4" x-cloak>
+        <div class="bg-white rounded-lg p-4 w-full max-w-2xl">
+            <h3 class="text-lg font-bold mb-4">Кадрирование</h3>
+            <div class="h-96 w-full bg-gray-100 overflow-hidden rounded border">
+                <img id="imageToCrop" class="max-w-full block">
+            </div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button type="button" @click="cancelCrop" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700">Отмена</button>
+                <button type="button" @click="confirmCrop" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Обрезать и Применить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function imageCropper() {
+    return {
+        showModal: false,
+        cropper: null,
+        croppedBlob: null,
+
+        fileChosen(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('imageToCrop').src = event.target.result;
+                    this.showModal = true;
+                    // Инициализация Cropper после отображения модалки
+                    this.$nextTick(() => {
+                        if (this.cropper) this.cropper.destroy();
+                        this.cropper = new Cropper(document.getElementById('imageToCrop'), {
+                            viewMode: 1,
+                            autoCropArea: 1
+                        });
+                    });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                this.croppedBlob = null; // Если PDF, не трогаем
+            }
+        },
+        cancelCrop() {
+            this.showModal = false;
+            document.getElementById('fileInput').value = ''; // Сброс инпута
+        },
+        confirmCrop() {
+            this.cropper.getCroppedCanvas().toBlob((blob) => {
+                this.croppedBlob = blob;
+                this.showModal = false;
+            });
+        },
+        submitForm(e) {
+            const form = e.target;
+            const formData = new FormData(form);
+
+            // Если есть обрезанная картинка, подменяем файл в форме
+            if (this.croppedBlob) {
+                const originalFile = document.getElementById('fileInput').files[0];
+                formData.set('file', this.croppedBlob, originalFile.name);
+            }
+
+            // Отправляем через fetch, чтобы работала подмена файла
+            fetch(form.action, { method: 'POST', body: formData })
+                .then(response => {
+                    if (response.redirected) window.location.href = response.url;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }
+}
+</script>
+{% endblock %}

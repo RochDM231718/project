@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+
+    <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800">Рейтинг студентов</h2>
+            <p class="text-gray-500 mt-1">Топ учащихся по сумме баллов за достижения</p>
+        </div>
+
+        {% if user.role.value == 'student' %}
+        <div class="bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-4">
+            <div class="text-center">
+                <div class="text-xs opacity-80 uppercase tracking-wide">Ваше место</div>
+                <div class="text-2xl font-bold">#{{ my_rank }}</div>
+            </div>
+            <div class="w-px h-8 bg-white bg-opacity-20"></div>
+            <div class="text-center">
+                <div class="text-xs opacity-80 uppercase tracking-wide">Ваши баллы</div>
+                <div class="text-2xl font-bold">{{ my_points | int }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 items-end">
+
+        {% if leaderboard|length > 1 %}
+        <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-gray-300 flex flex-col items-center order-2 md:order-1 relative top-4">
+            <div class="absolute -top-6 w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xl font-bold text-gray-600 border-4 border-white shadow-sm">2</div>
+
+            {% set u = leaderboard[1][0] %}
+            {% if u.avatar_path %}
+                <img src="/static/{{ u.avatar_path }}" class="w-20 h-20 rounded-full object-cover mb-3 border-2 border-gray-100">
+            {% else %}
+                <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-400 mb-3">{{ u.first_name[:1] }}</div>
+            {% endif %}
+
+            <div class="text-lg font-bold text-center leading-tight">{{ u.first_name }} {{ u.last_name }}</div>
+            <div class="text-indigo-600 font-bold text-xl mt-2">{{ leaderboard[1][1] | int }} баллов</div>
+            <div class="text-xs text-gray-400 mt-1">{{ leaderboard[1][2] }} достижений</div>
+        </div>
+        {% endif %}
+
+        {% if leaderboard|length > 0 %}
+        <div class="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-yellow-400 flex flex-col items-center order-1 md:order-2 z-10 transform md:-translate-y-4">
+            <div class="absolute -top-8 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center text-3xl font-bold text-white border-4 border-white shadow-md">1</div>
+
+            <div class="absolute top-0 right-0 p-2">
+                <svg class="w-8 h-8 text-yellow-400 opacity-20" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+
+            {% set u = leaderboard[0][0] %}
+            {% if u.avatar_path %}
+                <img src="/static/{{ u.avatar_path }}" class="w-24 h-24 rounded-full object-cover mb-4 border-4 border-yellow-100">
+            {% else %}
+                <div class="w-24 h-24 rounded-full bg-yellow-50 flex items-center justify-center text-3xl font-bold text-yellow-600 mb-4 border-4 border-yellow-100">{{ u.first_name[:1] }}</div>
+            {% endif %}
+
+            <div class="text-xl font-bold text-center leading-tight">{{ u.first_name }} {{ u.last_name }}</div>
+            <div class="text-indigo-600 font-bold text-3xl mt-2">{{ leaderboard[0][1] | int }} <span class="text-sm font-medium text-gray-500">баллов</span></div>
+            <div class="text-sm text-gray-400 mt-1">{{ leaderboard[0][2] }} подтвержденных достижений</div>
+        </div>
+        {% endif %}
+
+        {% if leaderboard|length > 2 %}
+        <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-orange-300 flex flex-col items-center order-3 md:order-3 relative top-4">
+            <div class="absolute -top-6 w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center text-xl font-bold text-orange-700 border-4 border-white shadow-sm">3</div>
+
+            {% set u = leaderboard[2][0] %}
+            {% if u.avatar_path %}
+                <img src="/static/{{ u.avatar_path }}" class="w-20 h-20 rounded-full object-cover mb-3 border-2 border-gray-100">
+            {% else %}
+                <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-400 mb-3">{{ u.first_name[:1] }}</div>
+            {% endif %}
+
+            <div class="text-lg font-bold text-center leading-tight">{{ u.first_name }} {{ u.last_name }}</div>
+            <div class="text-indigo-600 font-bold text-xl mt-2">{{ leaderboard[2][1] | int }} баллов</div>
+            <div class="text-xs text-gray-400 mt-1">{{ leaderboard[2][2] }} достижений</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if leaderboard|length > 3 %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
+                <tr>
+                    <th class="p-4 w-16 text-center">#</th>
+                    <th class="p-4">Студент</th>
+                    <th class="p-4 text-center">Достижений</th>
+                    <th class="p-4 text-right">Баллы</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for row in leaderboard[3:] %}
+                <tr class="hover:bg-gray-50 transition-colors {{ 'bg-indigo-50' if row[0].id == user.id else '' }}">
+                    <td class="p-4 text-center font-bold text-gray-400">{{ loop.index + 3 }}</td>
+                    <td class="p-4 flex items-center gap-3">
+                        {% if row[0].avatar_path %}
+                            <img src="/static/{{ row[0].avatar_path }}" class="w-10 h-10 rounded-full object-cover">
+                        {% else %}
+                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-sm">{{ row[0].first_name[:1] }}</div>
+                        {% endif %}
+                        <div class="font-medium text-gray-900">{{ row[0].first_name }} {{ row[0].last_name }}</div>
+                    </td>
+                    <td class="p-4 text-center text-gray-600">{{ row[2] }}</td>
+                    <td class="p-4 text-right font-bold text-indigo-600">{{ row[1] | int }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if leaderboard|length == 0 %}
+    <div class="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-200">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900">Рейтинг пуст</h3>
+        <p class="text-gray-500 mt-1">Ни одно достижение еще не было одобрено.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

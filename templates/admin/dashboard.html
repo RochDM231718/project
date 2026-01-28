@@ -1,0 +1,146 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Добро пожаловать, {{ user.first_name }}!</h2>
+        <p class="text-gray-500">Вот обзор вашей активности на сегодня.</p>
+    </div>
+
+    {% if user.role.value in ['admin', 'moderator', 'super_admin'] %}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 uppercase font-semibold">Ожидают проверки</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-2">{{ stats.pending_docs }}</p>
+                    </div>
+                    <div class="p-3 bg-yellow-100 rounded-full text-yellow-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+                <a href="/admin/moderation/achievements" class="text-sm text-indigo-600 font-medium mt-4 block hover:underline">Перейти к модерации →</a>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 uppercase font-semibold">Студентов</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.total_users }}</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-full text-blue-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 uppercase font-semibold">Всего документов</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.total_docs }}</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-full text-green-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-lg text-white transform transition hover:scale-105 duration-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-indigo-100 text-sm font-medium uppercase tracking-wider">Мои баллы</p>
+                        <p class="text-4xl font-extrabold mt-2">{{ stats.my_points | int }}</p>
+                    </div>
+                    <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
+                    <a href="/admin/leaderboard" class="text-sm font-medium hover:text-white text-indigo-100 flex items-center">
+                        Посмотреть рейтинг <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">На проверке</p>
+                <div class="mt-2 flex items-baseline">
+                    <p class="text-4xl font-extrabold text-gray-800">{{ stats.pending_count }}</p>
+                    <span class="ml-2 text-sm text-gray-500">документов</span>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <a href="/admin/achievements/create" class="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center">
+                        + Загрузить новое
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Подтверждено</p>
+                <div class="mt-2 flex items-baseline">
+                    <p class="text-4xl font-extrabold text-green-600">{{ stats.approved_count }}</p>
+                    <span class="ml-2 text-sm text-gray-500">документов</span>
+                </div>
+            </div>
+        </div>
+
+        {% if stats.chart_data and stats.chart_data|length > 0 %}
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Структура достижений</h3>
+            <div class="h-64 w-full">
+                <canvas id="achievementsChart"></canvas>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('achievementsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ stats.chart_labels | tojson }},
+                        datasets: [{
+                            label: 'Баллы',
+                            data: {{ stats.chart_data | tojson }},
+                            backgroundColor: [
+                                'rgba(99, 102, 241, 0.6)',
+                                'rgba(167, 139, 250, 0.6)',
+                                'rgba(236, 72, 153, 0.6)',
+                                'rgba(16, 185, 129, 0.6)',
+                                'rgba(245, 158, 11, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgb(99, 102, 241)',
+                                'rgb(167, 139, 250)',
+                                'rgb(236, 72, 153)',
+                                'rgb(16, 185, 129)',
+                                'rgb(245, 158, 11)'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            });
+        </script>
+        {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}

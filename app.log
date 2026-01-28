@@ -1,0 +1,1143 @@
+2025-12-06T07:15:34.555603Z [info     ] Started server process [1344]  [uvicorn.error]
+2025-12-06T07:15:34.556376Z [info     ] Waiting for application startup. [uvicorn.error]
+2025-12-06T07:15:34.557882Z [info     ] Application startup complete.  [uvicorn.error]
+2025-12-06T07:15:57.443380Z [info     ] select pg_catalog.version()    [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.443945Z [info     ] [raw sql] ()                   [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.465168Z [info     ] select current_schema()        [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.465899Z [info     ] [raw sql] ()                   [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.469054Z [info     ] show standard_conforming_strings [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.469740Z [info     ] [raw sql] ()                   [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.472177Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.476174Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.476984Z [info     ] [generated in 0.00104s] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.531083Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.531802Z [info     ] [generated in 0.00096s] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.543077Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0008s method=GET path=/admin/login request_id=b7431c6c-99de-47e9-96b1-8fbb5a4d9225 status_code=302
+2025-12-06T07:15:57.545102Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.546685Z [info     ] 127.0.0.1:61706 - "GET /admin/login HTTP/1.1" 302 [uvicorn.access]
+2025-12-06T07:15:57.553073Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.554104Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.554676Z [info     ] [cached since 0.07893s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.556694Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.557229Z [info     ] [cached since 0.02655s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:57.912602Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:57.917847Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:57.920271Z [info     ] [generated in 0.00313s] ()     [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:57.950318Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:57.957850Z [info     ] [cached since 0.4755s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.013753Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.014706Z [info     ] [cached since 0.5387s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.017658Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.018746Z [info     ] [cached since 0.5426s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.021431Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.022230Z [info     ] [cached since 0.5463s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.025180Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.026037Z [info     ] [generated in 0.00101s] ()     [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.030755Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.031606Z [info     ] [cached since 0.5006s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.043620Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.044393Z [info     ] [cached since 0.5135s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.047428Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.048043Z [info     ] [cached since 0.5173s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.060792Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.061613Z [info     ] [generated in 0.00116s] (datetime.datetime(2025, 11, 30, 10, 15, 58, 48860),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.075827Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.076819Z [info     ] [generated in 0.00140s] (datetime.datetime(2025, 11, 30, 10, 15, 58, 73049),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.216695Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738
+2025-12-06T07:15:58.217489Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.6591s method=GET path=/admin/dashboard request_id=1ea093d9-eb31-4714-8995-980a259dd738 status_code=200
+2025-12-06T07:15:58.218709Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.219687Z [info     ] 127.0.0.1:61706 - "GET /admin/dashboard HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:15:58.354250Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.360654Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.362163Z [info     ] [cached since 0.8855s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.365536Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.368649Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.371514Z [info     ] [cached since 0.8935s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.375353Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.376477Z [info     ] [cached since 0.8453s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.380939Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.381681Z [info     ] [cached since 0.8508s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.455849Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0729s method=GET path=/static/assets/css/font-awesome.min.css request_id=4803ad91-98d6-48cf-84fd-79ce6b5ffb1c status_code=304
+2025-12-06T07:15:58.457424Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0730s method=GET path=/static/assets/css/style.css request_id=5f66148c-b7a1-4ae4-8817-076585824482 status_code=304
+2025-12-06T07:15:58.459928Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.461410Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.462841Z [info     ] 127.0.0.1:61706 - "GET /static/assets/css/font-awesome.min.css HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:15:58.465102Z [info     ] 127.0.0.1:61707 - "GET /static/assets/css/style.css HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:15:58.541616Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.542996Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.544402Z [info     ] [cached since 1.068s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.547035Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.547998Z [info     ] [cached since 1.017s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.557685Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0082s method=GET path=/static/assets/fonts/fontawesome-webfont.woff2 request_id=04986b14-4b4c-4851-af17-fea9b0e7cc31 status_code=200
+2025-12-06T07:15:58.563253Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.564676Z [info     ] 127.0.0.1:61707 - "GET /static/assets/fonts/fontawesome-webfont.woff2?v=4.7.0 HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:15:58.678057Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.678959Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.679639Z [info     ] [cached since 1.204s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.682538Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.683515Z [info     ] [cached since 1.152s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.685660Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0004s method=GET path=/favicon.ico request_id=2601c333-d3c6-4197-9e3b-c8e341dc5315 status_code=204
+2025-12-06T07:15:58.687647Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:15:58.689587Z [info     ] 127.0.0.1:61707 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:10.773347Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.774724Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.775676Z [info     ] [cached since 13.3s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.779389Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.779976Z [info     ] [cached since 13.25s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.781696Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0005s method=GET path=/admin/lang/en request_id=ede8ad9e-0ab2-4513-a093-832e29de4fa9 status_code=302
+2025-12-06T07:16:10.783502Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.785188Z [info     ] 127.0.0.1:61739 - "GET /admin/lang/en HTTP/1.1" 302 [uvicorn.access]
+2025-12-06T07:16:10.794325Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.796417Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.798249Z [info     ] [cached since 13.32s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.802541Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.804936Z [info     ] [cached since 13.27s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.809624Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.810986Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.812485Z [info     ] [cached since 12.9s ago] ()    [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.815969Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.817080Z [info     ] [cached since 13.34s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.821637Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.822643Z [info     ] [cached since 13.35s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.825200Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.826706Z [info     ] [cached since 13.35s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.829683Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.830856Z [info     ] [cached since 13.35s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.833997Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.835376Z [info     ] [cached since 12.81s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.838329Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.839589Z [info     ] [cached since 13.31s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.842948Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.844021Z [info     ] [cached since 13.31s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.849459Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.850544Z [info     ] [cached since 13.32s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.855236Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.856728Z [info     ] [cached since 12.8s ago] (datetime.datetime(2025, 11, 30, 10, 16, 10, 851580),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.864397Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.876839Z [info     ] [cached since 12.79s ago] (datetime.datetime(2025, 11, 30, 10, 16, 10, 858478),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.891873Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b
+2025-12-06T07:16:10.892986Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0858s method=GET path=/admin/dashboard request_id=3709dbb5-ae04-4c57-aef0-3a28ce3bab8b status_code=200
+2025-12-06T07:16:10.900159Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:10.906443Z [info     ] 127.0.0.1:61739 - "GET /admin/dashboard?toast_msg=Language%20changed%20to%20English.&toast_type=success HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:11.155454Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:11.156696Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:11.157892Z [info     ] [cached since 13.68s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:11.161182Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:11.161860Z [info     ] [cached since 13.63s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:11.163330Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0004s method=GET path=/favicon.ico request_id=7ee359ad-1cff-4a3b-a067-cd1413cce3e7 status_code=204
+2025-12-06T07:16:11.165142Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:11.166803Z [info     ] 127.0.0.1:61739 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:34.756345Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.760785Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.762998Z [info     ] [cached since 37.29s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.770779Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.773161Z [info     ] [cached since 37.24s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.781745Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=b7ac9e16-6809-451b-abc1-773370d9f56c
+2025-12-06T07:16:34.789792Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.status = $1 ORDER BY users.id DESC [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=b7ac9e16-6809-451b-abc1-773370d9f56c
+2025-12-06T07:16:34.792473Z [info     ] [generated in 0.00338s] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=b7ac9e16-6809-451b-abc1-773370d9f56c
+2025-12-06T07:16:34.884390Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=b7ac9e16-6809-451b-abc1-773370d9f56c
+2025-12-06T07:16:34.885568Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.1087s method=GET path=/admin/moderation/users request_id=b7ac9e16-6809-451b-abc1-773370d9f56c status_code=200
+2025-12-06T07:16:34.887571Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.889108Z [info     ] 127.0.0.1:61740 - "GET /admin/moderation/users HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:34.990857Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.992481Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.996356Z [info     ] [cached since 37.52s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:34.999243Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:35.000276Z [info     ] [cached since 37.47s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:35.002263Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0006s method=GET path=/favicon.ico request_id=22dcc16d-985b-419b-adb1-9a65aeabe046 status_code=204
+2025-12-06T07:16:35.004720Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:35.006182Z [info     ] 127.0.0.1:61740 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:37.602418Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.604762Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.606432Z [info     ] [cached since 40.13s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.613718Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.617501Z [info     ] [cached since 40.08s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.628689Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.645736Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements JOIN users ON users.id = achievements.user_id ORDER BY achievements.created_at DESC 
+ LIMIT $1::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.649347Z [info     ] [generated in 0.00504s] (50,)  [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.671801Z [info     ] SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.first_name AS users_first_name, users.last_name AS users_last_name, users.role AS users_role, users.status AS users_status, users.is_active AS users_is_active, users.phone_number AS users_phone_number, users.avatar_path AS users_avatar_path, users.created_at AS users_created_at 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.674291Z [info     ] [generated in 0.00372s] (4, 15) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.684969Z [info     ] SELECT count(*) AS count_1 
+FROM achievements JOIN users ON users.id = achievements.user_id [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.687108Z [info     ] [generated in 0.00234s] ()     [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.802377Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7
+2025-12-06T07:16:37.803083Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.1821s method=GET path=/admin/pages request_id=c4879152-f8c5-413c-8855-527c04654ed7 status_code=200
+2025-12-06T07:16:37.804185Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.805231Z [info     ] 127.0.0.1:61740 - "GET /admin/pages HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:37.919507Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.921044Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.921781Z [info     ] [cached since 40.45s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.924736Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.925423Z [info     ] [cached since 40.39s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.926807Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0004s method=GET path=/favicon.ico request_id=dbd9c6c7-437d-4321-93ed-56b473d9e45f status_code=204
+2025-12-06T07:16:37.928556Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:37.930156Z [info     ] 127.0.0.1:61740 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:40.768704Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.772496Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.774556Z [info     ] [cached since 43.3s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.781051Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.783589Z [info     ] [cached since 43.25s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.795800Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=c114f787-c608-48ec-b984-8a25945b8403
+2025-12-06T07:16:40.815453Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.user_id = $1::INTEGER ORDER BY achievements.created_at DESC 
+ LIMIT $2::INTEGER OFFSET $3::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=c114f787-c608-48ec-b984-8a25945b8403
+2025-12-06T07:16:40.818555Z [info     ] [generated in 0.01619s] (4, 20, 0) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=c114f787-c608-48ec-b984-8a25945b8403
+2025-12-06T07:16:40.826878Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.user_id = $1::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=c114f787-c608-48ec-b984-8a25945b8403
+2025-12-06T07:16:40.828003Z [info     ] [generated in 0.00163s] (4,)   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=c114f787-c608-48ec-b984-8a25945b8403
+2025-12-06T07:16:40.864120Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=c114f787-c608-48ec-b984-8a25945b8403
+2025-12-06T07:16:40.865611Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0790s method=GET path=/admin/achievements request_id=c114f787-c608-48ec-b984-8a25945b8403 status_code=200
+2025-12-06T07:16:40.867699Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.869064Z [info     ] 127.0.0.1:61740 - "GET /admin/achievements HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:40.970577Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.972001Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.972894Z [info     ] [cached since 43.5s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.975756Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.977049Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.977790Z [info     ] [cached since 43.5s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.980535Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.981279Z [info     ] [cached since 43.45s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.984418Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.985784Z [info     ] [cached since 43.45s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:40.991828Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0031s method=GET path=/static/uploads/achievements/41f12da3-d444-43d0-afd2-9c8d15f84976.jpg request_id=3f564bb5-f9fe-4d9f-ac93-595d1d836580 status_code=304
+2025-12-06T07:16:41.002745Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.007937Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0210s method=GET path=/static/uploads/achievements/e1dacd2d-19fa-4f80-a41d-85f5466e15ee.png request_id=5d2d7ae2-0154-4220-9d36-df55d1a7a3e1 status_code=304
+2025-12-06T07:16:41.010144Z [info     ] 127.0.0.1:61756 - "GET /static/uploads/achievements/41f12da3-d444-43d0-afd2-9c8d15f84976.jpg HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.014068Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.015812Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.016639Z [info     ] [cached since 43.54s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.049299Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.065721Z [info     ] 127.0.0.1:61740 - "GET /static/uploads/achievements/e1dacd2d-19fa-4f80-a41d-85f5466e15ee.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.070260Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.071108Z [info     ] [cached since 43.54s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.076833Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0045s method=GET path=/static/uploads/achievements/a49fba99-2942-432f-a1b4-a2d7e6cb2d8c.png request_id=a441702b-4451-4d64-ac68-98c315ee6fc9 status_code=304
+2025-12-06T07:16:41.089219Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.091023Z [info     ] 127.0.0.1:61762 - "GET /static/uploads/achievements/a49fba99-2942-432f-a1b4-a2d7e6cb2d8c.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.196799Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.198486Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.199519Z [info     ] [cached since 43.72s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.202561Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.204393Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.206331Z [info     ] [cached since 43.73s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.286054Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.286761Z [info     ] [cached since 43.76s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.363667Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.364510Z [info     ] [cached since 43.83s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.368168Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.369249Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.369844Z [info     ] [cached since 43.89s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.509563Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.510978Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.511719Z [info     ] [cached since 44.04s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.512905Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.513919Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.514487Z [info     ] [cached since 44.04s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.518566Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.519859Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.520610Z [info     ] [cached since 44.04s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.524333Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.1573s method=GET path=/static/uploads/achievements/b5e63cb0-8507-424b-b4fd-ba37351d0ef2.jpg request_id=5b47513b-b146-4056-aa68-c06468e70930 status_code=304
+2025-12-06T07:16:41.526307Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0179s method=GET path=/static/uploads/achievements/1581beef-2da4-4316-a0d3-1059a34c45a6.png request_id=01988f0d-ef69-44e5-b8f1-3c33e5ee135d status_code=304
+2025-12-06T07:16:41.529043Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.531666Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.538506Z [info     ] 127.0.0.1:61740 - "GET /static/uploads/achievements/1581beef-2da4-4316-a0d3-1059a34c45a6.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.541015Z [info     ] 127.0.0.1:61762 - "GET /static/uploads/achievements/b5e63cb0-8507-424b-b4fd-ba37351d0ef2.jpg HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.581779Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.582770Z [info     ] [cached since 44.05s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.591343Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.592557Z [info     ] [cached since 44.06s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.606236Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.607748Z [info     ] [cached since 44.08s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.623534Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0074s method=GET path=/static/uploads/achievements/30197560-11d4-41a5-a3bd-2a98fff8a59c.png request_id=0924448e-5cbd-4c60-a018-920e8fb3bccc status_code=304
+2025-12-06T07:16:41.641251Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.642099Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0274s method=GET path=/static/uploads/achievements/315f918f-10d9-40d7-b6fd-1643c6d857ae.png request_id=8a4d15fd-a834-4564-bf31-26782797e30c status_code=304
+2025-12-06T07:16:41.648922Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.653345Z [info     ] 127.0.0.1:61763 - "GET /static/uploads/achievements/30197560-11d4-41a5-a3bd-2a98fff8a59c.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.657523Z [info     ] 127.0.0.1:61765 - "GET /static/uploads/achievements/315f918f-10d9-40d7-b6fd-1643c6d857ae.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.661469Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0065s method=GET path=/static/uploads/achievements/22f2cb70-f28b-4a8f-a19b-d4bcaed59268.png request_id=55ba64f4-26e3-4b0f-a60c-237b65a7bf9b status_code=304
+2025-12-06T07:16:41.671428Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.674322Z [info     ] 127.0.0.1:61764 - "GET /static/uploads/achievements/22f2cb70-f28b-4a8f-a19b-d4bcaed59268.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.682269Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.683114Z [info     ] [cached since 44.15s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.721877Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0172s method=GET path=/static/uploads/achievements/0e4e0eea-52c7-44bb-ab3a-684e216f2768.png request_id=ded0de60-ffe6-4138-b13c-709a53f602ed status_code=304
+2025-12-06T07:16:41.730490Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.739629Z [info     ] 127.0.0.1:61756 - "GET /static/uploads/achievements/0e4e0eea-52c7-44bb-ab3a-684e216f2768.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:41.779755Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.781564Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.782850Z [info     ] [cached since 44.31s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.787268Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.788211Z [info     ] [cached since 44.26s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.790286Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0005s method=GET path=/favicon.ico request_id=99ccb083-042b-4f78-95a3-d2c79aa036fa status_code=204
+2025-12-06T07:16:41.793457Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:41.796006Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:42.887777Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:42.890209Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:42.891584Z [info     ] [cached since 45.42s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:42.896254Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:42.898131Z [info     ] [cached since 45.37s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:42.907187Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=0e98ae1e-9000-4819-8417-04811e2b02eb
+2025-12-06T07:16:42.911681Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users ORDER BY users.id DESC 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=0e98ae1e-9000-4819-8417-04811e2b02eb
+2025-12-06T07:16:42.914473Z [info     ] [generated in 0.00268s] (20, 0) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=0e98ae1e-9000-4819-8417-04811e2b02eb
+2025-12-06T07:16:42.943261Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=0e98ae1e-9000-4819-8417-04811e2b02eb
+2025-12-06T07:16:42.944995Z [info     ] [cached since 45.03s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=0e98ae1e-9000-4819-8417-04811e2b02eb
+2025-12-06T07:16:43.112647Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=0e98ae1e-9000-4819-8417-04811e2b02eb
+2025-12-06T07:16:43.113799Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.2133s method=GET path=/admin/users request_id=0e98ae1e-9000-4819-8417-04811e2b02eb status_code=200
+2025-12-06T07:16:43.115299Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.116381Z [info     ] 127.0.0.1:61756 - "GET /admin/users HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:43.210743Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.212398Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.213251Z [info     ] [cached since 45.74s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.216278Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.216992Z [info     ] [cached since 45.69s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.222385Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0028s method=GET path=/static/uploads/avatars/avatar_15_a0b7b056.jpg request_id=2913cb25-7e33-403e-957f-98bc17c9ec77 status_code=304
+2025-12-06T07:16:43.224237Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.226610Z [info     ] 127.0.0.1:61756 - "GET /static/uploads/avatars/avatar_15_a0b7b056.jpg HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:43.239178Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.242199Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.243161Z [info     ] [cached since 45.77s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.245727Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.247500Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.248356Z [info     ] [cached since 45.77s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.251209Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.252018Z [info     ] [cached since 45.72s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.254300Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.255080Z [info     ] [cached since 45.72s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.262934Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0050s method=GET path=/static/uploads/avatars/avatar_4_66316634.png request_id=50685d53-a6fe-4ff1-b404-708c0d5f12aa status_code=304
+2025-12-06T07:16:43.263841Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0073s method=GET path=/static/uploads/avatars/avatar_5_9ebfe25f.jpg request_id=ec128f47-1477-4906-8e37-b09e690690f9 status_code=304
+2025-12-06T07:16:43.265628Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.266620Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.268772Z [info     ] 127.0.0.1:61764 - "GET /static/uploads/avatars/avatar_4_66316634.png HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:43.269992Z [info     ] 127.0.0.1:61756 - "GET /static/uploads/avatars/avatar_5_9ebfe25f.jpg HTTP/1.1" 304 [uvicorn.access]
+2025-12-06T07:16:43.348489Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.349844Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.351673Z [info     ] [cached since 45.87s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.355802Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.357354Z [info     ] [cached since 45.83s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.360374Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0005s method=GET path=/favicon.ico request_id=18f7086b-65c7-417f-ad0d-1692458b37f8 status_code=204
+2025-12-06T07:16:43.362510Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:43.365026Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:44.172933Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.175900Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.177895Z [info     ] [cached since 46.7s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.185254Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.187466Z [info     ] [cached since 46.66s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.194792Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.197443Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.199287Z [info     ] [cached since 46.28s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.207071Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.209207Z [info     ] [cached since 46.73s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.216315Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.218462Z [info     ] [cached since 46.74s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.226127Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.228467Z [info     ] [cached since 46.75s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.235487Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.237773Z [info     ] [cached since 46.76s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.242075Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.243607Z [info     ] [cached since 46.22s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.248952Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.250401Z [info     ] [cached since 46.72s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.254276Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.255550Z [info     ] [cached since 46.72s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.258618Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.261083Z [info     ] [cached since 46.73s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.264478Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.265445Z [info     ] [cached since 46.2s ago] (datetime.datetime(2025, 11, 30, 10, 16, 44, 262547),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.278201Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.279118Z [info     ] [cached since 46.2s ago] (datetime.datetime(2025, 11, 30, 10, 16, 44, 276615),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.287381Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c
+2025-12-06T07:16:44.288681Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0982s method=GET path=/admin/dashboard request_id=994b639f-9a9e-4266-85a3-bd52fd365e4c status_code=200
+2025-12-06T07:16:44.290484Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.291648Z [info     ] 127.0.0.1:61756 - "GET /admin/dashboard HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:44.436089Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.437349Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.439239Z [info     ] [cached since 46.96s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.442758Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.443555Z [info     ] [cached since 46.91s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.445495Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0006s method=GET path=/favicon.ico request_id=7065ca99-2f81-4d1b-a040-2986342164c3 status_code=204
+2025-12-06T07:16:44.447452Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:44.448796Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:47.110060Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.113434Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.115714Z [info     ] [cached since 49.64s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.121822Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.123806Z [info     ] [cached since 49.59s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.130449Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.133671Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.136140Z [info     ] [cached since 49.22s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.142981Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.145536Z [info     ] [cached since 49.67s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.159316Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.162407Z [info     ] [cached since 49.68s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.170971Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.173408Z [info     ] [cached since 49.7s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.180999Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.183635Z [info     ] [cached since 49.71s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.192051Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.194365Z [info     ] [cached since 49.17s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.205216Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.208119Z [info     ] [cached since 49.68s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.215652Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.218293Z [info     ] [cached since 49.69s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.224377Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.226517Z [info     ] [cached since 49.69s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.232181Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.233929Z [info     ] [cached since 49.17s ago] (datetime.datetime(2024, 12, 1, 10, 16, 47, 228585),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.239596Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.240591Z [info     ] [cached since 49.17s ago] (datetime.datetime(2024, 12, 1, 10, 16, 47, 237134),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.247853Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e
+2025-12-06T07:16:47.248760Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.1220s method=GET path=/admin/dashboard request_id=f9aed15e-c40b-4aa5-873a-e9f44861b92e status_code=200
+2025-12-06T07:16:47.250469Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.252059Z [info     ] 127.0.0.1:61756 - "GET /admin/dashboard?period=all HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:47.402901Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.403836Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.404538Z [info     ] [cached since 49.93s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.406634Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.407309Z [info     ] [cached since 49.88s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.408909Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0004s method=GET path=/favicon.ico request_id=f381dcc8-169d-4e8f-9282-fa3474303c87 status_code=204
+2025-12-06T07:16:47.410891Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:47.413176Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:48.781305Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:48.783988Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:48.786317Z [info     ] [cached since 51.31s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:48.792314Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:48.794632Z [info     ] [cached since 51.26s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:48.802361Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.805738Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.808224Z [info     ] [cached since 50.89s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.831195Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.837802Z [info     ] [cached since 51.36s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.844709Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.847057Z [info     ] [cached since 51.37s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.853423Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.856290Z [info     ] [cached since 51.38s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.860990Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.862785Z [info     ] [cached since 51.39s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.866815Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.868580Z [info     ] [cached since 50.84s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.873375Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.874382Z [info     ] [cached since 51.34s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.877184Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.877841Z [info     ] [cached since 51.35s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.880062Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.880804Z [info     ] [cached since 51.35s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.885481Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.886415Z [info     ] [cached since 50.83s ago] (datetime.datetime(2025, 11, 30, 10, 16, 48, 881579),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.898079Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.898801Z [info     ] [cached since 50.82s ago] (datetime.datetime(2025, 11, 30, 10, 16, 48, 896895),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.904165Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0
+2025-12-06T07:16:48.904997Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.1073s method=GET path=/admin/dashboard request_id=82b28330-6697-4c18-88f5-d789d7ff94e0 status_code=200
+2025-12-06T07:16:48.906263Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:48.907258Z [info     ] 127.0.0.1:61756 - "GET /admin/dashboard?period=week HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:49.068840Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.070393Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.071430Z [info     ] [cached since 51.6s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.073766Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.074345Z [info     ] [cached since 51.54s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.075727Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0003s method=GET path=/favicon.ico request_id=043a1d68-8494-4bd2-9e53-07d9aa9089ab status_code=204
+2025-12-06T07:16:49.077549Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.079622Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:49.896709Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.898088Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.898661Z [info     ] [cached since 52.42s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.901177Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.901790Z [info     ] [cached since 52.37s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.904999Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.906557Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.907514Z [info     ] [cached since 51.99s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.911086Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.912388Z [info     ] [cached since 52.44s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.915243Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.916704Z [info     ] [cached since 52.44s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.920472Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.921243Z [info     ] [cached since 52.45s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.923986Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.925528Z [info     ] [cached since 52.45s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.928116Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.929056Z [info     ] [cached since 51.9s ago] ()    [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.932093Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.933083Z [info     ] [cached since 52.4s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.935176Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.935979Z [info     ] [cached since 52.41s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.940250Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.941305Z [info     ] [cached since 52.41s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.943551Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.944595Z [info     ] [cached since 51.88s ago] (datetime.datetime(2025, 12, 5, 10, 16, 49, 942153),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.947876Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.948648Z [info     ] [cached since 51.87s ago] (datetime.datetime(2025, 12, 5, 10, 16, 49, 946085),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.957096Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f
+2025-12-06T07:16:49.958263Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0550s method=GET path=/admin/dashboard request_id=f281ba8a-5c01-413d-a388-c6870e94380f status_code=200
+2025-12-06T07:16:49.960245Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:49.961722Z [info     ] 127.0.0.1:61756 - "GET /admin/dashboard?period=day HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:50.097222Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:50.098356Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:50.099271Z [info     ] [cached since 52.62s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:50.102061Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:50.102845Z [info     ] [cached since 52.57s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:50.104703Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0005s method=GET path=/favicon.ico request_id=e4099ce0-75e4-4465-9ea7-5251b1a895a1 status_code=204
+2025-12-06T07:16:50.106705Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:50.111220Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:51.387159Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.390797Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.393686Z [info     ] [cached since 53.92s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.406784Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.415587Z [info     ] [cached since 53.88s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.434420Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.438160Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.439725Z [info     ] [cached since 53.52s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.444160Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.445430Z [info     ] [cached since 53.97s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.448558Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.449524Z [info     ] [cached since 53.97s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.452318Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.453195Z [info     ] [cached since 53.98s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.455723Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.456570Z [info     ] [cached since 53.98s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.459303Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.460190Z [info     ] [cached since 53.44s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.462664Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.463567Z [info     ] [cached since 53.93s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.466362Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.467154Z [info     ] [cached since 53.94s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.469805Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.470759Z [info     ] [cached since 53.94s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.473565Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.474528Z [info     ] [cached since 53.41s ago] (datetime.datetime(2025, 11, 30, 10, 16, 51, 471883),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.477594Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.478592Z [info     ] [cached since 53.4s ago] (datetime.datetime(2025, 11, 30, 10, 16, 51, 476209),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.485617Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e
+2025-12-06T07:16:51.486539Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0606s method=GET path=/admin/dashboard request_id=fdcf7c1a-f662-4709-8a7d-9c306d49341e status_code=200
+2025-12-06T07:16:51.487910Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.489187Z [info     ] 127.0.0.1:61756 - "GET /admin/dashboard?period=week HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:51.588038Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.589740Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.590575Z [info     ] [cached since 54.11s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.593424Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.594419Z [info     ] [cached since 54.06s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.595833Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0004s method=GET path=/favicon.ico request_id=af13b50b-30ce-4da1-a31f-d7fd2b0b64f0 status_code=204
+2025-12-06T07:16:51.597122Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:51.598355Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:52.899166Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:52.899994Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:52.900645Z [info     ] [cached since 55.42s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:52.903110Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:52.903698Z [info     ] [cached since 55.37s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:52.905955Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.906829Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.907504Z [info     ] [cached since 54.99s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.910947Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.911821Z [info     ] [cached since 55.44s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.914365Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.916807Z [info     ] [cached since 55.44s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.919405Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.920327Z [info     ] [cached since 55.44s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.925351Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.926176Z [info     ] [cached since 55.45s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.928119Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.931381Z [info     ] [cached since 54.9s ago] ()    [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.934057Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.934837Z [info     ] [cached since 55.4s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.937875Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.938814Z [info     ] [cached since 55.41s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.941318Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.942132Z [info     ] [cached since 55.41s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.946266Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.947187Z [info     ] [cached since 54.89s ago] (datetime.datetime(2025, 11, 6, 10, 16, 52, 944018),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.949879Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.950905Z [info     ] [cached since 54.88s ago] (datetime.datetime(2025, 11, 6, 10, 16, 52, 948439),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.958590Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606
+2025-12-06T07:16:52.959532Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0548s method=GET path=/admin/dashboard request_id=27365a4e-ccac-438a-96fb-393398941606 status_code=200
+2025-12-06T07:16:52.961152Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:52.962214Z [info     ] 127.0.0.1:61756 - "GET /admin/dashboard?period=month HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:53.142230Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:53.144553Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:53.145660Z [info     ] [cached since 55.67s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:53.148456Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:53.149167Z [info     ] [cached since 55.62s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:53.150998Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0007s method=GET path=/favicon.ico request_id=87700d0c-5bda-4bb9-b19b-9a0573d7fb7a status_code=204
+2025-12-06T07:16:53.152990Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:53.154488Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:16:55.204629Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.205883Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.206747Z [info     ] [cached since 57.73s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.208912Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.209618Z [info     ] [cached since 57.68s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.212619Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.213734Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.214602Z [info     ] [cached since 57.3s ago] ()    [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.217528Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.218618Z [info     ] [cached since 57.74s ago] ('ACTIVE',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.222337Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.223216Z [info     ] [cached since 57.75s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.225603Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.227047Z [info     ] [cached since 57.75s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.230675Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.231471Z [info     ] [cached since 57.76s ago] ('DELETED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.234657Z [info     ] SELECT count(*) AS count_1 
+FROM achievements [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.237518Z [info     ] [cached since 57.21s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.241674Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.243544Z [info     ] [cached since 57.71s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.247666Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.250582Z [info     ] [cached since 57.72s ago] ('APPROVED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.260520Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.265915Z [info     ] [cached since 57.73s ago] ('REJECTED',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.270430Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.271651Z [info     ] [cached since 57.21s ago] (datetime.datetime(2025, 11, 30, 10, 16, 55, 266917),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.274785Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.created_at >= $1::TIMESTAMP WITH TIME ZONE [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.275993Z [info     ] [cached since 57.2s ago] (datetime.datetime(2025, 11, 30, 10, 16, 55, 273125),) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.284840Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300
+2025-12-06T07:16:55.285856Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0749s method=GET path=/admin/dashboard request_id=7ab53a14-cb5b-4bf1-9271-b83b1f963300 status_code=200
+2025-12-06T07:16:55.287324Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.288298Z [info     ] 127.0.0.1:61756 - "GET /admin/dashboard?period=week HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:16:55.757578Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.758578Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.759183Z [info     ] [cached since 58.28s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.763407Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.764219Z [info     ] [cached since 58.23s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.766204Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0006s method=GET path=/favicon.ico request_id=7a868d66-8e23-4266-ae05-c475e0e8596e status_code=204
+2025-12-06T07:16:55.768264Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:16:55.770097Z [info     ] 127.0.0.1:61756 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:20:28.636951Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.639445Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.641439Z [info     ] [cached since 271.2s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.648077Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.650192Z [info     ] [cached since 271.1s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.659332Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=25275dca-26ec-471d-9fab-0746f8033cb0
+2025-12-06T07:20:28.662317Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users ORDER BY users.id DESC 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=25275dca-26ec-471d-9fab-0746f8033cb0
+2025-12-06T07:20:28.664295Z [info     ] [cached since 225.8s ago] (20, 0) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=25275dca-26ec-471d-9fab-0746f8033cb0
+2025-12-06T07:20:28.671855Z [info     ] SELECT count(*) AS count_1 
+FROM users [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=25275dca-26ec-471d-9fab-0746f8033cb0
+2025-12-06T07:20:28.673744Z [info     ] [cached since 270.8s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=25275dca-26ec-471d-9fab-0746f8033cb0
+2025-12-06T07:20:28.698952Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/users request_id=25275dca-26ec-471d-9fab-0746f8033cb0
+2025-12-06T07:20:28.701399Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0482s method=GET path=/admin/users request_id=25275dca-26ec-471d-9fab-0746f8033cb0 status_code=200
+2025-12-06T07:20:28.706197Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.709501Z [info     ] 127.0.0.1:61895 - "GET /admin/users HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:20:28.911716Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.912949Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.913910Z [info     ] [cached since 271.4s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.916466Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.917303Z [info     ] [cached since 271.4s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.919547Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0007s method=GET path=/favicon.ico request_id=3e09d2e1-25b8-4339-96cc-0eac07d05618 status_code=204
+2025-12-06T07:20:28.921263Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:28.922685Z [info     ] 127.0.0.1:61895 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:20:32.431607Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.434630Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.436392Z [info     ] [cached since 275s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.442624Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.444615Z [info     ] [cached since 274.9s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.452685Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=d43278ac-b53f-4ed7-b9e2-f37311dc8e5e
+2025-12-06T07:20:32.456439Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.user_id = $1::INTEGER ORDER BY achievements.created_at DESC 
+ LIMIT $2::INTEGER OFFSET $3::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=d43278ac-b53f-4ed7-b9e2-f37311dc8e5e
+2025-12-06T07:20:32.458987Z [info     ] [cached since 231.7s ago] (4, 20, 0) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=d43278ac-b53f-4ed7-b9e2-f37311dc8e5e
+2025-12-06T07:20:32.468947Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.user_id = $1::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=d43278ac-b53f-4ed7-b9e2-f37311dc8e5e
+2025-12-06T07:20:32.470915Z [info     ] [cached since 231.6s ago] (4,) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=d43278ac-b53f-4ed7-b9e2-f37311dc8e5e
+2025-12-06T07:20:32.490582Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/achievements request_id=d43278ac-b53f-4ed7-b9e2-f37311dc8e5e
+2025-12-06T07:20:32.493756Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0465s method=GET path=/admin/achievements request_id=d43278ac-b53f-4ed7-b9e2-f37311dc8e5e status_code=200
+2025-12-06T07:20:32.498247Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.501931Z [info     ] 127.0.0.1:61895 - "GET /admin/achievements HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:20:32.740115Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.741328Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.742271Z [info     ] [cached since 275.3s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.745540Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.746560Z [info     ] [cached since 275.2s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.748239Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0005s method=GET path=/favicon.ico request_id=b50934f9-8dd4-4505-bf2f-9e34e2e22a09 status_code=204
+2025-12-06T07:20:32.750569Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:32.752222Z [info     ] 127.0.0.1:61895 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:20:39.755028Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.757851Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.759529Z [info     ] [cached since 282.3s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.764636Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.766313Z [info     ] [cached since 282.2s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.772669Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=98ef4d85-4dfd-477c-b5db-5cce89f333c2
+2025-12-06T07:20:39.776133Z [info     ] SELECT users.id, users.email, users.hashed_password, users.first_name, users.last_name, users.role, users.status, users.is_active, users.phone_number, users.avatar_path, users.created_at 
+FROM users 
+WHERE users.status = $1 ORDER BY users.id DESC [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=98ef4d85-4dfd-477c-b5db-5cce89f333c2
+2025-12-06T07:20:39.778233Z [info     ] [cached since 245s ago] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=98ef4d85-4dfd-477c-b5db-5cce89f333c2
+2025-12-06T07:20:39.791901Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/users request_id=98ef4d85-4dfd-477c-b5db-5cce89f333c2
+2025-12-06T07:20:39.794709Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0256s method=GET path=/admin/moderation/users request_id=98ef4d85-4dfd-477c-b5db-5cce89f333c2 status_code=200
+2025-12-06T07:20:39.799199Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.802132Z [info     ] 127.0.0.1:61896 - "GET /admin/moderation/users HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:20:39.983459Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.984853Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.985646Z [info     ] [cached since 282.5s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.990312Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.991251Z [info     ] [cached since 282.5s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.992957Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0005s method=GET path=/favicon.ico request_id=2571be7c-528e-4a5c-8919-e21d980fd62a status_code=204
+2025-12-06T07:20:39.995136Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:39.996492Z [info     ] 127.0.0.1:61896 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:20:41.243168Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.245469Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.247203Z [info     ] [cached since 283.8s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.252071Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.253993Z [info     ] [cached since 283.7s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.261671Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/achievements request_id=4f80e7f1-d831-46ba-b6b4-91bada90bdd6
+2025-12-06T07:20:41.267768Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements 
+WHERE achievements.status = $1 ORDER BY achievements.created_at DESC [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/achievements request_id=4f80e7f1-d831-46ba-b6b4-91bada90bdd6
+2025-12-06T07:20:41.270592Z [info     ] [generated in 0.00306s] ('PENDING',) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/achievements request_id=4f80e7f1-d831-46ba-b6b4-91bada90bdd6
+2025-12-06T07:20:41.398411Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/moderation/achievements request_id=4f80e7f1-d831-46ba-b6b4-91bada90bdd6
+2025-12-06T07:20:41.400550Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.1438s method=GET path=/admin/moderation/achievements request_id=4f80e7f1-d831-46ba-b6b4-91bada90bdd6 status_code=200
+2025-12-06T07:20:41.404084Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.406607Z [info     ] 127.0.0.1:61896 - "GET /admin/moderation/achievements HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:20:41.628224Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.629677Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.630500Z [info     ] [cached since 284.2s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.633166Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.634290Z [info     ] [cached since 284.1s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.636761Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0005s method=GET path=/favicon.ico request_id=e24ee554-ebba-45ff-a53c-2b691586302d status_code=204
+2025-12-06T07:20:41.638507Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:41.640013Z [info     ] 127.0.0.1:61896 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:20:42.384615Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.387138Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.388943Z [info     ] [cached since 284.9s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.394522Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.396380Z [info     ] [cached since 284.9s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.403315Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.406329Z [info     ] SELECT achievements.id, achievements.user_id, achievements.title, achievements.description, achievements.file_path, achievements.status, achievements.rejection_reason, achievements.created_at 
+FROM achievements JOIN users ON users.id = achievements.user_id ORDER BY achievements.created_at DESC 
+ LIMIT $1::INTEGER [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.408398Z [info     ] [cached since 244.8s ago] (50,) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.420250Z [info     ] SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.first_name AS users_first_name, users.last_name AS users_last_name, users.role AS users_role, users.status AS users_status, users.is_active AS users_is_active, users.phone_number AS users_phone_number, users.avatar_path AS users_avatar_path, users.created_at AS users_created_at 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.422344Z [info     ] [cached since 244.8s ago] (4, 15) [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.430191Z [info     ] SELECT count(*) AS count_1 
+FROM achievements JOIN users ON users.id = achievements.user_id [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.431974Z [info     ] [cached since 244.7s ago] ()   [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.459627Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine] client_ip=127.0.0.1 method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b
+2025-12-06T07:20:42.462166Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0630s method=GET path=/admin/pages request_id=c6b2ae1d-4c20-4595-a20d-0f4c7e92a57b status_code=200
+2025-12-06T07:20:42.466710Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.470903Z [info     ] 127.0.0.1:61896 - "GET /admin/pages HTTP/1.1" 200 [uvicorn.access]
+2025-12-06T07:20:42.634317Z [info     ] BEGIN (implicit)               [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.635501Z [info     ] SELECT count(*) AS count_1 
+FROM users 
+WHERE users.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.636062Z [info     ] [cached since 285.2s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.637946Z [info     ] SELECT count(*) AS count_1 
+FROM achievements 
+WHERE achievements.status = $1 [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.638498Z [info     ] [cached since 285.1s ago] ('PENDING',) [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.639714Z [info     ] Request finished               [app.middlewares.logging_middleware] client_ip=127.0.0.1 duration=0.0004s method=GET path=/favicon.ico request_id=cfd0f0f8-bbe6-431d-9bf4-e130f717f74e status_code=204
+2025-12-06T07:20:42.641642Z [info     ] ROLLBACK                       [sqlalchemy.engine.Engine]
+2025-12-06T07:20:42.643038Z [info     ] 127.0.0.1:61896 - "GET /favicon.ico HTTP/1.1" 204 [uvicorn.access]
+2025-12-06T07:38:05.604098Z [info     ] Shutting down                  [uvicorn.error]
+2025-12-06T07:38:05.711520Z [info     ] Waiting for application shutdown. [uvicorn.error]
+2025-12-06T07:38:05.712279Z [info     ] Application shutdown complete. [uvicorn.error]
+2025-12-06T07:38:05.712593Z [info     ] Finished server process [1344] [uvicorn.error]
+2025-12-06T07:38:08.411820Z [info     ] Started server process [15576] [uvicorn.error]
+2025-12-06T07:38:08.412449Z [info     ] Waiting for application startup. [uvicorn.error]
+2025-12-06T07:38:08.412781Z [info     ] Application startup complete.  [uvicorn.error]
+2025-12-06T07:41:44.210113Z [info     ] Shutting down                  [uvicorn.error]
+2025-12-06T07:41:44.320126Z [info     ] Waiting for application shutdown. [uvicorn.error]
+2025-12-06T07:41:44.321095Z [info     ] Application shutdown complete. [uvicorn.error]
+2025-12-06T07:41:44.321486Z [info     ] Finished server process [15576] [uvicorn.error]
+2025-12-06T07:41:46.078829Z [info     ] Started server process [3956]  [uvicorn.error]
+2025-12-06T07:41:46.079336Z [info     ] Waiting for application startup. [uvicorn.error]
+2025-12-06T07:41:46.079647Z [info     ] Application startup complete.  [uvicorn.error]
+2025-12-06T07:43:03.584132Z [info     ] Shutting down                  [uvicorn.error]
+2025-12-06T07:43:03.690388Z [info     ] Waiting for application shutdown. [uvicorn.error]
+2025-12-06T07:43:03.692250Z [info     ] Application shutdown complete. [uvicorn.error]
+2025-12-06T07:43:03.693348Z [info     ] Finished server process [3956] [uvicorn.error]
