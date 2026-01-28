@@ -1,9 +1,11 @@
 version: '3.8'
 
 services:
+  # Сервис 1: База данных PostgreSQL
   db:
     image: postgres:15-alpine
     container_name: sirius_db
+    restart: always
     environment:
       POSTGRES_USER: sirius_user
       POSTGRES_PASSWORD: sirius_password
@@ -12,7 +14,26 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  # Сервис 2: Ваше приложение (FastAPI)
+  web:
+    build: .
+    container_name: sirius_app
     restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    # Берем настройки из файла .env, но ПЕРЕОПРЕДЕЛЯЕМ хост базы для Докера
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_USERNAME=sirius_user
+      - DB_PASSWORD=sirius_password
+      - DB_NAME=sirius_db
+    volumes:
+      - .:/app  # Чтобы изменения в коде применялись сразу
 
 volumes:
   postgres_data:

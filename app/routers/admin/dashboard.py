@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse  # <--- Добавлено RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, case, literal_column
 from datetime import datetime, timedelta
@@ -16,7 +16,18 @@ router = guard_router
 @router.get('/dashboard', response_class=HTMLResponse, name='admin.dashboard.index')
 async def index(request: Request, period: str = 'all', db: AsyncSession = Depends(get_db)):
     user_id = request.session.get('auth_id')
+
+    # Если в сессии нет ID, сразу редирект (чтобы не делать запрос к БД зря)
+    if not user_id:
+        return RedirectResponse(url='/admin/login', status_code=302)
+
     user = await db.get(Users, user_id)
+
+    # --- ИСПРАВЛЕНИЕ ОШИБКИ ---
+    # Если пользователя удалили или ID в сессии старый/неверный
+    if not user:
+        return RedirectResponse(url='/admin/login', status_code=302)
+    # --------------------------
 
     # 1. ОПРЕДЕЛЕНИЕ ПЕРИОДА
     now = datetime.now()
