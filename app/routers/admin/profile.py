@@ -1,4 +1,3 @@
-# ... импорты ...
 from fastapi import APIRouter, Request, Depends, Form, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,13 +18,24 @@ def get_service(db: AsyncSession = Depends(get_db)):
     return UserService(UserRepository(db))
 
 
-# ... метод index без изменений ...
+# ... метод index ...
 @router.get('/profile', response_class=HTMLResponse, name='admin.profile.index')
 async def index(request: Request, db: AsyncSession = Depends(get_db)):
     user_id = request.session.get('auth_id')
+
+    # [FIX] Добавлена проверка на наличие user_id в сессии
+    if not user_id:
+        return RedirectResponse(url='/admin/login', status_code=302)
+
     stmt = select(Users).options(selectinload(Users.achievements)).where(Users.id == user_id)
     result = await db.execute(stmt)
     user = result.scalars().first()
+
+    # [FIX] Если пользователя нет в БД (например, удален), а сессия осталась - разлогиниваем
+    if not user:
+        request.session.clear()
+        return RedirectResponse(url='/admin/login', status_code=302)
+
     return templates.TemplateResponse('profile/index.html', {'request': request, 'user': user})
 
 
@@ -41,6 +51,10 @@ async def update_profile(
         db: AsyncSession = Depends(get_db)
 ):
     user_id = request.session.get('auth_id')
+
+    # [FIX] Добавлена проверка на наличие user_id
+    if not user_id:
+        return RedirectResponse(url='/admin/login', status_code=302)
 
     # Проверка email
     stmt = select(Users).filter(Users.email == email)
@@ -86,11 +100,23 @@ async def change_password(
         db: AsyncSession = Depends(get_db)
 ):
     user_id = request.session.get('auth_id')
+
+    # [FIX] Добавлена проверка
+    if not user_id:
+        return RedirectResponse(url='/admin/login', status_code=302)
+
     if new_password != confirm_password:
         return RedirectResponse(url="/admin/profile?active_tab=security&error_msg=Пароли не совпадают", status_code=302)
+
     stmt = select(Users).where(Users.id == user_id)
     result = await db.execute(stmt)
     user = result.scalars().first()
+
+    # [FIX] Еще одна проверка на существование юзера
+    if not user:
+        request.session.clear()
+        return RedirectResponse(url='/admin/login', status_code=302)
+
     if not pwd_context.verify(current_password, user.hashed_password):
         return RedirectResponse(url="/admin/profile?active_tab=security&error_msg=Неверный текущий пароль",
                                 status_code=302)

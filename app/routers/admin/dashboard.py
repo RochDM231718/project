@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse  # <--- Добавлено RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, case, literal_column
+from sqlalchemy.orm import selectinload  # <--- [FIX] Импорт нужен для загрузки связей
 from datetime import datetime, timedelta
 import json
 
@@ -88,7 +89,9 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
 
         # В. ТАБЛИЦА: ПОСЛЕДНИЕ ЗАГРУЗКИ (ДЕТАЛИЗАЦИЯ)
         recent_docs_stmt = (
-            select(Achievement).join(Users)
+            select(Achievement)
+            .options(selectinload(Achievement.user))  # <--- [FIX] Подгружаем пользователя, чтобы избежать MissingGreenlet
+            .join(Users)
             .filter(Achievement.created_at >= start_date)
             .order_by(Achievement.created_at.desc())
             .limit(5)
