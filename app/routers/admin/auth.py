@@ -2,10 +2,9 @@ from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.auth_service import AuthService
+from app.services.auth_service import AuthService, UserBlockedException
 from app.routers.admin.admin import templates, get_db
 from app.repositories.admin.user_repository import UserRepository
-# ВАЖНО: Импортируем UserRegister
 from app.schemas.admin.auth import UserRegister
 
 router = APIRouter(prefix="/admin", tags=["Admin Auth"])
@@ -29,21 +28,29 @@ async def login(
         password: str = Form(...),
         service: AuthService = Depends(get_service)
 ):
-    user = await service.authenticate(email, password)
+    try:
+        user = await service.authenticate(email, password)
 
-    if not user:
+        if not user:
+            return templates.TemplateResponse('auth/sign-in.html', {
+                'request': request,
+                'error_msg': "Неверный email или пароль",
+                'form_data': {'email': email}
+            })
+
+        request.session['auth_id'] = user.id
+        request.session['auth_role'] = user.role.value
+        request.session['auth_name'] = f"{user.first_name} {user.last_name}"
+        request.session['auth_avatar'] = user.avatar_path
+
+        return RedirectResponse(url='/admin/dashboard', status_code=302)
+
+    except UserBlockedException as e:
         return templates.TemplateResponse('auth/sign-in.html', {
             'request': request,
-            'error_msg': "Неверный email или пароль",
+            'error_msg': str(e),
             'form_data': {'email': email}
         })
-
-    request.session['auth_id'] = user.id
-    request.session['auth_role'] = user.role.value
-    request.session['auth_name'] = f"{user.first_name} {user.last_name}"
-    request.session['auth_avatar'] = user.avatar_path
-
-    return RedirectResponse(url='/admin/dashboard', status_code=302)
 
 
 @router.get('/logout', name='admin.auth.logout')
@@ -77,7 +84,6 @@ async def register(
         })
 
     try:
-        # Используем UserRegister
         user_data = UserRegister(
             first_name=first_name,
             last_name=last_name,
@@ -86,10 +92,18 @@ async def register(
             password_confirm=password_confirm
         )
 
-        await service.register_user(user_data)
+        # 1. Регистрация (теперь возвращает user)
+        user = await service.register_user(user_data)
 
+        # 2. Автоматическая авторизация
+        request.session['auth_id'] = user.id
+        request.session['auth_role'] = user.role.value
+        request.session['auth_name'] = f"{user.first_name} {user.last_name}"
+        request.session['auth_avatar'] = user.avatar_path
+
+        # 3. Редирект сразу на Dashboard
         return RedirectResponse(
-            url='/admin/login?toast_msg=Регистрация успешна! Войдите в систему.&toast_type=success',
+            url='/admin/dashboard',
             status_code=302
         )
     except ValueError as e:

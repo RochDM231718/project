@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, case, literal_column
-from sqlalchemy.orm import selectinload  # <--- [FIX] Импорт нужен для загрузки связей
+from sqlalchemy import select, func, desc, literal_column
+from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta
 import json
 
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
 from app.models.achievement import Achievement
-from app.models.enums import AchievementStatus, UserRole
+from app.models.enums import AchievementStatus, UserRole, UserStatus
 
 router = guard_router
 
@@ -18,17 +18,25 @@ router = guard_router
 async def index(request: Request, period: str = 'all', db: AsyncSession = Depends(get_db)):
     user_id = request.session.get('auth_id')
 
-    # Если в сессии нет ID, сразу редирект (чтобы не делать запрос к БД зря)
     if not user_id:
         return RedirectResponse(url='/admin/login', status_code=302)
 
     user = await db.get(Users, user_id)
 
-    # --- ИСПРАВЛЕНИЕ ОШИБКИ ---
-    # Если пользователя удалили или ID в сессии старый/неверный
     if not user:
         return RedirectResponse(url='/admin/login', status_code=302)
-    # --------------------------
+
+    # --- ПРОВЕРКА НА МОДЕРАЦИЮ ---
+    # Если пользователь не одобрен и он студент, показываем экран ожидания
+    if user.status == UserStatus.PENDING and user.role not in [UserRole.SUPER_ADMIN, UserRole.MODERATOR]:
+        return templates.TemplateResponse('dashboard/index.html', {
+            'request': request,
+            'user': user,
+            'pending_review': True,  # Флаг для шаблона
+            'stats': {},
+            'period': period
+        })
+    # -----------------------------
 
     # 1. ОПРЕДЕЛЕНИЕ ПЕРИОДА
     now = datetime.now()
@@ -47,21 +55,17 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
         date_trunc = 'day'
         date_fmt = '%d.%m'
     else:  # all
-        start_date = datetime(2020, 1, 1)  # Условное начало времен
+        start_date = datetime(2020, 1, 1)
         date_trunc = 'month'
         date_fmt = '%m.%Y'
 
     stats = {}
 
-    # --- ЛОГИКА АДМИНА (ПОЛНАЯ СТАТИСТИКА) ---
+    # --- ЛОГИКА АДМИНА/МОДЕРАТОРА ---
     if user.role in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
-
-        # А. ТЕКСТОВАЯ СТАТИСТИКА (С учетом фильтра времени!)
-        # Новые пользователи за период
         new_users = (await db.execute(
             select(func.count()).filter(Users.role == UserRole.STUDENT, Users.created_at >= start_date))).scalar()
 
-        # Документы за период
         ach_stats = (await db.execute(
             select(
                 func.count().filter(Achievement.status == AchievementStatus.PENDING,
@@ -72,8 +76,6 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
             )
         )).first()
 
-        # Б. ТАБЛИЦА: ТОП-5 СТУДЕНТОВ ЗА ЭТОТ ПЕРИОД
-        # Считаем сумму баллов только за достижения, обновленные в этот период
         top_students_stmt = (
             select(Users, func.sum(Achievement.points).label('points'))
             .join(Achievement, Users.id == Achievement.user_id)
@@ -87,10 +89,9 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
         )
         top_students = (await db.execute(top_students_stmt)).all()
 
-        # В. ТАБЛИЦА: ПОСЛЕДНИЕ ЗАГРУЗКИ (ДЕТАЛИЗАЦИЯ)
         recent_docs_stmt = (
             select(Achievement)
-            .options(selectinload(Achievement.user))  # <--- [FIX] Подгружаем пользователя, чтобы избежать MissingGreenlet
+            .options(selectinload(Achievement.user))
             .join(Users)
             .filter(Achievement.created_at >= start_date)
             .order_by(Achievement.created_at.desc())
@@ -98,8 +99,6 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
         )
         recent_docs = (await db.execute(recent_docs_stmt)).scalars().all()
 
-        # Г. ГРАФИКИ (ДИНАМИКА)
-        # График документов
         chart_query = (
             select(
                 func.date_trunc(date_trunc, Achievement.created_at).label('d_date'),
@@ -125,30 +124,80 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
             'chart_data': json.dumps(c_data)
         }
 
-    # --- ЛОГИКА СТУДЕНТА (Личная статистика) ---
+    # --- ЛОГИКА СТУДЕНТА ---
     else:
-        # Мои баллы (Всего)
+        # Мои баллы за период
         my_points = (await db.execute(
-            select(func.coalesce(func.sum(Achievement.points), 0)).filter(Achievement.user_id == user_id,
-                                                                          Achievement.status == AchievementStatus.APPROVED))).scalar()
+            select(func.coalesce(func.sum(Achievement.points), 0))
+            .filter(
+                Achievement.user_id == user_id,
+                Achievement.status == AchievementStatus.APPROVED,
+                Achievement.updated_at >= start_date
+            )
+        )).scalar()
 
-        # На проверке
-        pending_count = (await db.execute(select(func.count()).filter(Achievement.user_id == user_id,
-                                                                      Achievement.status == AchievementStatus.PENDING))).scalar()
+        # Статистика документов за период
+        doc_stats = (await db.execute(
+            select(
+                func.count().filter(Achievement.user_id == user_id, Achievement.created_at >= start_date).label(
+                    'total'),
+                func.count().filter(Achievement.user_id == user_id, Achievement.status == AchievementStatus.PENDING,
+                                    Achievement.created_at >= start_date).label('pending'),
+                func.count().filter(Achievement.user_id == user_id, Achievement.status == AchievementStatus.APPROVED,
+                                    Achievement.updated_at >= start_date).label('approved'),
+                func.count().filter(Achievement.user_id == user_id, Achievement.status == AchievementStatus.REJECTED,
+                                    Achievement.updated_at >= start_date).label('rejected')
+            )
+        )).first()
 
-        # График: Мои баллы по категориям
+        # Ранк за период
+        subquery_points = (
+            select(Achievement.user_id, func.sum(Achievement.points).label('total_points'))
+            .filter(
+                Achievement.status == AchievementStatus.APPROVED,
+                Achievement.updated_at >= start_date
+            )
+            .group_by(Achievement.user_id)
+            .subquery()
+        )
+
+        if my_points > 0:
+            rank_stmt = select(func.count()).filter(subquery_points.c.total_points > my_points)
+            better_than_me = (await db.execute(rank_stmt)).scalar() or 0
+            my_rank = better_than_me + 1
+        else:
+            my_rank = 0
+
+        # Последние загрузки
+        recent_docs = (await db.execute(
+            select(Achievement)
+            .filter(Achievement.user_id == user_id, Achievement.created_at >= start_date)
+            .order_by(Achievement.created_at.desc())
+            .limit(5)
+        )).scalars().all()
+
+        # График
         cat_stats = (await db.execute(
             select(Achievement.category, func.sum(Achievement.points))
-            .filter(Achievement.user_id == user_id, Achievement.status == AchievementStatus.APPROVED)
+            .filter(
+                Achievement.user_id == user_id,
+                Achievement.status == AchievementStatus.APPROVED,
+                Achievement.updated_at >= start_date
+            )
             .group_by(Achievement.category)
         )).all()
 
-        c_labels = [row[0].value for row in cat_stats]
-        c_data = [row[1] for row in cat_stats]
+        c_labels = [row[0].value for row in cat_stats if row[0]]
+        c_data = [row[1] for row in cat_stats if row[0]]
 
         stats = {
             'my_points': my_points,
-            'pending_count': pending_count,
+            'rank': my_rank,
+            'total_docs': doc_stats.total,
+            'pending_docs': doc_stats.pending,
+            'approved_docs': doc_stats.approved,
+            'rejected_docs': doc_stats.rejected,
+            'recent_docs': recent_docs,
             'chart_labels': json.dumps(c_labels),
             'chart_data': json.dumps(c_data)
         }

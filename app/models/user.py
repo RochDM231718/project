@@ -5,15 +5,6 @@ from sqlalchemy.orm import relationship
 from app.infrastructure.database import Base
 from app.models.enums import UserRole, UserStatus
 
-
-# !!! ВАЖНО: Добавьте этот импорт, чтобы разорвать цикличность, используем строки в relationship
-# Но для SQLAlchemy лучше, если класс будет известен хотя бы как строка.
-# Если возникает циклическая зависимость (Notification импортирует User, а User -> Notification),
-# то импорт можно делать внутри метода или оставить строкой, НО убедиться, что Notification вообще где-то импортируется в проекте.
-
-# В данном случае, проблема в том, что когда загружается User, SQLAlchemy пытается найти 'Notification',
-# но модель Notification еще не загружена в память.
-
 class Users(Base):
     __tablename__ = "users"
 
@@ -25,20 +16,17 @@ class Users(Base):
     phone_number = Column(String, nullable=True)
     avatar_path = Column(String, nullable=True)
 
-    role = Column(Enum(UserRole), default=UserRole.STUDENT)
+    # ИСПРАВЛЕНО: default=UserRole.GUEST
+    role = Column(Enum(UserRole), default=UserRole.GUEST)
     status = Column(Enum(UserStatus), default=UserStatus.PENDING)
 
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Связи
-    # Используем строковые названия классов ("Achievement", "Notification"), чтобы избежать проблем с порядком импорта
+    failed_attempts = Column(Integer, default=0)
+    blocked_until = Column(DateTime, nullable=True)
+
     achievements = relationship("Achievement", back_populates="user", cascade="all, delete-orphan")
-
-    # ВОТ ЗДЕСЬ БЫЛА ОШИБКА. SQLAlchemy не мог найти класс Notification.
-    # Если мы используем строковое имя "Notification", то сам файл notification.py должен быть импортирован
-    # где-то в проекте (например в __init__.py или main.py), чтобы модель зарегистрировалась.
-
-    # Самый надежный способ: импортировать TYPE_CHECKING
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    tokens = relationship("UserToken", back_populates="user", cascade="all, delete-orphan")

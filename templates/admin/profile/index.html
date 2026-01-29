@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-<div class="max-w-4xl mx-auto" x-data="{ activeTab: '{{ request.query_params.get('active_tab', 'profile') }}' }">
+<div class="max-w-4xl mx-auto" x-data="{ activeTab: '{{ active_tab or request.query_params.get('active_tab', 'profile') }}' }">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Мой профиль</h2>
     </div>
@@ -12,6 +12,12 @@
         <button @click="activeTab = 'profile'" :class="activeTab === 'profile' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'" class="flex-1 py-1.5 px-4 rounded-md text-sm font-medium">Основное</button>
         <button @click="activeTab = 'security'" :class="activeTab === 'security' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'" class="flex-1 py-1.5 px-4 rounded-md text-sm font-medium">Безопасность</button>
     </div>
+
+    {% if error_msg %}
+    <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 text-sm text-red-700">
+        {{ error_msg }}
+    </div>
+    {% endif %}
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div x-show="activeTab === 'profile'" class="p-6 md:p-8">

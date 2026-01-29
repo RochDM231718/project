@@ -4,10 +4,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, desc, asc
 from app.schemas.admin.users import UserCreate
 
-
 class UserRepository(CrudRepository):
     def __init__(self, db: AsyncSession):
         super().__init__(db, Users)
+
+    # --- ДОБАВЛЕН МЕТОД ---
+    async def get_by_email(self, email: str):
+        stmt = select(self.model).where(self.model.email == email)
+        result = await self.db.execute(stmt)
+        return result.scalars().first()
+    # ----------------------
 
     async def get(self, filters: dict = None, sort_by: str = 'id', sort_order: str = 'desc'):
         stmt = select(self.model)
@@ -23,13 +29,10 @@ class UserRepository(CrudRepository):
                         self.model.phone_number.ilike(like_term),
                     )
                 )
-
             if 'role' in filters and filters['role']:
                 stmt = stmt.filter(self.model.role == filters['role'])
-
             if 'status' in filters and filters['status']:
                 stmt = stmt.filter(self.model.status == filters['status'])
-
             if 'email' in filters and filters['email']:
                 stmt = stmt.filter(self.model.email == filters['email'])
 
@@ -43,7 +46,6 @@ class UserRepository(CrudRepository):
             stmt = stmt.order_by(desc(self.model.id))
 
         stmt = self.paginate(stmt, filters)
-
         result = await self.db.execute(stmt)
         return result.scalars().all()
 

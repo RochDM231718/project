@@ -18,12 +18,10 @@ def get_service(db: AsyncSession = Depends(get_db)):
     return UserService(UserRepository(db))
 
 
-# ... метод index ...
 @router.get('/profile', response_class=HTMLResponse, name='admin.profile.index')
 async def index(request: Request, db: AsyncSession = Depends(get_db)):
     user_id = request.session.get('auth_id')
 
-    # [FIX] Добавлена проверка на наличие user_id в сессии
     if not user_id:
         return RedirectResponse(url='/admin/login', status_code=302)
 
@@ -31,7 +29,6 @@ async def index(request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     user = result.scalars().first()
 
-    # [FIX] Если пользователя нет в БД (например, удален), а сессия осталась - разлогиниваем
     if not user:
         request.session.clear()
         return RedirectResponse(url='/admin/login', status_code=302)
@@ -52,16 +49,37 @@ async def update_profile(
 ):
     user_id = request.session.get('auth_id')
 
-    # [FIX] Добавлена проверка на наличие user_id
     if not user_id:
         return RedirectResponse(url='/admin/login', status_code=302)
 
-    # Проверка email
-    stmt = select(Users).filter(Users.email == email)
+    # 1. Получаем текущего пользователя (нужен для рендеринга шаблона при ошибке)
+    stmt = select(Users).options(selectinload(Users.achievements)).where(Users.id == user_id)
     result = await db.execute(stmt)
-    existing = result.scalars().first()
+    current_user = result.scalars().first()
+
+    if not current_user:
+        request.session.clear()
+        return RedirectResponse(url='/admin/login', status_code=302)
+
+    # 2. Проверка email
+    stmt_email = select(Users).filter(Users.email == email)
+    result_email = await db.execute(stmt_email)
+    existing = result_email.scalars().first()
+
+    # Если email занят другим пользователем
     if existing and existing.id != user_id:
-        return RedirectResponse(url="/admin/profile?active_tab=profile&error_msg=Email уже занят", status_code=302)
+        # Временно обновляем объект для отображения в форме (не сохраняя в БД)
+        current_user.first_name = first_name
+        current_user.last_name = last_name
+        current_user.email = email
+        current_user.phone_number = phone_number
+
+        return templates.TemplateResponse('profile/index.html', {
+            'request': request,
+            'user': current_user,  # Передаем объект с введенными данными
+            'error_msg': "Email уже занят",
+            'active_tab': 'profile'  # Указываем вкладку
+        })
 
     update_data = {
         "first_name": first_name,
@@ -70,19 +88,27 @@ async def update_profile(
         "phone_number": phone_number
     }
 
+    # 3. Обработка аватара
     if avatar and avatar.filename:
         try:
-            # Пытаемся сохранить аватар (тут сработают проверки)
             path = await service.save_avatar(user_id, avatar)
             update_data["avatar_path"] = path
             request.session['auth_avatar'] = path
         except ValueError as e:
-            # Если размер/тип не тот, возвращаем ошибку
-            return RedirectResponse(
-                url=f"/admin/profile?active_tab=profile&error_msg={str(e)}",
-                status_code=302
-            )
+            # При ошибке валидации файла также возвращаем форму с данными
+            current_user.first_name = first_name
+            current_user.last_name = last_name
+            current_user.email = email
+            current_user.phone_number = phone_number
 
+            return templates.TemplateResponse('profile/index.html', {
+                'request': request,
+                'user': current_user,
+                'error_msg': str(e),
+                'active_tab': 'profile'
+            })
+
+    # 4. Сохранение изменений
     await service.repository.update(user_id, update_data)
     request.session['auth_name'] = f"{first_name} {last_name}"
 
@@ -101,26 +127,43 @@ async def change_password(
 ):
     user_id = request.session.get('auth_id')
 
-    # [FIX] Добавлена проверка
     if not user_id:
         return RedirectResponse(url='/admin/login', status_code=302)
 
-    if new_password != confirm_password:
-        return RedirectResponse(url="/admin/profile?active_tab=security&error_msg=Пароли не совпадают", status_code=302)
-
-    stmt = select(Users).where(Users.id == user_id)
+    # Получаем пользователя для проверки пароля и рендеринга
+    stmt = select(Users).options(selectinload(Users.achievements)).where(Users.id == user_id)
     result = await db.execute(stmt)
     user = result.scalars().first()
 
-    # [FIX] Еще одна проверка на существование юзера
     if not user:
         request.session.clear()
         return RedirectResponse(url='/admin/login', status_code=302)
 
+    # Проверка совпадения новых паролей
+    if new_password != confirm_password:
+        return templates.TemplateResponse('profile/index.html', {
+            'request': request,
+            'user': user,
+            'error_msg': "Пароли не совпадают",
+            'active_tab': 'security'
+        })
+
+    # Проверка текущего пароля
     if not pwd_context.verify(current_password, user.hashed_password):
-        return RedirectResponse(url="/admin/profile?active_tab=security&error_msg=Неверный текущий пароль",
-                                status_code=302)
+        return templates.TemplateResponse('profile/index.html', {
+            'request': request,
+            'user': user,
+            'error_msg': "Неверный текущий пароль",
+            'active_tab': 'security'
+        })
+
+    # Смена пароля
     user.hashed_password = pwd_context.hash(new_password)
     await db.commit()
-    return RedirectResponse(url="/admin/profile?active_tab=security&toast_msg=Пароль изменен&toast_type=success",
-                            status_code=302)
+
+    url = request.url_for('admin.profile.index').include_query_params(
+        toast_msg="Пароль изменен",
+        toast_type="success",
+        active_tab="security"
+    )
+    return RedirectResponse(url=url, status_code=302)

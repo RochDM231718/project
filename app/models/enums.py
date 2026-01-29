@@ -1,9 +1,11 @@
 from enum import Enum
 
 class UserRole(str, Enum):
-    STUDENT = "student"
-    MODERATOR = "moderator"
-    SUPER_ADMIN = "super_admin"
+    # Значения справа должны СТРОГО совпадать с тем, что в базе PostgreSQL
+    GUEST = "GUEST"
+    STUDENT = "STUDENT"
+    MODERATOR = "MODERATOR"
+    SUPER_ADMIN = "SUPER_ADMIN"
 
 class UserStatus(str, Enum):
     PENDING = "pending"
@@ -16,14 +18,12 @@ class AchievementStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
 
-# --- ЭТОТ КЛАСС БЫЛ ПОТЕРЯН, ВОЗВРАЩАЕМ ЕГО ---
 class UserTokenType(str, Enum):
     ACCESS = "access"
     REFRESH = "refresh"
     RESET_PASSWORD = "reset_password"
     VERIFY_EMAIL = "verify_email"
 
-# --- НОВЫЕ КАТЕГОРИИ ---
 class AchievementCategory(str, Enum):
     SPORT = "Спорт"
     SCIENCE = "Наука"

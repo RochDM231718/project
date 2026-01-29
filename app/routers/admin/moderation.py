@@ -10,7 +10,7 @@ from app.repositories.admin.user_repository import UserRepository
 from app.repositories.admin.achievement_repository import AchievementRepository
 from app.services.admin.user_service import UserService
 from app.services.admin.achievement_service import AchievementService
-from app.services.points_calculator import calculate_points  # <-- Логика баллов
+from app.services.points_calculator import calculate_points
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.notification import Notification
@@ -19,7 +19,6 @@ from app.models.enums import UserStatus, AchievementStatus, UserRole
 router = guard_router
 
 
-# --- ЗАВИСИМОСТИ ---
 def get_user_service(db: AsyncSession = Depends(get_db)):
     return UserService(UserRepository(db))
 
@@ -30,10 +29,13 @@ def get_achievement_service(db: AsyncSession = Depends(get_db)):
 
 def check_moderator(request: Request):
     if request.session.get('auth_role') not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
-        raise HTTPException(status_code=403, detail="Access denied")
+        # Разрешаем админам тоже, если в Enum значение отличается от строки в сессии (на всякий случай)
+        # Лучше проверить по строкам, если есть сомнения в регистрах
+        role = request.session.get('auth_role')
+        if str(role).upper() not in ['MODERATOR', 'SUPER_ADMIN']:
+             raise HTTPException(status_code=403, detail="Access denied")
 
 
-# --- МОДЕРАЦИЯ ПОЛЬЗОВАТЕЛЕЙ ---
 @router.get('/moderation/users', response_class=HTMLResponse, name='admin.moderation.users')
 async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
     check_moderator(request)
@@ -53,7 +55,11 @@ async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
 @router.post('/moderation/users/{id}/approve', name='admin.moderation.users.approve')
 async def approve_user(id: int, request: Request, service: UserService = Depends(get_user_service)):
     check_moderator(request)
-    await service.repository.update(id, {"status": UserStatus.ACTIVE})
+    # При одобрении повышаем роль до STUDENT (в базе это "STUDENT")
+    await service.repository.update(id, {
+        "status": UserStatus.ACTIVE,
+        "role": UserRole.STUDENT
+    })
     return RedirectResponse(
         url=request.url_for('admin.moderation.users').include_query_params(toast_msg="Пользователь одобрен",
                                                                            toast_type="success"),
@@ -72,7 +78,6 @@ async def reject_user(id: int, request: Request, service: UserService = Depends(
     )
 
 
-# --- МОДЕРАЦИЯ ДОКУМЕНТОВ ---
 @router.get('/moderation/achievements', response_class=HTMLResponse, name='admin.moderation.achievements')
 async def achievements_list(request: Request, page: int = Query(1, ge=1), db: AsyncSession = Depends(get_db)):
     check_moderator(request)
@@ -81,21 +86,27 @@ async def achievements_list(request: Request, page: int = Query(1, ge=1), db: As
     limit = 10
     offset = (page - 1) * limit
 
-    # Выбираем только PENDING (новые), загружаем данные пользователя (selectinload)
     stmt = select(Achievement).options(selectinload(Achievement.user)) \
         .filter(Achievement.status == AchievementStatus.PENDING) \
         .order_by(Achievement.created_at.asc())
 
-    # Пагинация
-    total_items = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar()
+    total_pending = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar() or 0
     achievements = (await db.execute(stmt.offset(offset).limit(limit))).scalars().all()
+
+    # Расчет баллов для отображения
+    for item in achievements:
+        if item.level and item.category:
+            item.projected_points = calculate_points(item.level.value, item.category.value)
+        else:
+            item.projected_points = 0
 
     return templates.TemplateResponse('moderation/achievements.html', {
         'request': request,
         'achievements': achievements,
-        'total_pending': total_items,
+        'total_pending': total_pending, # [FIX] Передаем переменную в шаблон
+        'stats': {"pending": total_pending, "approved": 0},
         'page': page,
-        'total_pages': math.ceil(total_items / limit),
+        'total_pages': math.ceil(total_pending / limit) if total_pending > 0 else 1,
         'user': user
     })
 
@@ -107,28 +118,24 @@ async def update_achievement_status(
 ):
     check_moderator(request)
 
-    # 1. Получаем достижение
     stmt = select(Achievement).where(Achievement.id == id)
     achievement = (await db.execute(stmt)).scalars().first()
     if not achievement:
         raise HTTPException(status_code=404, detail="Achievement not found")
 
-    # 2. Обновляем статус и баллы
     achievement.status = status
 
     if status == AchievementStatus.REJECTED:
         achievement.rejection_reason = rejection_reason
-        achievement.points = 0  # Обнуляем баллы при отказе
+        achievement.points = 0
         notif_message = f"Статус документа '{achievement.title}' изменен на 'Отклонено'. Причина: {rejection_reason}"
 
     elif status == AchievementStatus.APPROVED:
-        # Рассчитываем баллы на основе уровня и категории
         points = calculate_points(achievement.level.value, achievement.category.value)
         achievement.points = points
         achievement.rejection_reason = None
         notif_message = f"Документ '{achievement.title}' одобрен! Вам начислено {points} баллов."
 
-    # 3. Создаем уведомление пользователю
     notification = Notification(
         user_id=achievement.user_id,
         title="Обновление статуса достижения",
@@ -136,8 +143,6 @@ async def update_achievement_status(
         is_read=False
     )
     db.add(notification)
-
-    # Сохраняем изменения (и достижение, и уведомление)
     await db.commit()
 
     return RedirectResponse(

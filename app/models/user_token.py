@@ -1,4 +1,3 @@
-# ИМПОРТИРУЕМ ИЗ __init__.py (где мы настроили Postgres)
 from app.infrastructure.database import Base
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
 from sqlalchemy.sql import func
@@ -14,4 +13,5 @@ class UserToken(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
-    user = relationship("Users", backref="tokens")
+    # ВАЖНО: Используем back_populates вместо backref, чтобы не было дублирования
+    user = relationship("Users", back_populates="tokens")
