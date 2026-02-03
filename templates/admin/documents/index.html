@@ -75,7 +75,10 @@
                     {% for item in achievements %}
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 w-16">
-                            <button @click="$dispatch('open-preview', {src: '/static/{{ item.file_path }}', type: '{{ 'pdf' if item.file_path.endswith('.pdf') else 'image' }}'})" class="w-10 h-10 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center">👁</button>
+                            <button @click="$dispatch('open-preview', {src: '/static/{{ item.file_path }}', type: '{{ 'pdf' if item.file_path.endswith('.pdf') else 'image' }}'})"
+                                    class="w-10 h-10 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center shadow-sm">
+                                ⛶
+                            </button>
                         </td>
                         <td class="px-6 py-4 font-bold text-gray-800">{{ item.title }}</td>
                         <td class="px-6 py-4">{{ item.category.value }} / {{ item.level.value }}</td>
@@ -85,7 +88,12 @@
                             {% else %}<span class="text-yellow-600 font-bold bg-yellow-50 px-2 py-1 rounded-full text-xs">На проверке</span>{% endif %}
                         </td>
                         <td class="px-6 py-4">{{ item.user.first_name }} {{ item.user.last_name }}</td>
-                        <td class="px-6 py-4 text-right"><form action="/admin/documents/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Удалить?');"><button class="text-red-500 hover:underline">Удалить</button></form></td>
+                        <td class="px-6 py-4 text-right">
+                            <button @click="$dispatch('confirm-delete', {url: '/admin/documents/{{ item.id }}/delete', title: 'Удалить документ?', desc: 'Файл «{{ item.title }}» будет безвозвратно удален.'})"
+                                    class="text-red-500 hover:text-red-700 hover:underline font-medium transition-colors">
+                                Удалить
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

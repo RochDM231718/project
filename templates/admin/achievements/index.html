@@ -89,7 +89,10 @@
                     {% for item in achievements %}
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 w-16">
-                            <button @click="$dispatch('open-preview', {src: '/static/{{ item.file_path }}', type: '{{ 'pdf' if item.file_path.endswith('.pdf') else 'image' }}'})" class="w-10 h-10 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center">👁</button>
+                            <button @click="$dispatch('open-preview', {src: '/static/{{ item.file_path }}', type: '{{ 'pdf' if item.file_path.endswith('.pdf') else 'image' }}'})"
+                                    class="w-10 h-10 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center shadow-sm">
+                                ⛶
+                            </button>
                         </td>
                         <td class="px-6 py-4 font-bold text-gray-800">{{ item.title }}</td>
                         <td class="px-6 py-4">{{ item.category.value }} / {{ item.level.value }}</td>
