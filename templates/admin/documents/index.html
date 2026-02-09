@@ -87,7 +87,11 @@
                             {% elif item.status.value == 'rejected' %}<span class="text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full text-xs">Отклонено</span>
                             {% else %}<span class="text-yellow-600 font-bold bg-yellow-50 px-2 py-1 rounded-full text-xs">На проверке</span>{% endif %}
                         </td>
-                        <td class="px-6 py-4">{{ item.user.first_name }} {{ item.user.last_name }}</td>
+                        <td class="px-6 py-4">
+                            <a href="{{ url_for('admin.users.show', id=item.user.id) }}?from=documents" class="text-indigo-600 hover:text-indigo-800 hover:underline font-medium transition-colors">
+                                {{ item.user.first_name }} {{ item.user.last_name }}
+                            </a>
+                        </td>
                         <td class="px-6 py-4 text-right">
                             <button @click="$dispatch('confirm-delete', {url: '/admin/documents/{{ item.id }}/delete', title: 'Удалить документ?', desc: 'Файл «{{ item.title }}» будет безвозвратно удален.'})"
                                     class="text-red-500 hover:text-red-700 hover:underline font-medium transition-colors">

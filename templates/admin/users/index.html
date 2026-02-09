@@ -69,8 +69,12 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 {% for u in users %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 font-bold text-gray-800">{{ u.first_name }} {{ u.last_name }}</td>
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <a href="{{ url_for('admin.users.show', id=u.id) }}" class="font-bold text-indigo-600 hover:text-indigo-800 hover:underline">
+                            {{ u.first_name }} {{ u.last_name }}
+                        </a>
+                    </td>
                     <td class="px-6 py-4">{{ u.email }}</td>
                     <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs border border-indigo-100">{{ u.role.value }}</span></td>
                     <td class="px-6 py-4">
@@ -78,9 +82,12 @@
                         {% elif u.status.value == 'pending' %}<span class="text-yellow-600 bg-yellow-50 px-2 py-1 rounded text-xs font-bold">Ожидает</span>
                         {% else %}<span class="text-red-500 bg-red-50 px-2 py-1 rounded text-xs font-bold">Блок</span>{% endif %}
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-4 text-right flex justify-end items-center gap-3">
+                        <a href="{{ url_for('admin.users.show', id=u.id) }}" class="text-indigo-600 hover:text-indigo-800 hover:underline font-medium transition-colors">
+                            Профиль
+                        </a>
                         <button @click="$dispatch('confirm-delete', {url: '/admin/users/{{ u.id }}/delete', title: 'Удалить пользователя?', desc: 'Доступ пользователя {{ u.first_name }} будет заблокирован.'})"
-                                class="text-indigo-600 hover:text-indigo-800 hover:underline font-medium transition-colors">
+                                class="text-red-500 hover:text-red-700 hover:underline font-medium transition-colors">
                             Удалить
                         </button>
                     </td>

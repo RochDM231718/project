@@ -4,6 +4,7 @@ import uuid
 from fastapi import UploadFile
 from app.services.admin.base_crud_service import BaseCrudService
 from app.repositories.admin.user_repository import UserRepository
+from app.models.enums import UserRole
 
 # Настройки ограничений
 MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2 MB
@@ -53,3 +54,14 @@ class UserService(BaseCrudService):
             shutil.copyfileobj(file.file, buffer)
 
         return f"uploads/avatars/{unique_name}"
+
+    async def update_role(self, user_id: int, new_role: UserRole):
+        """Обновляет роль пользователя"""
+        user = await self.repository.find(user_id)
+        if user:
+            user.role = new_role
+            # Предполагаем, что в репозитории/сессии есть механизм коммита
+            # Если репозиторий использует flush/commit при обновлении:
+            await self.repository.db.commit()
+            await self.repository.db.refresh(user)
+        return user
