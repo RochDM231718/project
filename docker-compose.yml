@@ -10,6 +10,7 @@ services:
       POSTGRES_USER: sirius_user
       POSTGRES_PASSWORD: sirius_password
       POSTGRES_DB: sirius_db
+      TZ: Europe/Moscow
     ports:
       - "5432:5432"
     volumes:
@@ -32,6 +33,7 @@ services:
       - DB_USERNAME=sirius_user
       - DB_PASSWORD=sirius_password
       - DB_NAME=sirius_db
+      - TZ=Europe/Moscow
     volumes:
       - .:/app  # Чтобы изменения в коде применялись сразу
 
