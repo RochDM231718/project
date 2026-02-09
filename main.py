@@ -73,7 +73,6 @@ async def global_exception_handler(request: Request, exc: Exception):
     return templates.TemplateResponse("errors/500.html", {"request": request, "user": None, "error": str(exc)},
                                       status_code=500)
 
-
 # ----------------------------
 
 @app.get("/")
