@@ -143,6 +143,7 @@
 
 ## Полезные команды
 
+
 * **Создание новой миграции:** `alembic revision --autogenerate -m "название_изменения"`
 * **Применение миграций:** `alembic upgrade head`
 * **Откат миграции:** `alembic downgrade -1`
