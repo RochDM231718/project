@@ -8,14 +8,14 @@
             <h2 class="text-2xl font-bold text-gray-800">Мои достижения</h2>
             <p class="text-sm text-gray-500">История загрузок и статусы проверки</p>
         </div>
-        <a href="/admin/achievements/create" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all flex items-center">
+        <a href="/sirius.achievements/achievements/create" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Добавить
         </a>
     </div>
 
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-8">
-        <form action="/admin/achievements" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/admin/api/my-achievements/search')">
+        <form action="/sirius.achievements/achievements" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/sirius.achievements/api/my-achievements/search')">
 
             <div class="md:col-span-3 relative">
                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Поиск</label>
@@ -72,7 +72,7 @@
 
             <div class="md:col-span-1 flex gap-2 justify-end w-full">
                 <button type="submit" class="bg-indigo-600 text-white w-full rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-sm transition-colors h-[42px] flex items-center justify-center">Найти</button>
-                <a href="/admin/achievements" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
+                <a href="/sirius.achievements/achievements" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
             </div>
         </form>
     </div>
@@ -102,7 +102,7 @@
                             {% else %}<span class="text-yellow-600 font-bold bg-yellow-50 px-2 py-1 rounded-full text-xs">На проверке</span>{% endif %}
                         </td>
                         <td class="px-6 py-4 font-bold text-indigo-600">{{ item.points }}</td>
-                        <td class="px-6 py-4 text-right"><form action="/admin/achievements/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Удалить?');"><button class="text-red-500 hover:underline">Удалить</button></form></td>
+                        <td class="px-6 py-4 text-right"><form action="/sirius.achievements/achievements/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Удалить?');"><button class="text-red-500 hover:underline">Удалить</button></form></td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -10,7 +10,7 @@
     </div>
 
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-8">
-        <form action="/admin/documents" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/admin/api/documents/search')">
+        <form action="/sirius.achievements/documents" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/sirius.achievements/api/documents/search')">
 
             <div class="md:col-span-3 relative">
                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Поиск</label>
@@ -59,7 +59,7 @@
 
             <div class="md:col-span-1 flex gap-2 justify-end w-full">
                 <button type="submit" class="bg-indigo-600 text-white w-full rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-sm transition-colors h-[42px] flex items-center justify-center">Найти</button>
-                <a href="/admin/documents" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
+                <a href="/sirius.achievements/documents" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
             </div>
         </form>
     </div>
@@ -69,7 +69,7 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-100">
-                    <tr><th class="px-6 py-4">Файл</th><th class="px-6 py-4">Название</th><th class="px-6 py-4">Инфо</th><th class="px-6 py-4">Статус</th><th class="px-6 py-4">Владелец</th><th class="px-6 py-4 text-right"></th></tr>
+                    <tr><th class="px-6 py-4">Файл</th><th class="px-6 py-4">Название</th><th class="px-6 py-4">Вид и уровень</th><th class="px-6 py-4">Статус</th><th class="px-6 py-4">Владелец</th><th class="px-6 py-4 text-right"></th></tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for item in achievements %}
@@ -93,7 +93,7 @@
                             </a>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <button @click="$dispatch('confirm-delete', {url: '/admin/documents/{{ item.id }}/delete', title: 'Удалить документ?', desc: 'Файл «{{ item.title }}» будет безвозвратно удален.'})"
+                            <button @click="$dispatch('confirm-delete', {url: '/sirius.achievements/documents/{{ item.id }}/delete', title: 'Удалить документ?', desc: 'Файл «{{ item.title }}» будет безвозвратно удален.'})"
                                     class="text-red-500 hover:text-red-700 hover:underline font-medium transition-colors">
                                 Удалить
                             </button>

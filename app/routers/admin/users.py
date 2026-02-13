@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, HTTPException, Form, Query
+from fastapi import APIRouter, Request, Depends, HTTPException, Form, Query, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, desc
@@ -20,7 +20,15 @@ def get_service(db: AsyncSession = Depends(get_db)):
 
 
 def check_admin(request: Request):
-    if request.session.get('auth_role') not in [UserRole.SUPER_ADMIN, UserRole.MODERATOR]:
+    allowed_roles = [
+        UserRole.SUPER_ADMIN,
+        UserRole.MODERATOR,
+        "SUPER_ADMIN",
+        "MODERATOR",
+        "super_admin",
+        "moderator"
+    ]
+    if request.session.get('auth_role') not in allowed_roles:
         raise HTTPException(status_code=403, detail="Access denied")
 
 
@@ -85,7 +93,7 @@ async def index(
         'sort_by': sort_by,
         'roles': list(UserRole),
         'statuses': list(UserStatus),
-        'user': current_user
+        'user': current_user  # Здесь user = текущий админ, все верно
     })
 
 
@@ -94,25 +102,21 @@ async def index(
 async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db)):
     check_admin(request)
 
-    # 1. Получаем целевого пользователя
-    target_user = await db.get(Users, id)
-    if not target_user:
+    target_user_obj = await db.get(Users, id)
+    if not target_user_obj:
         raise HTTPException(status_code=404, detail="User not found")
 
     current_user = await db.get(Users, request.session.get('auth_id'))
 
-    # 2. Получаем достижения пользователя
     achievements_stmt = select(Achievement).filter(Achievement.user_id == id).order_by(Achievement.created_at.desc())
     achievements = (await db.execute(achievements_stmt)).scalars().all()
 
     total_docs = len(achievements)
 
-    # 3. Расчет рейтинга (ТОЛЬКО ДЛЯ СТУДЕНТОВ)
     rank = None
     total_points = 0
 
-    if target_user.role == UserRole.STUDENT and target_user.status == UserStatus.ACTIVE:
-        # Логика из leaderboard.py
+    if target_user_obj.role == UserRole.STUDENT and target_user_obj.status == UserStatus.ACTIVE:
         leaderboard_stmt = (
             select(
                 Users.id,
@@ -127,7 +131,6 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
 
         results = (await db.execute(leaderboard_stmt)).all()
 
-        # Находим пользователя в списке
         for idx, (uid, pts) in enumerate(results, 1):
             if uid == id:
                 rank = idx
@@ -136,14 +139,14 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
 
     return templates.TemplateResponse('users/show.html', {
         'request': request,
-        'user': target_user,  # Целевой пользователь профиля
-        'current_user': current_user,  # Тот, кто смотрит (админ)
+        'user': current_user,  # ИСПРАВЛЕНО: user теперь всегда текущий админ (для меню)
+        'target_user': target_user_obj,  # ИСПРАВЛЕНО: Просматриваемый пользователь в отдельной переменной
         'achievements': achievements,
         'total_docs': total_docs,
-        'rank': rank,  # Место в рейтинге
-        'total_points': total_points,  # Сумма баллов
+        'rank': rank,
+        'total_points': total_points,
         'roles': list(UserRole),
-        'timestamp': int(time.time())  # Для сброса кэша картинок
+        'timestamp': int(time.time())
     })
 
 
@@ -153,17 +156,16 @@ async def update_user_role(id: int, request: Request, role: UserRole = Form(...)
                            service: UserService = Depends(get_service)):
     check_admin(request)
 
-    # Защита: нельзя менять роль самому себе
     if id == request.session.get('auth_id'):
         return RedirectResponse(
-            url=f"/admin/users/{id}?toast_msg=Нельзя изменить роль самому себе&toast_type=error",
+            url=f"/sirius.achievements/users/{id}?toast_msg=Нельзя изменить роль самому себе&toast_type=error",
             status_code=302
         )
 
     await service.update_role(id, role)
 
     return RedirectResponse(
-        url=f"/admin/users/{id}?toast_msg=Роль обновлена&toast_type=success",
+        url=f"/sirius.achievements/users/{id}?toast_msg=Роль обновлена&toast_type=success",
         status_code=302
     )
 
@@ -172,5 +174,13 @@ async def update_user_role(id: int, request: Request, role: UserRole = Form(...)
 @router.post('/users/{id}/delete', name='admin.users.delete')
 async def delete_user(id: int, request: Request, service: UserService = Depends(get_service)):
     check_admin(request)
+
+    if id == request.session.get('auth_id'):
+        return RedirectResponse(
+            url=f"/sirius.achievements/users/{id}?toast_msg=Нельзя удалить самого себя&toast_type=error",
+            status_code=302
+        )
+
     await service.repository.delete(id)
-    return RedirectResponse(url="/admin/users?toast_msg=Пользователь удален&toast_type=success", status_code=302)
+    return RedirectResponse(url="/sirius.achievements/users?toast_msg=Пользователь удален&toast_type=success",
+                            status_code=302)

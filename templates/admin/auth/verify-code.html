@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Введите код | Sirius Achievements</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 space-y-6">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-900">Проверка кода</h1>
+            <p class="text-sm text-gray-500 mt-2">Код отправлен на <b>{{ email }}</b></p>
+        </div>
+
+        {% if error_msg %}
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 text-sm text-red-700">
+            {{ error_msg }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('admin.auth.verify_code') }}" method="POST" class="space-y-6">
+            <div>
+                <input type="text" name="code" required placeholder="123456" maxlength="6" autofocus
+                       class="w-full px-4 py-3 text-center text-3xl tracking-[0.5em] font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 text-white font-medium py-3 rounded-lg hover:bg-indigo-700 transition-colors shadow-md">
+                Подтвердить код
+            </button>
+        </form>
+
+        <form action="{{ url_for('admin.auth.resend_code') }}" method="POST" id="resendForm" class="text-center">
+            <button type="submit" id="resendBtn" disabled
+                    class="text-sm text-gray-400 cursor-not-allowed font-medium transition-colors">
+                Отправить код повторно <span id="timer">({{ seconds_left }})</span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        let timeLeft = {{ seconds_left }};
+        const timerSpan = document.getElementById('timer');
+        const resendBtn = document.getElementById('resendBtn');
+
+        function updateTimer() {
+            if (timeLeft <= 0) {
+                resendBtn.disabled = false;
+                resendBtn.classList.remove('text-gray-400', 'cursor-not-allowed');
+                resendBtn.classList.add('text-indigo-600', 'hover:underline', 'cursor-pointer');
+                resendBtn.innerHTML = "Отправить код повторно";
+            } else {
+                timerSpan.textContent = `(${timeLeft})`;
+                timeLeft--;
+                setTimeout(updateTimer, 1000);
+            }
+        }
+
+        updateTimer();
+    </script>
+</body>
+</html>

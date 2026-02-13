@@ -19,14 +19,14 @@ from app.routers.admin.documents import router as admin_documents_router
 from app.routers.admin.notifications import router as admin_notifications_router
 from app.routers.admin.leaderboard import router as admin_leaderboard_router
 from app.routers.admin.admin import public_router as admin_common_router
-from app.routers.admin.admin import templates  # Импортируем templates для обработчиков ошибок
+from app.routers.admin.admin import templates
 
 load_dotenv()
 
-app = FastAPI()
+# ИСПРАВЛЕНО: Добавлен root_path для корректной работы за прокси
+app = FastAPI(root_path=os.getenv("ROOT_PATH", ""))
 
 
-# Создание таблиц при старте (для надежности)
 @app.on_event("startup")
 async def init_tables():
     async with engine.begin() as conn:
@@ -36,7 +36,6 @@ async def init_tables():
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "supersecret"))
 
-# Подключение роутеров
 app.include_router(admin_common_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_dashboard_router)
@@ -49,37 +48,31 @@ app.include_router(admin_notifications_router)
 app.include_router(admin_leaderboard_router)
 
 
-# --- ОБРАБОТЧИКИ ОШИБОК ---
-
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    """Обработка HTTP ошибок (404, 403 и др.)"""
     if exc.status_code == 404:
         return templates.TemplateResponse("errors/404.html", {"request": request, "user": None}, status_code=404)
     elif exc.status_code == 403:
         return templates.TemplateResponse("errors/403.html", {"request": request, "user": None, "detail": exc.detail},
                                           status_code=403)
-
-    # Для остальных кодов ошибок можно использовать общий шаблон или 500
     return templates.TemplateResponse("errors/500.html", {"request": request, "user": None, "error": exc.detail},
                                       status_code=exc.status_code)
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Обработка всех остальных непредвиденных ошибок (500)"""
-    # В продакшене лучше не выводить полный текст ошибки пользователю, но для разработки полезно
     error_msg = str(exc) if os.getenv("DEBUG") == "True" else "Internal Server Error"
     return templates.TemplateResponse("errors/500.html", {"request": request, "user": None, "error": str(exc)},
                                       status_code=500)
 
-# ----------------------------
 
 @app.get("/")
-async def root():
-    return RedirectResponse(url="/admin/login")
+async def root(request: Request):
+    # ИСПРАВЛЕНО: Используем url_for для редиректа
+    return RedirectResponse(url=request.url_for('admin.auth.login_page'))
 
 
 @app.get("/admin")
-async def admin_root():
-    return RedirectResponse(url="/admin/dashboard")
+async def admin_root(request: Request):
+    # ИСПРАВЛЕНО: Используем url_for для редиректа
+    return RedirectResponse(url=request.url_for('admin.dashboard.index'))

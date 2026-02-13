@@ -2,7 +2,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request
 from sqlalchemy import select, func
 from app.infrastructure.tranaslations import current_locale
-from app.infrastructure.database.connection import db_instance  # Импортируем глобальный объект Database
+from app.infrastructure.database.connection import db_instance
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.enums import UserStatus, AchievementStatus
@@ -51,4 +51,5 @@ async def auth(request: Request):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             raise HTTPException(status_code=401, detail="Unauthorized")
 
-        raise HTTPException(status_code=302, headers={"Location": "/admin/login"})
+        # ИСПРАВЛЕНО: Редирект на новый путь
+        raise HTTPException(status_code=302, headers={"Location": "/sirius.achievements/login"})

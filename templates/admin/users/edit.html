@@ -9,13 +9,13 @@
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Редактировать профиль</h2>
         </div>
-        <a href="/admin/users" class="text-sm text-gray-500 hover:text-indigo-600">Назад к списку</a>
+        <a href="/sirius.achievements/users" class="text-sm text-gray-500 hover:text-indigo-600">Назад к списку</a>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
 
         <div x-show="activeTab === 'profile'" class="p-6 md:p-8">
-            <form id="editUserForm" action="/admin/users/{{ user.id }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <form id="editUserForm" action="/sirius.achievements/users/{{ user.id }}" method="POST" enctype="multipart/form-data" class="space-y-6">
 
                 <div class="flex items-center space-x-6">
                     <div class="shrink-0 relative">

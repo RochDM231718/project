@@ -1,0 +1,7 @@
+
+Jpython:S1172.",Remove the unused function parameter "role".(ÈË€8ûç‹Å3
+rpython:S3776."TRefactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.(ÈË€8ýç‹Å3
+apython:S112c">Replace this generic exception class with a more specific one.(¶³ØÅýÿÿÿÿ8‚è‹Å3
+ˆpython:S112Ì">Replace this generic exception class with a more specific one.(ë¦ã¨ùÿÿÿÿ8÷­‹Å3J$d0a16619-1327-43c9-8dee-f4f92ec60b1e
+ƒpython:S112Ñ">Replace this generic exception class with a more specific one.(Ú€¬€8÷­‹Å3J$834dbf9a-b195-4f48-8e1e-1c7a4dd77a66
+ˆpython:S112Û">Replace this generic exception class with a more specific one.(ë¦ã¨ùÿÿÿÿ8÷­‹Å3J$1f131ef8-f10a-4425-984f-ee8d0974a9ed

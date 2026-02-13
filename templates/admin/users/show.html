@@ -1,171 +1,152 @@
 {% extends "layout.html" %}
 
-{% block title %}Профиль: {{ user.first_name }} {{ user.last_name }}{% endblock %}
-
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-5xl mx-auto">
 
-    <div class="mb-8 flex justify-between items-center">
-        <div>
-            <h2 class="text-3xl font-bold text-gray-900">Профиль пользователя</h2>
-            <p class="text-gray-500 mt-1">Управление информацией и доступом</p>
-        </div>
-        <a href="/admin/users" class="group flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm">
-            <svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    <div class="mb-6 flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">Профиль пользователя</h2>
+        <a href="{{ '/sirius.achievements/documents' if request.query_params.get('from') == 'documents' else '/sirius.achievements/users' }}"
+           class="text-sm text-gray-500 hover:text-indigo-600 flex items-center transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             Назад к списку
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div class="lg:col-span-4 space-y-6">
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                 <div class="mx-auto h-32 w-32 mb-4 relative">
+                    {% if target_user.avatar_path %}
+                        <img class="h-32 w-32 rounded-full object-cover border-4 border-white shadow-md" src="/static/{{ target_user.avatar_path }}?t={{ timestamp }}" alt="">
+                    {% else %}
+                        <div class="h-32 w-32 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-300 mx-auto text-4xl font-bold">
+                            {{ target_user.first_name[:1] }}{{ target_user.last_name[:1] }}
+                        </div>
+                    {% endif %}
+                </div>
+                <h1 class="text-xl font-bold text-gray-900">{{ target_user.first_name }} {{ target_user.last_name }}</h1>
+                <p class="text-sm text-gray-500 mb-4">{{ target_user.email }}</p>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-8 text-center">
-                    <div class="relative mx-auto w-32 h-32 mb-6 group">
-                        {% if user.avatar_path %}
-                            <img class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg group-hover:shadow-xl transition-shadow"
-                                 src="/{{ user.avatar_path if user.avatar_path.startswith('static') else 'static/' + user.avatar_path }}"
-                                 alt="Avatar">
-                        {% else %}
-                            <div class="w-32 h-32 rounded-full bg-indigo-50 flex items-center justify-center border-4 border-white shadow-lg mx-auto">
-                                <span class="text-4xl font-bold text-indigo-300">{{ user.first_name[:1] }}{{ user.last_name[:1] }}</span>
-                            </div>
-                        {% endif %}
+                <div class="flex justify-center gap-2 mb-6">
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                        {{ target_user.role.value | upper }}
+                    </span>
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full
+                        {{ 'bg-green-100 text-green-700 border-green-200' if target_user.status.value == 'active' else 'bg-yellow-100 text-yellow-700 border-yellow-200' }}">
+                        {{ target_user.status.value | upper }}
+                    </span>
+                </div>
+
+                {% if request.session.auth_role in ['super_admin', 'moderator', 'SUPER_ADMIN', 'MODERATOR'] and request.session.auth_id != target_user.id %}
+                <form action="/sirius.achievements/users/{{ target_user.id }}/role" method="POST" class="mt-4 pt-4 border-t border-gray-100">
+                    <label class="text-xs text-gray-400 block mb-2 text-left font-medium">Сменить роль</label>
+                    <div class="flex gap-2">
+                        <select name="role" class="flex-1 text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            {% for r in roles %}
+                                <option value="{{ r.value }}" {{ 'selected' if target_user.role.value == r.value else '' }}>{{ r.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition-colors">Сохранить</button>
                     </div>
+                </form>
+                {% endif %}
+            </div>
 
-                    <h1 class="text-xl font-bold text-gray-900">{{ user.first_name }} {{ user.last_name }}</h1>
-                    <p class="text-sm text-gray-500 mb-4">{{ user.email }}</p>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                 <h3 class="font-semibold text-gray-800 mb-4 text-sm uppercase tracking-wide">Информация</h3>
+                 <div class="space-y-3 text-sm">
+                     <div class="flex justify-between border-b border-gray-50 pb-2">
+                         <span class="text-gray-500">Телефон</span>
+                         <span class="text-gray-900">{{ target_user.phone_number or 'Не указан' }}</span>
+                     </div>
+                     <div class="flex justify-between border-b border-gray-50 pb-2">
+                         <span class="text-gray-500">Регистрация</span>
+                         <span class="text-gray-900">{{ target_user.created_at.strftime('%d.%m.%Y') }}</span>
+                     </div>
+                 </div>
+            </div>
 
-                    <div class="flex flex-wrap justify-center gap-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            {{ user.role.value }}
-                        </span>
-                        {% if user.status.value == 'active' %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Активен</span>
-                        {% elif user.status.value == 'pending' %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">На проверке</span>
-                        {% else %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{{ user.status.value }}</span>
-                        {% endif %}
-                    </div>
+            </div>
+
+        <div class="lg:col-span-2 space-y-6">
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div class="text-gray-400 text-xs font-medium uppercase">Всего документов</div>
+                    <div class="text-2xl font-bold text-gray-900 mt-1">{{ total_docs }}</div>
                 </div>
 
                 {% if rank %}
-                <div class="px-6 py-4 bg-indigo-50 border-t border-indigo-100 flex items-center justify-between">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
                     <div>
-                        <div class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-0.5">Рейтинг</div>
-                        <div class="text-2xl font-black text-indigo-600">{{ rank }}-е место</div>
+                        <div class="text-gray-400 text-xs font-medium uppercase">Место</div>
+                        <div class="text-2xl font-bold text-indigo-600 mt-1">#{{ rank }}</div>
                     </div>
+                    <div class="w-px h-10 bg-gray-100"></div>
                     <div class="text-right">
-                        <div class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-0.5">Баллы</div>
-                        <div class="text-xl font-bold text-indigo-900">{{ total_points | int }}</div>
+                        <div class="text-gray-400 text-xs font-medium uppercase">Баллы</div>
+                        <div class="text-2xl font-bold text-indigo-600 mt-1">{{ total_points | int }}</div>
                     </div>
                 </div>
                 {% endif %}
-
-                <div class="p-6 border-t border-gray-100 bg-gray-50">
-                    <form action="/admin/users/{{ user.id }}/role" method="POST">
-                        <label for="role" class="block text-xs font-bold text-gray-500 uppercase mb-2">Изменить роль</label>
-                        <div class="flex rounded-md shadow-sm">
-                            <select name="role" id="role" class="block w-full rounded-l-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 py-2 pl-3">
-                                {% for r in roles %}
-                                    <option value="{{ r.value }}" {{ 'selected' if user.role.value == r.value else '' }}>{{ r.value }}</option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 rounded-r-lg bg-indigo-600 text-white hover:bg-indigo-700 text-sm font-medium transition-colors">
-                                OK
-                            </button>
-                        </div>
-                    </form>
-                </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <h3 class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">Детали</h3>
-                <dl class="space-y-4 text-sm">
-                    <div class="flex justify-between">
-                        <dt class="text-gray-500">Телефон:</dt>
-                        <dd class="font-medium text-gray-900">{{ user.phone_number or '—' }}</dd>
-                    </div>
-                    <div class="flex justify-between pt-4 border-t border-gray-50">
-                        <dt class="text-gray-500">Регистрация:</dt>
-                        <dd class="font-medium text-gray-900">{{ user.created_at.strftime('%d.%m.%Y') }}</dd>
-                    </div>
-                </dl>
-            </div>
-
-            </div>
-
-        <div class="lg:col-span-8 space-y-6">
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                    <div class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Всего</div>
-                    <div class="text-3xl font-black text-gray-900">{{ total_docs }}</div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                     <h3 class="font-bold text-gray-800">Загруженные документы</h3>
                 </div>
 
                 {% if achievements %}
                 <ul class="divide-y divide-gray-100">
                     {% for item in achievements %}
-                    <li class="p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center gap-4">
-                        <div class="flex-shrink-0">
-                            <a href="/static/{{ item.file_path }}" target="_blank" class="group block w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 hover:bg-indigo-100 transition-colors">
+                    <li class="p-4 hover:bg-gray-50 flex items-center justify-between transition-colors">
+                        <div class="flex items-center flex-1 min-w-0">
+                            <div class="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 mr-4 shrink-0">
                                 {% if item.file_path and item.file_path.endswith('.pdf') %}
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                 {% else %}
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                 {% endif %}
-                            </a>
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-bold text-gray-900 truncate mb-0.5">{{ item.title }}</h4>
-                            <div class="flex items-center text-xs text-gray-500 gap-2">
-                                <span>{{ item.created_at.strftime('%d.%m.%Y') }}</span>
-                                <span>•</span>
-                                <span>{{ item.category.value }}</span>
                             </div>
-                            {% if item.rejection_reason and item.status.value == 'rejected' %}
-                                <p class="text-xs text-red-500 mt-1 font-medium">Причина отказа: {{ item.rejection_reason }}</p>
-                            {% endif %}
+
+                            <div class="min-w-0 flex-1 pr-4">
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ item.title }}</p>
+                                <p class="text-xs text-gray-500 flex items-center">
+                                    <span class="mr-2">{{ item.created_at.strftime('%d.%m.%Y') }}</span>
+                                    {% if item.status.value == 'rejected' and item.rejection_reason %}
+                                        <span class="text-red-400 truncate max-w-xs" title="{{ item.rejection_reason }}">• {{ item.rejection_reason }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
                         </div>
 
-                        <div class="flex-shrink-0 text-right">
-                             {% if item.status.value == 'approved' %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
-                                    Одобрено (+{{ item.points }})
-                                </span>
-                            {% elif item.status.value == 'rejected' %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
-                                    Отклонено
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                    На проверке
-                                </span>
-                            {% endif %}
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 text-xs rounded-full border whitespace-nowrap
+                                {{ 'bg-green-50 text-green-600 border-green-100' if item.status.value == 'approved' else '' }}
+                                {{ 'bg-yellow-50 text-yellow-600 border-yellow-100' if item.status.value == 'pending' else '' }}
+                                {{ 'bg-red-50 text-red-600 border-red-100' if item.status.value == 'rejected' else '' }}">
+                                {% if item.status.value == 'approved' %}Одобрено
+                                {% elif item.status.value == 'pending' %}На проверке
+                                {% elif item.status.value == 'rejected' %}Отклонено
+                                {% endif %}
+                            </span>
+
+                            <a href="/static/{{ item.file_path }}" target="_blank" class="text-gray-400 hover:text-indigo-600 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
                         </div>
                     </li>
                     {% endfor %}
                 </ul>
                 {% else %}
-                <div class="py-12 flex flex-col items-center justify-center text-center">
-                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    </div>
-                    <p class="text-gray-500 text-sm font-medium">Документы пока не загружены</p>
+                <div class="p-12 text-center text-gray-400 text-sm flex flex-col items-center">
+                    <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Пользователь пока не загрузил достижений.
                 </div>
                 {% endif %}
             </div>
         </div>
-
     </div>
 </div>
 {% endblock %}

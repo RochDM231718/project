@@ -7,7 +7,7 @@
     </div>
 
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-8">
-        <form action="/admin/users" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/admin/api/users/search')">
+        <form action="/sirius.achievements/users" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/sirius.achievements/api/users/search')">
 
             <div class="md:col-span-3 relative">
                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Поиск пользователя</label>
@@ -57,7 +57,7 @@
 
             <div class="md:col-span-1 flex gap-2 justify-end w-full">
                 <button type="submit" class="bg-indigo-600 text-white w-full rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-sm transition-colors h-[42px] flex items-center justify-center">Найти</button>
-                <a href="/admin/users" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
+                <a href="/sirius.achievements/users" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
             </div>
         </form>
     </div>
@@ -86,7 +86,7 @@
                         <a href="{{ url_for('admin.users.show', id=u.id) }}" class="text-indigo-600 hover:text-indigo-800 hover:underline font-medium transition-colors">
                             Профиль
                         </a>
-                        <button @click="$dispatch('confirm-delete', {url: '/admin/users/{{ u.id }}/delete', title: 'Удалить пользователя?', desc: 'Доступ пользователя {{ u.first_name }} будет заблокирован.'})"
+                        <button @click="$dispatch('confirm-delete', {url: '/sirius.achievements/users/{{ u.id }}/delete', title: 'Удалить пользователя?', desc: 'Доступ пользователя {{ u.first_name }} будет заблокирован.'})"
                                 class="text-red-500 hover:text-red-700 hover:underline font-medium transition-colors">
                             Удалить
                         </button>

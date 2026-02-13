@@ -22,7 +22,7 @@ services:
     container_name: sirius_app
     restart: always
     ports:
-      - "8000:8000"
+      - "8080:8000"
     depends_on:
       - db
     # Берем настройки из файла .env, но ПЕРЕОПРЕДЕЛЯЕМ хост базы для Докера

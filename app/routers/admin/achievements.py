@@ -134,10 +134,12 @@ async def store(
             "level": level,
             "status": AchievementStatus.PENDING
         })
+        # ИСПРАВЛЕНО: Редирект на /sirius.achievements/...
         return RedirectResponse(
-            url="/admin/achievements?toast_msg=Достижение отправлено на проверку&toast_type=success", status_code=302)
+            url="/sirius.achievements/achievements?toast_msg=Достижение отправлено на проверку&toast_type=success", status_code=302)
     except Exception as e:
-        return RedirectResponse(url=f"/admin/achievements/create?toast_msg=Ошибка: {e}&toast_type=error",
+        # ИСПРАВЛЕНО: Редирект на /sirius.achievements/...
+        return RedirectResponse(url=f"/sirius.achievements/achievements/create?toast_msg=Ошибка: {e}&toast_type=error",
                                 status_code=302)
 
 
@@ -147,4 +149,5 @@ async def delete(id: int, request: Request, service: AchievementService = Depend
     # Проверка владельца происходит внутри repo.delete или фильтром,
     # здесь упрощенно считаем, что удаляет владелец. В проде добавить проверку user_id.
     await service.repo.delete(id)
-    return RedirectResponse(url="/admin/achievements?toast_msg=Достижение удалено&toast_type=success", status_code=302)
+    # ИСПРАВЛЕНО: Редирект на /sirius.achievements/...
+    return RedirectResponse(url="/sirius.achievements/achievements?toast_msg=Достижение удалено&toast_type=success", status_code=302)
