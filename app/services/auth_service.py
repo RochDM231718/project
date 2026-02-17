@@ -1,3 +1,6 @@
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import Request, BackgroundTasks
@@ -8,7 +11,6 @@ from app.repositories.admin.user_token_repository import UserTokenRepository
 from app.schemas.admin.user_tokens import UserTokenCreate
 from app.schemas.admin.auth import UserRegister
 from app.services.admin.user_token_service import UserTokenService
-from mailbridge import MailBridge
 from app.infrastructure.jwt_handler import create_access_token, create_refresh_token, refresh_access_token
 import os
 import structlog
@@ -16,19 +18,6 @@ from datetime import datetime, timedelta
 
 logger = structlog.get_logger()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Инициализация почты
-try:
-    mailer = MailBridge(provider='smtp',
-                        host=os.getenv('MAIL_HOST'),
-                        port=int(os.getenv('MAIL_PORT', 587)),
-                        username=os.getenv('MAIL_USERNAME'),
-                        password=os.getenv('MAIL_PASSWORD'),
-                        use_tls=True,
-                        from_email=os.getenv('MAIL_FROM')
-                        )
-except Exception as e:
-    print(f"[CRITICAL] Mailer failed to init: {e}")
 
 
 class UserBlockedException(Exception):
@@ -50,7 +39,6 @@ class AuthService:
             logger.warning("Login failed: user not found", email=email)
             return None
 
-        # 1. Проверка блокировки
         if user.blocked_until:
             if user.blocked_until > datetime.utcnow():
                 wait_time = user.blocked_until - datetime.utcnow()
@@ -62,7 +50,6 @@ class AuthService:
                 self.db.add(user)
                 await self.db.commit()
 
-        # 2. Проверка пароля
         if not self.verify_password(password, user.hashed_password):
             user.failed_attempts = (user.failed_attempts or 0) + 1
             if user.failed_attempts >= 5:
@@ -77,12 +64,10 @@ class AuthService:
                 raise UserBlockedException("Слишком много попыток. Аккаунт заблокирован на 15 мин.")
             return None
 
-        # 3. Проверка статуса
         if user.status == UserStatus.REJECTED:
             logger.warning("Login failed: user rejected", email=email)
             return None
 
-        # 4. Успешный вход
         if (user.failed_attempts and user.failed_attempts > 0) or user.blocked_until:
             user.failed_attempts = 0
             user.blocked_until = None
@@ -141,64 +126,113 @@ class AuthService:
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
 
-    # --- ЛОГИКА СБРОСА ПАРОЛЯ ---
+    # --- НОВАЯ ЛОГИКА ОТПРАВКИ ЧЕРЕЗ SMTPLIB (СТАНДАРТНАЯ) ---
 
-    def _send_mail_task(self, to: str, subject: str, body: str, html: str):
+    def _send_mail_task(self, to_email: str, subject: str, body_text: str, body_html: str):
+        """
+        Отправка письма через стандартный smtplib (самый надежный способ).
+        """
+        smtp_host = os.getenv('MAIL_HOST', 'smtp.yandex.ru')
+        smtp_port = int(os.getenv('MAIL_PORT', 465))
+        smtp_user = os.getenv('MAIL_USERNAME')
+        smtp_pass = os.getenv('MAIL_PASSWORD')
+        mail_from = os.getenv('MAIL_FROM', smtp_user)
+
+        # Формируем сообщение
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = mail_from
+        msg['To'] = to_email
+
+        # Добавляем текстовую и HTML версии
+        part1 = MIMEText(body_text, 'plain')
+        part2 = MIMEText(body_html, 'html')
+        msg.attach(part1)
+        msg.attach(part2)
+
         try:
-            mailer.send(to=to, subject=subject, body=body, html=html)
-            logger.info("Reset password email sent", to=to)
+            # Выбираем протокол в зависимости от порта
+            if smtp_port == 465:
+                # SSL подключение (Implicit SSL)
+                server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+            else:
+                # Обычное подключение + STARTTLS (для 587)
+                server = smtplib.SMTP(smtp_host, smtp_port)
+                server.starttls()
+
+            server.login(smtp_user, smtp_pass)
+            server.sendmail(mail_from, to_email, msg.as_string())
+            server.quit()
+
+            logger.info(f"Email sent successfully via {smtp_host}:{smtp_port}", to=to_email)
+            print(f"[INFO] Email sent to {to_email}")
+
         except Exception as e:
-            logger.error("Failed to send reset email in background", error=str(e))
+            logger.error("Failed to send email via SMTP", error=str(e))
             print(f"[ERROR] Mail send failed: {e}")
 
     async def forgot_password(self, email: str, background_tasks: BackgroundTasks = None):
-        """
-        Возвращает кортеж: (success: bool, message: str, retry_after: int)
-        """
         user = await self.repository.get_by_email(email)
         if not user:
-            # Имитируем успех для безопасности, но ставим задержку
             return True, "Код отправлен (если аккаунт существует)", 60
 
-        # 1. Проверяем таймер (Rate Limiting)
         retry_after = await self.user_token_service.get_time_until_next_retry(user.id)
         if retry_after > 0:
             return False, f"Повторная отправка возможна через {retry_after} сек.", retry_after
 
-        # 2. Генерируем 6-значный код
+        # Генерируем код
         token_data = UserTokenCreate(
             user_id=user.id,
             type=UserTokenType.RESET_PASSWORD
         )
         user_token = await self.user_token_service.create(token_data)
-
-        # 3. Контент письма
         code = user_token.token
-        subject = "Код подтверждения"
-        text_content = f"Ваш код для сброса пароля: {code}"
+
+        # Тема и контент
+        subject = "Разовый код"
+
+        text_content = f"""Здравствуйте, {user.email}!
+Мы получили запрос на отправку разового кода для вашей учетной записи Sirius.Achievements.
+Ваш разовый код: {code}
+Вводите этот код только на официальном сайте."""
+
+        # HTML в стиле Microsoft
         html_content = f"""
-        <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-            <h2>Восстановление пароля</h2>
-            <p>Ваш код подтверждения:</p>
-            <h1 style="background: #f4f4f4; padding: 10px 20px; display: inline-block; letter-spacing: 5px; border-radius: 8px;">{code}</h1>
-            <p style="color: #666; margin-top: 20px;">Введите этот код на сайте.</p>
-            <p style="font-size: 12px; color: #999;">Код действителен 1 час.</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #000000; background-color: #ffffff; padding: 20px; max-width: 600px;">
+            <p style="font-size: 15px; margin-bottom: 20px;">
+                Здравствуйте, <a href="mailto:{user.email}" style="color: #0067b8; text-decoration: none;">{user.email}</a>!
+            </p>
+            <p style="font-size: 15px; margin-bottom: 20px;">
+                Мы получили запрос на отправку разового кода для вашей учетной записи Sirius.Achievements.
+            </p>
+            <p style="font-size: 15px; margin-bottom: 5px;">
+                Ваш разовый код: <span style="font-weight: 600; font-size: 16px;">{code}</span>
+            </p>
+            <p style="font-size: 15px; margin-top: 20px; margin-bottom: 25px;">
+                Вводите этот код только на официальном сайте или в приложении. Не делитесь им ни с кем.
+            </p>
+            <p style="font-size: 15px; margin-bottom: 5px;">
+                С уважением,<br>
+                Служба технической поддержки Sirius.Achievements
+            </p>
+            <br>
+            <div style="font-size: 12px; color: #666666; margin-top: 20px;">
+                <p style="margin-bottom: 5px;">Заявление о конфиденциальности:</p>
+                <a href="#" style="color: #0067b8; text-decoration: underline;">https://sirius.achievements/privacy</a>
+                <p style="margin-top: 5px;">Sirius Corporation, Russia</p>
+            </div>
         </div>
         """
 
-        # 4. Отправляем
         if background_tasks:
-            background_tasks.add_task(self._send_mail_task, to=user.email, subject=subject, body=text_content,
-                                      html=html_content)
+            background_tasks.add_task(self._send_mail_task, to_email=user.email, subject=subject,
+                                      body_text=text_content, body_html=html_content)
         else:
             self._send_mail_task(user.email, subject, text_content, html_content)
 
         return True, "Код успешно отправлен", 60
 
     async def verify_code_only(self, email: str, code: str) -> bool:
-        """
-        Проверяет, подходит ли код к email.
-        """
         user = await self.repository.get_by_email(email)
         if not user:
             raise Exception("Пользователь не найден")
@@ -211,19 +245,11 @@ class AuthService:
         return True
 
     async def reset_password_final(self, email: str, new_password: str):
-        """
-        Устанавливает новый пароль.
-        """
         user = await self.repository.get_by_email(email)
         if not user:
             raise Exception("Пользователь не найден")
 
         user.hashed_password = pwd_context.hash(new_password)
         self.db.add(user)
-
-        # Опционально: удалить использованные токены
-        # await self.user_token_service.delete_all_for_user(user.id, UserTokenType.RESET_PASSWORD)
-
         await self.db.commit()
-        logger.info("Password reset successfully", user_id=user.id)
         return user
