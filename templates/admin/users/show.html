@@ -38,8 +38,11 @@
                     </span>
                 </div>
 
-                {% if request.session.auth_role in ['super_admin', 'moderator', 'SUPER_ADMIN', 'MODERATOR'] and request.session.auth_id != target_user.id %}
+                {# ИСПРАВЛЕНО: Проверяем роль через объект user, а не через сессию #}
+                {% if user.role.value in ['super_admin', 'moderator', 'SUPER_ADMIN', 'MODERATOR'] and user.id != target_user.id %}
                 <form action="/sirius.achievements/users/{{ target_user.id }}/role" method="POST" class="mt-4 pt-4 border-t border-gray-100">
+                    <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+
                     <label class="text-xs text-gray-400 block mb-2 text-left font-medium">Сменить роль</label>
                     <div class="flex gap-2">
                         <select name="role" class="flex-1 text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">

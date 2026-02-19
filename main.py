@@ -1,9 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
+from app.security.csrf import get_csrf_token
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi.responses import RedirectResponse, HTMLResponse
+from starlette.middleware.base import BaseHTTPMiddleware  # <--- Добавлен импорт
+from fastapi.middleware.trustedhost import TrustedHostMiddleware  # <--- Добавлен импорт
+from fastapi.responses import RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
+import logging
 from dotenv import load_dotenv
 
 from app.infrastructure.database import engine, Base
@@ -23,8 +27,21 @@ from app.routers.admin.admin import templates
 
 load_dotenv()
 
-# ИСПРАВЛЕНО: Добавлен root_path для корректной работы за прокси
+# Настройка логгера
+logger = logging.getLogger("uvicorn.error")
+
 app = FastAPI(root_path=os.getenv("ROOT_PATH", ""))
+
+
+# --- MIDDLEWARES ---
+
+class CSRFContextMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Гарантируем, что CSRF токен есть в сессии.
+        # Шаблоны будут брать его через {{ request.session.csrf_token }}
+        get_csrf_token(request)
+        response = await call_next(request)
+        return response
 
 
 @app.on_event("startup")
@@ -34,8 +51,30 @@ async def init_tables():
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "supersecret"))
 
+# --- КОНФИГУРАЦИЯ БЕЗОПАСНОСТИ ---
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY or SECRET_KEY == "supersecretkey123":
+    if os.getenv("ENV") == "production":
+        raise ValueError("КРИТИЧЕСКАЯ ОШИБКА: Не установлен безопасный SECRET_KEY в переменной окружения!")
+    else:
+        logger.warning("ПРЕДУПРЕЖДЕНИЕ: Используется небезопасный SECRET_KEY!")
+
+# ВНИМАНИЕ: Порядок добавления middleware важен (снизу вверх по исполнению).
+# Поток запроса: TrustedHost -> Session -> CSRF -> Router
+
+# 3. Внутренний слой: CSRF (требует наличия сессии)
+app.add_middleware(CSRFContextMiddleware)
+
+# 2. Средний слой: Сессии
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+# 1. Внешний слой: Проверка хоста (защита от Host Header Injection)
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
+
+# --- ПОДКЛЮЧЕНИЕ РОУТЕРОВ ---
 app.include_router(admin_common_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_dashboard_router)
@@ -47,6 +86,8 @@ app.include_router(admin_documents_router)
 app.include_router(admin_notifications_router)
 app.include_router(admin_leaderboard_router)
 
+
+# --- ОБРАБОТЧИКИ ОШИБОК ---
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -61,18 +102,25 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    error_msg = str(exc) if os.getenv("DEBUG") == "True" else "Internal Server Error"
-    return templates.TemplateResponse("errors/500.html", {"request": request, "user": None, "error": str(exc)},
-                                      status_code=500)
+    logger.error(f"Global error: {exc}", exc_info=True)
+
+    # Безопасная проверка режима отладки
+    is_debug = str(os.getenv("DEBUG", "False")).lower() in ("true", "1", "yes")
+
+    error_msg = str(exc) if is_debug else "Внутренняя ошибка сервера"
+
+    return templates.TemplateResponse("errors/500.html", {
+        "request": request,
+        "user": None,
+        "error": error_msg
+    }, status_code=500)
 
 
 @app.get("/")
 async def root(request: Request):
-    # ИСПРАВЛЕНО: Используем url_for для редиректа
     return RedirectResponse(url=request.url_for('admin.auth.login_page'))
 
 
 @app.get("/admin")
 async def admin_root(request: Request):
-    # ИСПРАВЛЕНО: Используем url_for для редиректа
     return RedirectResponse(url=request.url_for('admin.dashboard.index'))

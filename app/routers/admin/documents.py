@@ -1,97 +1,140 @@
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_
-from sqlalchemy.orm import selectinload
-import math
-
-from app.routers.admin.admin import guard_router, templates, get_db
-from app.models.user import Users
-from app.models.achievement import Achievement
-from app.models.enums import AchievementStatus, UserRole, AchievementCategory, AchievementLevel
+import os
+from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi.responses import RedirectResponse, HTMLResponse, FileResponse
+from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession  # Добавили правильный тип сессии
+from app.infrastructure.database import get_db
 from app.services.admin.achievement_service import AchievementService
 from app.repositories.admin.achievement_repository import AchievementRepository
+from app.routers.admin.admin import templates
+from app.routers.admin.deps import get_current_user
+from app.security.csrf import validate_csrf
 
-router = guard_router
-
-
-def get_service(db: AsyncSession = Depends(get_db)):
-    return AchievementService(AchievementRepository(db))
-
-
-def check_access(request: Request):
-    if request.session.get('auth_role') not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
-        raise HTTPException(status_code=403, detail="Access denied")
+router = APIRouter(
+    prefix="/sirius.achievements/documents",
+    tags=["admin.documents"]
+)
 
 
-# --- API ЖИВОГО ПОИСКА ---
-@router.get('/api/documents/search', response_class=JSONResponse)
-async def api_documents_search(request: Request, q: str = Query(..., min_length=1), db: AsyncSession = Depends(get_db)):
-    check_access(request)
-    # Ищем по названию или по фамилии автора
-    stmt = select(Achievement).join(Users).filter(
-        or_(
-            Achievement.title.ilike(f"%{q}%"),
-            Users.last_name.ilike(f"%{q}%"),
-            Users.email.ilike(f"%{q}%")
-        )
-    ).limit(7)
-
-    result = await db.execute(stmt)
-    documents = result.scalars().all()
-
-    return [
-        {"value": d.title, "text": f"{d.title} ({d.category.value})"}
-        for d in documents
-    ]
-
-
-# --- СПИСОК ДОКУМЕНТОВ ---
-@router.get('/documents', response_class=HTMLResponse, name='admin.documents.index')
+@router.get("/", response_class=HTMLResponse)
 async def index(
         request: Request,
-        status: str = None,
-        category: str = None,  # <-- Отдельный фильтр
-        level: str = None,  # <-- Отдельный фильтр
-        query: str = None,
-        page: int = Query(1, ge=1),
-        db: AsyncSession = Depends(get_db)
+        query: str = "",
+        status: str = "",
+        category: str = "",
+        level: str = "",
+        sort_by: str = "newest",
+        db: AsyncSession = Depends(get_db)  # AsyncSession
 ):
-    check_access(request)
-    user = await db.get(Users, request.session.get('auth_id'))
+    # ВАЖНО: Добавлен await
+    user = await get_current_user(request, db)
 
-    limit = 10
-    offset = (page - 1) * limit
+    if not user:
+        return RedirectResponse(url="/")
 
-    stmt = select(Achievement).options(selectinload(Achievement.user)).order_by(Achievement.created_at.desc())
+    # Расширенный список ролей
+    allowed_roles = [
+        'admin', 'moderator', 'super_admin',
+        'ADMIN', 'MODERATOR', 'SUPER_ADMIN'
+    ]
 
-    # Фильтры
-    if status and status != 'all': stmt = stmt.filter(Achievement.status == status)
-    if category and category != 'all': stmt = stmt.filter(Achievement.category == category)
-    if level and level != 'all': stmt = stmt.filter(Achievement.level == level)
+    # Приведение роли к строке для безопасности
+    user_role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
 
-    if query:
-        stmt = stmt.filter(or_(Achievement.title.ilike(f"%{query}%"), Achievement.description.ilike(f"%{query}%")))
+    if user_role_str not in allowed_roles:
+        return RedirectResponse(url="/sirius.achievements/dashboard")
 
-    total_items = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar()
-    achievements = (await db.execute(stmt.offset(offset).limit(limit))).scalars().all()
-    total_pages = math.ceil(total_items / limit)
+    repo = AchievementRepository(db)
 
-    return templates.TemplateResponse('documents/index.html', {
-        'request': request, 'achievements': achievements, 'page': page,
-        'total_pages': total_pages,
-        'status': status, 'category': category, 'level': level, 'query': query,  # Передаем выбранные значения обратно
-        'statuses': list(AchievementStatus),
-        'categories': list(AchievementCategory),  # Передаем списки Enums
-        'levels': list(AchievementLevel),
-        'user': user
+    achievements = await repo.get_all_with_filters(
+        search=query,
+        status=status,
+        category=category,
+        level=level,
+        sort_by=sort_by
+    )
+
+    return templates.TemplateResponse("documents/index.html", {
+        "request": request,
+        "user": user,
+        "achievements": achievements,
+        "query": query,
+        "status": status,
+        "category": category,
+        "level": level,
+        "sort_by": sort_by,
+        "statuses": repo.model.status.type.enums if hasattr(repo.model, 'status') else [],
+        "categories": repo.model.category.type.enums if hasattr(repo.model, 'category') else [],
+        "levels": repo.model.level.type.enums if hasattr(repo.model, 'level') else []
     })
 
 
-@router.post('/documents/{id}/delete', name='admin.documents.delete')
-async def delete_document(id: int, request: Request, service: AchievementService = Depends(get_service)):
-    check_access(request)
-    await service.repo.delete(id)
-    return RedirectResponse(
-        url=request.url_for('admin.documents.index').include_query_params(toast_msg="Документ удален",
-                                                                          toast_type="success"), status_code=302)
+@router.post("/{id}/delete")
+async def delete(
+        id: int,
+        request: Request,
+        db: AsyncSession = Depends(get_db),
+        _=Depends(validate_csrf)
+):
+    # ВАЖНО: Добавлен await
+    user = await get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+
+    user_role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
+
+    repo = AchievementRepository(db)
+    service = AchievementService(repo)
+
+    try:
+        await service.delete(id, user.id, user_role_str)
+        return RedirectResponse(
+            url="/sirius.achievements/documents?toast_msg=Документ удален&toast_type=success",
+            status_code=303
+        )
+    except Exception as e:
+        return RedirectResponse(
+            url=f"/sirius.achievements/documents?toast_msg=Ошибка: {str(e)}&toast_type=error",
+            status_code=303
+        )
+
+
+@router.get("/{id}/download")
+async def download_document(
+        id: int,
+        request: Request,
+        db: AsyncSession = Depends(get_db)
+):
+    # ВАЖНО: Добавлен await
+    user = await get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    user_role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
+
+    allowed_roles = [
+        'admin', 'moderator', 'super_admin',
+        'ADMIN', 'MODERATOR', 'SUPER_ADMIN'
+    ]
+    if user_role_str not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Недостаточно прав для скачивания")
+
+    repo = AchievementRepository(db)
+    document = await repo.find(id)
+
+    if not document or not document.file_path:
+        raise HTTPException(status_code=404, detail="Документ не найден")
+
+    file_full_path = os.path.join("static", document.file_path)
+
+    if not os.path.exists(file_full_path):
+        raise HTTPException(status_code=404, detail="Файл физически отсутствует на сервере")
+
+    ext = os.path.splitext(file_full_path)[1]
+    filename = f"document_{id}_user_{document.user_id}{ext}"
+
+    return FileResponse(
+        path=file_full_path,
+        filename=filename,
+        media_type='application/octet-stream'
+    )

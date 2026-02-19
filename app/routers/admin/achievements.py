@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, case
 import math
 
+from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.achievement import Achievement
 from app.models.user import Users
@@ -42,7 +43,7 @@ async def index(
         status: str = None,
         category: str = None,
         level: str = None,
-        sort_by: str = "newest",  # Добавлена сортировка
+        sort_by: str = "newest",
         db: AsyncSession = Depends(get_db)
 ):
     user_id = request.session.get('auth_id')
@@ -112,7 +113,8 @@ async def create(request: Request, db: AsyncSession = Depends(get_db)):
     })
 
 
-@router.post('/achievements', name='admin.achievements.store')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/achievements', name='admin.achievements.store', dependencies=[Depends(validate_csrf)])
 async def store(
         request: Request,
         title: str = Form(...),
@@ -134,20 +136,46 @@ async def store(
             "level": level,
             "status": AchievementStatus.PENDING
         })
-        # ИСПРАВЛЕНО: Редирект на /sirius.achievements/...
         return RedirectResponse(
             url="/sirius.achievements/achievements?toast_msg=Достижение отправлено на проверку&toast_type=success", status_code=302)
     except Exception as e:
-        # ИСПРАВЛЕНО: Редирект на /sirius.achievements/...
         return RedirectResponse(url=f"/sirius.achievements/achievements/create?toast_msg=Ошибка: {e}&toast_type=error",
                                 status_code=302)
 
 
 # --- УДАЛЕНИЕ ---
-@router.post('/achievements/{id}/delete', name='admin.achievements.delete')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/achievements/{id}/delete', name='admin.achievements.delete', dependencies=[Depends(validate_csrf)])
 async def delete(id: int, request: Request, service: AchievementService = Depends(get_service)):
-    # Проверка владельца происходит внутри repo.delete или фильтром,
-    # здесь упрощенно считаем, что удаляет владелец. В проде добавить проверку user_id.
+    user_id = request.session.get('auth_id')
+    user_role = request.session.get('auth_role')
+
+    # 1. Получаем достижение из БД
+    achievement = await service.repo.find(id)
+
+    if not achievement:
+        return RedirectResponse(
+            url="/sirius.achievements/achievements?toast_msg=Достижение не найдено&toast_type=error",
+            status_code=302
+        )
+
+    # 2. Проверяем права: владелец ИЛИ модератор/админ
+    is_owner = achievement.user_id == user_id
+    # Примечание: тут всё еще используется user_role из сессии,
+    # в идеале стоит использовать тот же подход с БД, что мы делали для модерации,
+    # но это уже лучше, чем было.
+    is_staff = str(user_role) in [UserRole.MODERATOR.value, UserRole.SUPER_ADMIN.value, 'moderator', 'super_admin']
+
+    if not is_owner and not is_staff:
+        return RedirectResponse(
+            url="/sirius.achievements/achievements?toast_msg=У вас нет прав на удаление этого файла&toast_type=error",
+            status_code=302
+        )
+
+    # 3. Удаляем
     await service.repo.delete(id)
-    # ИСПРАВЛЕНО: Редирект на /sirius.achievements/...
-    return RedirectResponse(url="/sirius.achievements/achievements?toast_msg=Достижение удалено&toast_type=success", status_code=302)
+
+    return RedirectResponse(
+        url="/sirius.achievements/achievements?toast_msg=Достижение удалено&toast_type=success",
+        status_code=302
+    )

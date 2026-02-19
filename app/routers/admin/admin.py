@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from app.infrastructure.database import async_session_maker
 from datetime import timedelta
+from app.security.csrf import validate_csrf
 
 templates = Jinja2Templates(directory="templates/admin")
 

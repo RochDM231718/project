@@ -3,6 +3,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import time
 
+from app.routers.admin.deps import get_current_user
+from app.security.csrf import validate_csrf
 from app.services.auth_service import AuthService, UserBlockedException
 from app.routers.admin.admin import templates, get_db
 from app.repositories.admin.user_repository import UserRepository
@@ -28,7 +30,8 @@ async def login_page(request: Request):
     return templates.TemplateResponse('auth/sign-in.html', {'request': request})
 
 
-@router.post('/login', name='admin.auth.login')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/login', name='admin.auth.login', dependencies=[Depends(validate_csrf)])
 async def login(
         request: Request,
         email: str = Form(...),
@@ -46,7 +49,6 @@ async def login(
             })
 
         request.session['auth_id'] = user.id
-        request.session['auth_role'] = user.role.value
         request.session['auth_name'] = f"{user.first_name} {user.last_name}"
         request.session['auth_avatar'] = user.avatar_path
 
@@ -73,7 +75,8 @@ async def register_page(request: Request):
     return templates.TemplateResponse('auth/register.html', {'request': request})
 
 
-@router.post('/register', name='admin.auth.register')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/register', name='admin.auth.register', dependencies=[Depends(validate_csrf)])
 async def register(
         request: Request,
         first_name: str = Form(...),
@@ -102,7 +105,6 @@ async def register(
         user = await service.register_user(user_data)
 
         request.session['auth_id'] = user.id
-        request.session['auth_role'] = user.role.value
         request.session['auth_name'] = f"{user.first_name} {user.last_name}"
         request.session['auth_avatar'] = user.avatar_path
 
@@ -120,7 +122,8 @@ async def forgot_password_page(request: Request):
     return templates.TemplateResponse('auth/forgot-password.html', {'request': request})
 
 
-@router.post('/forgot-password', name='admin.auth.forgot_password')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/forgot-password', name='admin.auth.forgot_password', dependencies=[Depends(validate_csrf)])
 async def forgot_password(
         request: Request,
         background_tasks: BackgroundTasks,
@@ -158,7 +161,8 @@ async def verify_code_page(request: Request):
     })
 
 
-@router.post('/resend-code', name='admin.auth.resend_code')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/resend-code', name='admin.auth.resend_code', dependencies=[Depends(validate_csrf)])
 async def resend_code(
         request: Request,
         background_tasks: BackgroundTasks,
@@ -176,7 +180,8 @@ async def resend_code(
     return RedirectResponse(url=request.url_for('admin.auth.verify_code_page'), status_code=302)
 
 
-@router.post('/verify-code', name='admin.auth.verify_code')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/verify-code', name='admin.auth.verify_code', dependencies=[Depends(validate_csrf)])
 async def verify_code(
         request: Request,
         code: str = Form(...),
@@ -208,7 +213,8 @@ async def reset_password_page(request: Request):
     return templates.TemplateResponse('auth/reset-password.html', {'request': request})
 
 
-@router.post('/reset-password', name='admin.auth.reset_password')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/reset-password', name='admin.auth.reset_password', dependencies=[Depends(validate_csrf)])
 async def reset_password(
         request: Request,
         password: str = Form(...),

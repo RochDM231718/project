@@ -8,6 +8,7 @@
     <h2 class="text-2xl font-bold text-gray-800 mb-6">Добавить достижение</h2>
 
     <form action="{{ url_for('admin.achievements.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6" @submit.prevent="submitForm">
+        <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
 
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
@@ -71,17 +72,33 @@ function imageCropper() {
             const file = e.target.files[0];
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
+
                 reader.onload = (event) => {
-                    document.getElementById('imageToCrop').src = event.target.result;
-                    this.showModal = true;
-                    // Инициализация Cropper после отображения модалки
-                    this.$nextTick(() => {
-                        if (this.cropper) this.cropper.destroy();
-                        this.cropper = new Cropper(document.getElementById('imageToCrop'), {
-                            viewMode: 1,
-                            autoCropArea: 1
+                    const imageElement = document.getElementById('imageToCrop');
+
+                    // 1. Сбрасываем предыдущий src, чтобы корректно отловить ошибку загрузки
+                    imageElement.src = '';
+
+                    // 2. Навешиваем обработчик успешной загрузки
+                    imageElement.onload = () => {
+                        this.showModal = true;
+                        this.$nextTick(() => {
+                            if (this.cropper) this.cropper.destroy();
+                            this.cropper = new Cropper(imageElement, {
+                                viewMode: 1,
+                                autoCropArea: 1
+                            });
                         });
-                    });
+                    };
+
+                    // 3. Навешиваем обработчик ошибки (если это txt переименованный в jpg)
+                    imageElement.onerror = () => {
+                        alert("Ошибка: Файл поврежден или не является изображением.");
+                        e.target.value = ''; // Сбрасываем input
+                    };
+
+                    // 4. Устанавливаем src
+                    imageElement.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -91,9 +108,22 @@ function imageCropper() {
         cancelCrop() {
             this.showModal = false;
             document.getElementById('fileInput').value = ''; // Сброс инпута
+            if (this.cropper) {
+                this.cropper.destroy();
+                this.cropper = null;
+            }
         },
         confirmCrop() {
-            this.cropper.getCroppedCanvas().toBlob((blob) => {
+            // Защита: если кроппер не инициализировался или картинка битая
+            if (!this.cropper) return;
+
+            const canvas = this.cropper.getCroppedCanvas();
+            if (!canvas) {
+                alert("Не удалось обработать изображение.");
+                return;
+            }
+
+            canvas.toBlob((blob) => {
                 this.croppedBlob = blob;
                 this.showModal = false;
             });
@@ -108,12 +138,25 @@ function imageCropper() {
                 formData.set('file', this.croppedBlob, originalFile.name);
             }
 
-            // Отправляем через fetch, чтобы работала подмена файла
+            // Отправляем через fetch
             fetch(form.action, { method: 'POST', body: formData })
                 .then(response => {
-                    if (response.redirected) window.location.href = response.url;
+                    // Обработка редиректа от сервера (успех или ошибка)
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        // Если сервер вернул HTML (например, страницу с ошибкой 403/500)
+                        return response.text().then(html => {
+                            document.open();
+                            document.write(html);
+                            document.close();
+                        });
+                    }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Произошла ошибка при отправке формы.");
+                });
         }
     }
 }

@@ -5,12 +5,14 @@ from sqlalchemy import select, func, or_, desc
 import math
 import time
 
+from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.enums import UserRole, UserStatus, AchievementStatus
 from app.services.admin.user_service import UserService
 from app.repositories.admin.user_repository import UserRepository
+from app.routers.admin.deps import get_current_user
 
 router = guard_router
 
@@ -19,23 +21,23 @@ def get_service(db: AsyncSession = Depends(get_db)):
     return UserService(UserRepository(db))
 
 
-def check_admin(request: Request):
-    allowed_roles = [
-        UserRole.SUPER_ADMIN,
-        UserRole.MODERATOR,
-        "SUPER_ADMIN",
-        "MODERATOR",
-        "super_admin",
-        "moderator"
-    ]
-    if request.session.get('auth_role') not in allowed_roles:
+# Вспомогательная функция проверки прав
+async def check_admin_rights(request: Request, db: AsyncSession):
+    user = await get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=403, detail="Not authenticated")
+
+    # Разрешаем SUPER_ADMIN, MODERATOR и ADMIN
+    allowed_roles = [UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.ADMIN]
+    if user.role not in allowed_roles:
         raise HTTPException(status_code=403, detail="Access denied")
+    return user
 
 
 # --- API ЖИВОГО ПОИСКА ---
 @router.get('/api/users/search', response_class=JSONResponse)
 async def api_users_search(request: Request, q: str = Query(..., min_length=1), db: AsyncSession = Depends(get_db)):
-    check_admin(request)
+    await check_admin_rights(request, db)
     stmt = select(Users).filter(
         or_(
             Users.first_name.ilike(f"%{q}%"),
@@ -58,8 +60,7 @@ async def index(
         sort_by: str = "newest",
         db: AsyncSession = Depends(get_db)
 ):
-    check_admin(request)
-    current_user = await db.get(Users, request.session.get('auth_id'))
+    current_user = await check_admin_rights(request, db)
 
     limit = 10
     offset = (page - 1) * limit
@@ -93,26 +94,23 @@ async def index(
         'sort_by': sort_by,
         'roles': list(UserRole),
         'statuses': list(UserStatus),
-        'user': current_user  # Здесь user = текущий админ, все верно
+        'user': current_user
     })
 
 
 # --- ПРОСМОТР ПРОФИЛЯ ---
 @router.get('/users/{id}', response_class=HTMLResponse, name='admin.users.show')
 async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    check_admin(request)
+    current_user = await check_admin_rights(request, db)
 
     target_user_obj = await db.get(Users, id)
     if not target_user_obj:
         raise HTTPException(status_code=404, detail="User not found")
 
-    current_user = await db.get(Users, request.session.get('auth_id'))
-
     achievements_stmt = select(Achievement).filter(Achievement.user_id == id).order_by(Achievement.created_at.desc())
     achievements = (await db.execute(achievements_stmt)).scalars().all()
 
     total_docs = len(achievements)
-
     rank = None
     total_points = 0
 
@@ -128,9 +126,7 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
             .group_by(Users.id)
             .order_by(desc("total_points"))
         )
-
         results = (await db.execute(leaderboard_stmt)).all()
-
         for idx, (uid, pts) in enumerate(results, 1):
             if uid == id:
                 rank = idx
@@ -139,8 +135,8 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
 
     return templates.TemplateResponse('users/show.html', {
         'request': request,
-        'user': current_user,  # ИСПРАВЛЕНО: user теперь всегда текущий админ (для меню)
-        'target_user': target_user_obj,  # ИСПРАВЛЕНО: Просматриваемый пользователь в отдельной переменной
+        'user': current_user,
+        'target_user': target_user_obj,
         'achievements': achievements,
         'total_docs': total_docs,
         'rank': rank,
@@ -151,12 +147,17 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
 
 
 # --- ОБНОВЛЕНИЕ РОЛИ ---
-@router.post('/users/{id}/role', name='admin.users.update_role')
-async def update_user_role(id: int, request: Request, role: UserRole = Form(...),
-                           service: UserService = Depends(get_service)):
-    check_admin(request)
+@router.post('/users/{id}/role', name='admin.users.update_role', dependencies=[Depends(validate_csrf)])
+async def update_user_role(
+        id: int,
+        request: Request,
+        role: UserRole = Form(...),
+        service: UserService = Depends(get_service),
+        db: AsyncSession = Depends(get_db)
+):
+    current_user = await check_admin_rights(request, db)
 
-    if id == request.session.get('auth_id'):
+    if id == current_user.id:
         return RedirectResponse(
             url=f"/sirius.achievements/users/{id}?toast_msg=Нельзя изменить роль самому себе&toast_type=error",
             status_code=302
@@ -171,11 +172,16 @@ async def update_user_role(id: int, request: Request, role: UserRole = Form(...)
 
 
 # --- УДАЛЕНИЕ ---
-@router.post('/users/{id}/delete', name='admin.users.delete')
-async def delete_user(id: int, request: Request, service: UserService = Depends(get_service)):
-    check_admin(request)
+@router.post('/users/{id}/delete', name='admin.users.delete', dependencies=[Depends(validate_csrf)])
+async def delete_user(
+        id: int,
+        request: Request,
+        service: UserService = Depends(get_service),
+        db: AsyncSession = Depends(get_db)
+):
+    current_user = await check_admin_rights(request, db)
 
-    if id == request.session.get('auth_id'):
+    if id == current_user.id:
         return RedirectResponse(
             url=f"/sirius.achievements/users/{id}?toast_msg=Нельзя удалить самого себя&toast_type=error",
             status_code=302

@@ -2,7 +2,7 @@ from fastapi import Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, asc, desc
-from sqlalchemy.orm import selectinload  # <-- ВАЖНО: Импорт для подгрузки связей
+from sqlalchemy.orm import selectinload
 from typing import Optional
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.achievement import Achievement
@@ -11,6 +11,7 @@ from app.models.enums import UserRole, AchievementStatus
 from app.services.admin.achievement_service import AchievementService
 from app.repositories.admin.achievement_repository import AchievementRepository
 from app.infrastructure.tranaslations import TranslationManager
+from app.security.csrf import validate_csrf
 
 router = guard_router
 
@@ -19,16 +20,27 @@ def get_achievement_service(db: AsyncSession = Depends(get_db)):
     return AchievementService(AchievementRepository(db))
 
 
-def check_access(request: Request):
-    role = request.session.get('auth_role')
-    if role not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
+# ИСПРАВЛЕНО: Переписано на async с запросом в БД
+async def check_access(request: Request, db: AsyncSession):
+    user_id = request.session.get('auth_id')
+    if not user_id:
+        raise HTTPException(status_code=403, detail="Not authenticated")
+
+    user = await db.get(Users, user_id)
+
+    if not user:
+        raise HTTPException(status_code=403, detail="User not found")
+
+    if user.role not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
         raise HTTPException(status_code=403, detail="Access denied")
 
 
 @router.get('/pages/search', response_class=JSONResponse, name='admin.pages.search_api')
 async def search_documents(request: Request, query: str, status: Optional[str] = None,
                            db: AsyncSession = Depends(get_db)):
-    check_access(request)
+    # ИСПРАВЛЕНО: await и передача db
+    await check_access(request, db)
+
     if not query: return []
 
     stmt = select(Achievement).options(selectinload(Achievement.user)).join(Users)
@@ -48,7 +60,8 @@ async def search_documents(request: Request, query: str, status: Optional[str] =
 @router.get('/pages', response_class=HTMLResponse, name="admin.pages.index")
 async def index(request: Request, query: Optional[str] = "", status: Optional[str] = None,
                 sort: Optional[str] = "created_at", order: Optional[str] = "desc", db: AsyncSession = Depends(get_db)):
-    check_access(request)
+    # ИСПРАВЛЕНО: await и передача db
+    await check_access(request, db)
 
     stmt = select(Achievement).options(selectinload(Achievement.user)).join(Users)
 
@@ -82,9 +95,17 @@ async def index(request: Request, query: Optional[str] = "", status: Optional[st
                                                            'current_order': order})
 
 
-@router.post('/pages/{id}/delete', name='admin.pages.delete')
-async def delete_document(id: int, request: Request, service: AchievementService = Depends(get_achievement_service)):
-    check_access(request)
+# ДОБАВЛЕНО: Защита CSRF и зависимость db
+@router.post('/pages/{id}/delete', name='admin.pages.delete', dependencies=[Depends(validate_csrf)])
+async def delete_document(
+        id: int,
+        request: Request,
+        service: AchievementService = Depends(get_achievement_service),
+        db: AsyncSession = Depends(get_db)  # ИСПРАВЛЕНО: Добавлен db
+):
+    # ИСПРАВЛЕНО: await и передача db
+    await check_access(request, db)
+
     user_id = request.session['auth_id']
     user_role = request.session.get('auth_role')
 

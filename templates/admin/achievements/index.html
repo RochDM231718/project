@@ -102,7 +102,12 @@
                             {% else %}<span class="text-yellow-600 font-bold bg-yellow-50 px-2 py-1 rounded-full text-xs">На проверке</span>{% endif %}
                         </td>
                         <td class="px-6 py-4 font-bold text-indigo-600">{{ item.points }}</td>
-                        <td class="px-6 py-4 text-right"><form action="/sirius.achievements/achievements/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Удалить?');"><button class="text-red-500 hover:underline">Удалить</button></form></td>
+                        <td class="px-6 py-4 text-right">
+                            <form action="/sirius.achievements/achievements/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Удалить?');">
+                                <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+                                <button class="text-red-500 hover:underline">Удалить</button>
+                            </form>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

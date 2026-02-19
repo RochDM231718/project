@@ -6,39 +6,44 @@ from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta
 import json
 
+from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.enums import AchievementStatus, UserRole, UserStatus
+# Импортируем из deps, чтобы избежать Circular Import
+from app.routers.admin.deps import get_current_user
 
 router = guard_router
 
 
 @router.get('/dashboard', response_class=HTMLResponse, name='admin.dashboard.index')
 async def index(request: Request, period: str = 'all', db: AsyncSession = Depends(get_db)):
-    user_id = request.session.get('auth_id')
-
-    if not user_id:
-        return RedirectResponse(url='/admin/login', status_code=302)
-
-    user = await db.get(Users, user_id)
+    # 1. Получаем пользователя
+    user = await get_current_user(request, db)
 
     if not user:
-        return RedirectResponse(url='/admin/login', status_code=302)
+        return RedirectResponse(url='/sirius.achievements/login', status_code=302)
+
+    # 2. Безопасное определение роли (строковое сравнение)
+    # Это защищает от падения, если в Enum нет значения или оно отличается регистром
+    current_role = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
+
+    # Список ролей с доступом к админской статистике
+    admin_roles = ["MODERATOR", "SUPER_ADMIN", "ADMIN", "moderator", "super_admin", "admin"]
 
     # --- ПРОВЕРКА НА МОДЕРАЦИЮ ---
-    # Если пользователь не одобрен и он студент, показываем экран ожидания
-    if user.status == UserStatus.PENDING and user.role not in [UserRole.SUPER_ADMIN, UserRole.MODERATOR]:
+    # Если пользователь не одобрен и он не админ/модер, показываем заглушку
+    if user.status == UserStatus.PENDING and current_role not in admin_roles:
         return templates.TemplateResponse('dashboard/index.html', {
             'request': request,
             'user': user,
-            'pending_review': True,  # Флаг для шаблона
+            'pending_review': True,
             'stats': {},
             'period': period
         })
-    # -----------------------------
 
-    # 1. ОПРЕДЕЛЕНИЕ ПЕРИОДА
+    # 3. ОПРЕДЕЛЕНИЕ ПЕРИОДА ДЛЯ СТАТИСТИКИ
     now = datetime.now()
     start_date = None
 
@@ -62,7 +67,7 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
     stats = {}
 
     # --- ЛОГИКА АДМИНА/МОДЕРАТОРА ---
-    if user.role in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
+    if current_role in admin_roles:
         new_users = (await db.execute(
             select(func.count()).filter(Users.role == UserRole.STUDENT, Users.created_at >= start_date))).scalar()
 
@@ -126,31 +131,28 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
 
     # --- ЛОГИКА СТУДЕНТА ---
     else:
-        # Мои баллы за период
         my_points = (await db.execute(
             select(func.coalesce(func.sum(Achievement.points), 0))
             .filter(
-                Achievement.user_id == user_id,
+                Achievement.user_id == user.id,
                 Achievement.status == AchievementStatus.APPROVED,
                 Achievement.updated_at >= start_date
             )
         )).scalar()
 
-        # Статистика документов за период
         doc_stats = (await db.execute(
             select(
-                func.count().filter(Achievement.user_id == user_id, Achievement.created_at >= start_date).label(
+                func.count().filter(Achievement.user_id == user.id, Achievement.created_at >= start_date).label(
                     'total'),
-                func.count().filter(Achievement.user_id == user_id, Achievement.status == AchievementStatus.PENDING,
+                func.count().filter(Achievement.user_id == user.id, Achievement.status == AchievementStatus.PENDING,
                                     Achievement.created_at >= start_date).label('pending'),
-                func.count().filter(Achievement.user_id == user_id, Achievement.status == AchievementStatus.APPROVED,
+                func.count().filter(Achievement.user_id == user.id, Achievement.status == AchievementStatus.APPROVED,
                                     Achievement.updated_at >= start_date).label('approved'),
-                func.count().filter(Achievement.user_id == user_id, Achievement.status == AchievementStatus.REJECTED,
+                func.count().filter(Achievement.user_id == user.id, Achievement.status == AchievementStatus.REJECTED,
                                     Achievement.updated_at >= start_date).label('rejected')
             )
         )).first()
 
-        # Ранк за период
         subquery_points = (
             select(Achievement.user_id, func.sum(Achievement.points).label('total_points'))
             .filter(
@@ -168,19 +170,17 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
         else:
             my_rank = 0
 
-        # Последние загрузки
         recent_docs = (await db.execute(
             select(Achievement)
-            .filter(Achievement.user_id == user_id, Achievement.created_at >= start_date)
+            .filter(Achievement.user_id == user.id, Achievement.created_at >= start_date)
             .order_by(Achievement.created_at.desc())
             .limit(5)
         )).scalars().all()
 
-        # График
         cat_stats = (await db.execute(
             select(Achievement.category, func.sum(Achievement.points))
             .filter(
-                Achievement.user_id == user_id,
+                Achievement.user_id == user.id,
                 Achievement.status == AchievementStatus.APPROVED,
                 Achievement.updated_at >= start_date
             )

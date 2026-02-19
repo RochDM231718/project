@@ -22,6 +22,8 @@
         {% endif %}
 
         <form action="{{ url_for('admin.auth.verify_code') }}" method="POST" class="space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+
             <div>
                 <input type="text" name="code" required placeholder="123456" maxlength="6" autofocus
                        class="w-full px-4 py-3 text-center text-3xl tracking-[0.5em] font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
@@ -33,6 +35,8 @@
         </form>
 
         <form action="{{ url_for('admin.auth.resend_code') }}" method="POST" id="resendForm" class="text-center">
+            <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+
             <button type="submit" id="resendBtn" disabled
                     class="text-sm text-gray-400 cursor-not-allowed font-medium transition-colors">
                 Отправить код повторно <span id="timer">({{ seconds_left }})</span>

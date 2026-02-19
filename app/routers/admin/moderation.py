@@ -5,6 +5,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 import math
 
+from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.repositories.admin.user_repository import UserRepository
 from app.repositories.admin.achievement_repository import AchievementRepository
@@ -27,18 +28,28 @@ def get_achievement_service(db: AsyncSession = Depends(get_db)):
     return AchievementService(AchievementRepository(db))
 
 
-def check_moderator(request: Request):
-    if request.session.get('auth_role') not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
-        # Разрешаем админам тоже, если в Enum значение отличается от строки в сессии (на всякий случай)
-        # Лучше проверить по строкам, если есть сомнения в регистрах
-        role = request.session.get('auth_role')
-        if str(role).upper() not in ['MODERATOR', 'SUPER_ADMIN']:
-             raise HTTPException(status_code=403, detail="Access denied")
+# ИСПРАВЛЕНО: Асинхронная проверка через БД
+async def check_moderator(request: Request, db: AsyncSession):
+    user_id = request.session.get('auth_id')
+    if not user_id:
+        raise HTTPException(status_code=403, detail="Not authenticated")
+
+    # Получаем свежие данные пользователя
+    user = await db.get(Users, user_id)
+
+    if not user:
+        raise HTTPException(status_code=403, detail="User not found")
+
+    # Проверяем роль
+    if user.role not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
+        raise HTTPException(status_code=403, detail="Access denied")
 
 
 @router.get('/moderation/users', response_class=HTMLResponse, name='admin.moderation.users')
 async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
-    check_moderator(request)
+    # ИСПРАВЛЕНО: await и передача db
+    await check_moderator(request, db)
+
     user = await db.get(Users, request.session.get('auth_id'))
 
     stmt = select(Users).filter(Users.status == UserStatus.PENDING).order_by(Users.id.desc())
@@ -52,9 +63,16 @@ async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
     })
 
 
-@router.post('/moderation/users/{id}/approve', name='admin.moderation.users.approve')
-async def approve_user(id: int, request: Request, service: UserService = Depends(get_user_service)):
-    check_moderator(request)
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/moderation/users/{id}/approve', name='admin.moderation.users.approve', dependencies=[Depends(validate_csrf)])
+async def approve_user(
+        id: int,
+        request: Request,
+        service: UserService = Depends(get_user_service),
+        db: AsyncSession = Depends(get_db)
+):
+    await check_moderator(request, db)
+
     # При одобрении повышаем роль до STUDENT (в базе это "STUDENT")
     await service.repository.update(id, {
         "status": UserStatus.ACTIVE,
@@ -67,9 +85,16 @@ async def approve_user(id: int, request: Request, service: UserService = Depends
     )
 
 
-@router.post('/moderation/users/{id}/reject', name='admin.moderation.users.reject')
-async def reject_user(id: int, request: Request, service: UserService = Depends(get_user_service)):
-    check_moderator(request)
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/moderation/users/{id}/reject', name='admin.moderation.users.reject', dependencies=[Depends(validate_csrf)])
+async def reject_user(
+        id: int,
+        request: Request,
+        service: UserService = Depends(get_user_service),
+        db: AsyncSession = Depends(get_db)
+):
+    await check_moderator(request, db)
+
     await service.repository.update(id, {"status": UserStatus.REJECTED})
     return RedirectResponse(
         url=request.url_for('admin.moderation.users').include_query_params(toast_msg="Пользователь отклонен",
@@ -80,7 +105,8 @@ async def reject_user(id: int, request: Request, service: UserService = Depends(
 
 @router.get('/moderation/achievements', response_class=HTMLResponse, name='admin.moderation.achievements')
 async def achievements_list(request: Request, page: int = Query(1, ge=1), db: AsyncSession = Depends(get_db)):
-    check_moderator(request)
+    await check_moderator(request, db)
+
     user = await db.get(Users, request.session.get('auth_id'))
 
     limit = 10
@@ -103,7 +129,7 @@ async def achievements_list(request: Request, page: int = Query(1, ge=1), db: As
     return templates.TemplateResponse('moderation/achievements.html', {
         'request': request,
         'achievements': achievements,
-        'total_pending': total_pending, # [FIX] Передаем переменную в шаблон
+        'total_pending': total_pending,
         'stats': {"pending": total_pending, "approved": 0},
         'page': page,
         'total_pages': math.ceil(total_pending / limit) if total_pending > 0 else 1,
@@ -111,12 +137,13 @@ async def achievements_list(request: Request, page: int = Query(1, ge=1), db: As
     })
 
 
-@router.post('/moderation/achievements/{id}', name='admin.moderation.achievements.update')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/moderation/achievements/{id}', name='admin.moderation.achievements.update', dependencies=[Depends(validate_csrf)])
 async def update_achievement_status(
         id: int, request: Request, status: str = Form(...), rejection_reason: str = Form(None),
         db: AsyncSession = Depends(get_db)
 ):
-    check_moderator(request)
+    await check_moderator(request, db)
 
     stmt = select(Achievement).where(Achievement.id == id)
     achievement = (await db.execute(stmt)).scalars().first()

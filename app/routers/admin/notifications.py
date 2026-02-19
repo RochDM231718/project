@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update
 
+from app.security.csrf import validate_csrf
 # guard_router уже содержит префикс '/admin' и проверку авторизации
 from app.routers.admin.admin import guard_router, get_db
 from app.models.notification import Notification
@@ -48,7 +49,8 @@ async def get_unread_count(request: Request, db: AsyncSession = Depends(get_db))
     return JSONResponse({"count": count, "notifications": data})
 
 
-@router.post('/api/notifications/mark-read')
+# ДОБАВЛЕНО: Защита CSRF
+@router.post('/api/notifications/mark-read', dependencies=[Depends(validate_csrf)])
 async def mark_all_read(request: Request, db: AsyncSession = Depends(get_db)):
     """
     Помечает все уведомления пользователя как прочитанные.
