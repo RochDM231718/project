@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
 import logging
+import secrets
 from dotenv import load_dotenv
 
 from app.infrastructure.database import engine, Base
@@ -45,12 +46,19 @@ async def init_tables():
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+ENV = os.getenv("ENV", "development")
+IS_DEBUG = str(os.getenv("DEBUG", "False")).lower() in ("true", "1", "yes")
+
+if ENV == "production":
+    IS_DEBUG = False
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY or SECRET_KEY == "supersecretkey123":
-    if os.getenv("ENV") == "production":
+    if ENV == "production":
         raise ValueError("КРИТИЧЕСКАЯ ОШИБКА: Не установлен безопасный SECRET_KEY в переменной окружения!")
     else:
-        logger.warning("ПРЕДУПРЕЖДЕНИЕ: Используется небезопасный SECRET_KEY!")
+        logger.warning("ПРЕДУПРЕЖДЕНИЕ: Не установлен SECRET_KEY! Сгенерирован временный случайный ключ для разработки.")
+        SECRET_KEY = secrets.token_urlsafe(32)
 
 app.add_middleware(CSRFContextMiddleware)
 
@@ -87,9 +95,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global error: {exc}", exc_info=True)
 
-    is_debug = str(os.getenv("DEBUG", "False")).lower() in ("true", "1", "yes")
-
-    error_msg = str(exc) if is_debug else "Внутренняя ошибка сервера"
+    error_msg = str(exc) if IS_DEBUG else "Внутренняя ошибка сервера"
 
     return templates.TemplateResponse("errors/500.html", {
         "request": request,
@@ -105,4 +111,4 @@ async def root(request: Request):
 
 @app.get("/admin")
 async def admin_root(request: Request):
-    return RedirectResponse(url=request.url_for('admin.dashboard.index'))
+    return RedirectResponse(url=request.url_for('admin.dashboard.index'))x

@@ -11,7 +11,7 @@ from app.repositories.admin.user_token_repository import UserTokenRepository
 from app.schemas.admin.user_tokens import UserTokenCreate
 from app.schemas.admin.auth import UserRegister
 from app.services.admin.user_token_service import UserTokenService
-from app.infrastructure.jwt_handler import create_access_token, create_refresh_token, refresh_access_token
+from app.infrastructure.jwt_handler import create_access_token, create_refresh_token, verify_token
 import os
 import structlog
 from datetime import datetime, timedelta
@@ -114,6 +114,28 @@ class AuthService:
                 "first_name": user.first_name,
                 "last_name": user.last_name
             }
+        }
+
+    async def api_refresh_token(self, refresh_token: str):
+        payload = verify_token(refresh_token, refresh=True)
+        if not payload or payload.get('type') != "refresh":
+            return None
+
+        user_id = payload.get("sub")
+        stmt = select(Users).filter(Users.id == int(user_id))
+        result = await self.db.execute(stmt)
+        user = result.scalars().first()
+
+        if not user or user.status == UserStatus.REJECTED or not user.is_active:
+            logger.warning("Attempt to refresh token for inactive/blocked user", user_id=user_id)
+            return None
+
+        token_data = {"sub": str(user.id), "role": user.role.value}
+        new_access = create_access_token(token_data)
+
+        return {
+            "access_token": new_access,
+            "token_type": "bearer"
         }
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:

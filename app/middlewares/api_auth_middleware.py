@@ -3,9 +3,8 @@ from sqlalchemy import select
 from app.infrastructure.jwt_handler import verify_token
 from app.infrastructure.tranaslations import TranslationManager
 from app.models.user import Users
-# ИЗМЕНЕНИЕ: Импортируем db_instance вместо get_database_connection
 from app.infrastructure.database.connection import db_instance
-from app.models.enums import UserRole
+from app.models.enums import UserRole, UserStatus
 
 translation_manager = TranslationManager()
 
@@ -17,7 +16,8 @@ async def auth(request: Request):
 
     token = auth_header.split(" ")[1]
     payload = verify_token(token)
-    if not payload:
+
+    if not payload or payload.get("type") != "access":
         raise HTTPException(status_code=401, detail=translation_manager.gettext('api.auth.invalid_token'))
 
     async with db_instance.session_factory() as db:
@@ -26,7 +26,7 @@ async def auth(request: Request):
         result = await db.execute(stmt)
         user = result.scalars().first()
 
-        if not user:
+        if not user or user.status == UserStatus.REJECTED or not user.is_active:
             raise HTTPException(status_code=401, detail=translation_manager.gettext('api.auth.user_not_found'))
 
     request.state.user = user
