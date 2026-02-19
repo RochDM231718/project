@@ -2,8 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from app.security.csrf import get_csrf_token
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware  # <--- Добавлен импорт
-from fastapi.middleware.trustedhost import TrustedHostMiddleware  # <--- Добавлен импорт
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
@@ -12,7 +12,6 @@ from dotenv import load_dotenv
 
 from app.infrastructure.database import engine, Base
 
-# Импорт роутеров
 from app.routers.admin.auth import router as admin_auth_router
 from app.routers.admin.dashboard import router as admin_dashboard_router
 from app.routers.admin.users import router as admin_users_router
@@ -27,18 +26,12 @@ from app.routers.admin.admin import templates
 
 load_dotenv()
 
-# Настройка логгера
 logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI(root_path=os.getenv("ROOT_PATH", ""))
 
-
-# --- MIDDLEWARES ---
-
 class CSRFContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # Гарантируем, что CSRF токен есть в сессии.
-        # Шаблоны будут брать его через {{ request.session.csrf_token }}
         get_csrf_token(request)
         response = await call_next(request)
         return response
@@ -52,8 +45,6 @@ async def init_tables():
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# --- КОНФИГУРАЦИЯ БЕЗОПАСНОСТИ ---
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY or SECRET_KEY == "supersecretkey123":
     if os.getenv("ENV") == "production":
@@ -61,20 +52,13 @@ if not SECRET_KEY or SECRET_KEY == "supersecretkey123":
     else:
         logger.warning("ПРЕДУПРЕЖДЕНИЕ: Используется небезопасный SECRET_KEY!")
 
-# ВНИМАНИЕ: Порядок добавления middleware важен (снизу вверх по исполнению).
-# Поток запроса: TrustedHost -> Session -> CSRF -> Router
-
-# 3. Внутренний слой: CSRF (требует наличия сессии)
 app.add_middleware(CSRFContextMiddleware)
 
-# 2. Средний слой: Сессии
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-# 1. Внешний слой: Проверка хоста (защита от Host Header Injection)
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 
-# --- ПОДКЛЮЧЕНИЕ РОУТЕРОВ ---
 app.include_router(admin_common_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_dashboard_router)
@@ -87,7 +71,6 @@ app.include_router(admin_notifications_router)
 app.include_router(admin_leaderboard_router)
 
 
-# --- ОБРАБОТЧИКИ ОШИБОК ---
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -104,7 +87,6 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global error: {exc}", exc_info=True)
 
-    # Безопасная проверка режима отладки
     is_debug = str(os.getenv("DEBUG", "False")).lower() in ("true", "1", "yes")
 
     error_msg = str(exc) if is_debug else "Внутренняя ошибка сервера"

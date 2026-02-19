@@ -15,12 +15,11 @@ from app.infrastructure.jwt_handler import create_access_token, create_refresh_t
 import os
 import structlog
 from datetime import datetime, timedelta
-import redis.asyncio as aioredis  # Добавлен импорт redis
+import redis.asyncio as aioredis
 
 logger = structlog.get_logger()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Инициализация Redis для Rate Limiting
 redis_client = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
 
 
@@ -37,7 +36,6 @@ class AuthService:
         self.user_token_service = user_token_service
 
     async def authenticate(self, email: str, password: str, role: str = None, ip: str = "unknown"):
-        # Логика Rate Limiting (защита от брутфорса без DoS-уязвимости базы)
         rl_key = f"login_attempts:{ip}:{email}"
         attempts = await redis_client.get(rl_key)
 
@@ -46,10 +44,8 @@ class AuthService:
             minutes = int(ttl / 60) + 1
             raise UserBlockedException(f"Слишком много попыток. Повторите через {minutes} мин.")
 
-        # Фиктивная задержка для защиты от User Enumeration
         user = await self.repository.get_by_email(email)
         if not user:
-            # Защита от атаки по времени: имитируем работу bcrypt даже если пользователя нет
             pwd_context.hash(password)
             logger.warning("Login failed: user not found", email=email)
             await self._record_failed_attempt(rl_key)
@@ -64,16 +60,13 @@ class AuthService:
             await self._record_failed_attempt(rl_key)
             return None
 
-        # Успешный вход: очищаем счетчик неудачных попыток
         await redis_client.delete(rl_key)
 
         logger.info("User logged in", user_id=user.id, email=user.email)
         return user
 
     async def _record_failed_attempt(self, key: str):
-        """Вспомогательный метод для увеличения счетчика попыток в Redis"""
         await redis_client.incr(key)
-        # Устанавливаем блокировку на 15 минут (900 секунд), если ключ только что создан
         if await redis_client.ttl(key) == -1:
             await redis_client.expire(key, 900)
 

@@ -16,18 +16,12 @@ class AchievementRepository(BaseCrudRepository):
             level: str = "",
             sort_by: str = "newest"
     ):
-        """
-        Получение списка достижений с фильтрацией и сортировкой.
-        """
-        # Начинаем запрос с подгрузкой данных пользователя (join)
+
         stmt = select(self.model).options(selectinload(self.model.user))
 
-        # Поиск по названию (регистронезависимый)
         if search:
             stmt = stmt.filter(self.model.title.ilike(f"%{search}%"))
 
-        # Фильтры по статусу, категории и уровню
-        # Проверяем, что значение не пустое и не равно 'all' (значение по умолчанию в фильтрах)
         if status and status != "all":
             stmt = stmt.filter(self.model.status == status)
 
@@ -37,7 +31,6 @@ class AchievementRepository(BaseCrudRepository):
         if level and level != "all":
             stmt = stmt.filter(self.model.level == level)
 
-        # Сортировка
         if sort_by == "oldest":
             stmt = stmt.order_by(self.model.created_at.asc())
         elif sort_by == "level":
@@ -45,7 +38,6 @@ class AchievementRepository(BaseCrudRepository):
         elif sort_by == "category":
             stmt = stmt.order_by(self.model.category.asc())
         else:
-            # По умолчанию: сначала новые
             stmt = stmt.order_by(self.model.created_at.desc())
 
         result = await self.db.execute(stmt)

@@ -76,10 +76,8 @@ function imageCropper() {
                 reader.onload = (event) => {
                     const imageElement = document.getElementById('imageToCrop');
 
-                    // 1. Сбрасываем предыдущий src, чтобы корректно отловить ошибку загрузки
                     imageElement.src = '';
 
-                    // 2. Навешиваем обработчик успешной загрузки
                     imageElement.onload = () => {
                         this.showModal = true;
                         this.$nextTick(() => {
@@ -91,30 +89,27 @@ function imageCropper() {
                         });
                     };
 
-                    // 3. Навешиваем обработчик ошибки (если это txt переименованный в jpg)
                     imageElement.onerror = () => {
                         alert("Ошибка: Файл поврежден или не является изображением.");
-                        e.target.value = ''; // Сбрасываем input
+                        e.target.value = '';
                     };
 
-                    // 4. Устанавливаем src
                     imageElement.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
             } else {
-                this.croppedBlob = null; // Если PDF, не трогаем
+                this.croppedBlob = null;
             }
         },
         cancelCrop() {
             this.showModal = false;
-            document.getElementById('fileInput').value = ''; // Сброс инпута
+            document.getElementById('fileInput').value = '';
             if (this.cropper) {
                 this.cropper.destroy();
                 this.cropper = null;
             }
         },
         confirmCrop() {
-            // Защита: если кроппер не инициализировался или картинка битая
             if (!this.cropper) return;
 
             const canvas = this.cropper.getCroppedCanvas();
@@ -132,20 +127,16 @@ function imageCropper() {
             const form = e.target;
             const formData = new FormData(form);
 
-            // Если есть обрезанная картинка, подменяем файл в форме
             if (this.croppedBlob) {
                 const originalFile = document.getElementById('fileInput').files[0];
                 formData.set('file', this.croppedBlob, originalFile.name);
             }
 
-            // Отправляем через fetch
             fetch(form.action, { method: 'POST', body: formData })
                 .then(response => {
-                    // Обработка редиректа от сервера (успех или ошибка)
                     if (response.redirected) {
                         window.location.href = response.url;
                     } else {
-                        // Если сервер вернул HTML (например, страницу с ошибкой 403/500)
                         return response.text().then(html => {
                             document.open();
                             document.write(html);

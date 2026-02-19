@@ -5,8 +5,6 @@ from app.infrastructure.tranaslations import current_locale
 
 class LocaleMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # ЖЕСТКО ЗАДАЕМ РУССКИЙ ЯЗЫК
-        # Игнорируем сессию и браузер, всегда 'ru'
         locale = 'ru'
         request.session['locale'] = locale
 

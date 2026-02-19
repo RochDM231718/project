@@ -24,7 +24,6 @@ class ResetPasswordSchema(BaseModel):
             raise ValueError("Пароли не совпадают.")
         return self
 
-# ВАЖНО: Класс называется UserRegister
 class UserRegister(BaseModel):
     first_name: str = Field(..., min_length=2)
     last_name: str = Field(..., min_length=2)

@@ -8,12 +8,10 @@ class UserRepository(CrudRepository):
     def __init__(self, db: AsyncSession):
         super().__init__(db, Users)
 
-    # --- ДОБАВЛЕН МЕТОД ---
     async def get_by_email(self, email: str):
         stmt = select(self.model).where(self.model.email == email)
         result = await self.db.execute(stmt)
         return result.scalars().first()
-    # ----------------------
 
     async def get(self, filters: dict = None, sort_by: str = 'id', sort_order: str = 'desc'):
         stmt = select(self.model)

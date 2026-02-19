@@ -13,10 +13,8 @@ class UserTokenService:
         self.repo = repo
 
     async def create(self, data: UserTokenCreate):
-        # Генерируем 6-значный цифровой код
         token = ''.join(secrets.choice(string.digits) for _ in range(6))
 
-        # Код живет 1 час
         expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
 
         return await self.repo.create({
@@ -41,11 +39,7 @@ class UserTokenService:
         return user_token
 
     async def get_time_until_next_retry(self, user_id: int) -> int:
-        """
-        Проверяет, сколько секунд осталось до возможности повторной отправки.
-        Возвращает 0, если отправка разрешена.
-        """
-        # Берем самый свежий токен сброса пароля для этого пользователя
+
         stmt = select(self.repo.model).where(
             self.repo.model.user_id == user_id,
             self.repo.model.token_type == UserTokenType.RESET_PASSWORD.value
@@ -57,13 +51,11 @@ class UserTokenService:
         if not last_token:
             return 0
 
-        # Приводим время к UTC для корректного сравнения
         last_created = last_token.created_at.replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
 
         diff = (now - last_created).total_seconds()
 
-        # Если прошло меньше 60 секунд
         if diff < 60:
             return int(60 - diff)
 

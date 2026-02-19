@@ -1,5 +1,4 @@
 services:
-  # Сервис 1: База данных PostgreSQL
   db:
     image: postgres:15-alpine
     container_name: sirius_db
@@ -14,7 +13,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Сервис 2: Redis для защиты авторизации (Rate Limiting)
   redis:
     image: redis:7-alpine
     container_name: sirius_redis
@@ -22,7 +20,6 @@ services:
     ports:
       - "6379:6379"
 
-  # Сервис 3: Ваше приложение (FastAPI)
   web:
     build: .
     container_name: sirius_app
@@ -32,7 +29,6 @@ services:
     depends_on:
       - db
       - redis
-    # Берем настройки из файла .env, но ПЕРЕОПРЕДЕЛЯЕМ хост базы для Докера
     env_file:
       - .env
     environment:
@@ -40,10 +36,10 @@ services:
       - DB_USERNAME=sirius_user
       - DB_PASSWORD=sirius_password
       - DB_NAME=sirius_db
-      - REDIS_URL=redis://redis:6379  # <-- Указываем путь к контейнеру Redis
+      - REDIS_URL=redis://redis:6379
       - TZ=Europe/Moscow
     volumes:
-      - .:/app  # Чтобы изменения в коде применялись сразу
+      - .:/app
 
 volumes:
   postgres_data:

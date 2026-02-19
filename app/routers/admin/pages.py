@@ -20,7 +20,6 @@ def get_achievement_service(db: AsyncSession = Depends(get_db)):
     return AchievementService(AchievementRepository(db))
 
 
-# ИСПРАВЛЕНО: Переписано на async с запросом в БД
 async def check_access(request: Request, db: AsyncSession):
     user_id = request.session.get('auth_id')
     if not user_id:
@@ -38,7 +37,6 @@ async def check_access(request: Request, db: AsyncSession):
 @router.get('/pages/search', response_class=JSONResponse, name='admin.pages.search_api')
 async def search_documents(request: Request, query: str, status: Optional[str] = None,
                            db: AsyncSession = Depends(get_db)):
-    # ИСПРАВЛЕНО: await и передача db
     await check_access(request, db)
 
     if not query: return []
@@ -60,7 +58,6 @@ async def search_documents(request: Request, query: str, status: Optional[str] =
 @router.get('/pages', response_class=HTMLResponse, name="admin.pages.index")
 async def index(request: Request, query: Optional[str] = "", status: Optional[str] = None,
                 sort: Optional[str] = "created_at", order: Optional[str] = "desc", db: AsyncSession = Depends(get_db)):
-    # ИСПРАВЛЕНО: await и передача db
     await check_access(request, db)
 
     stmt = select(Achievement).options(selectinload(Achievement.user)).join(Users)
@@ -95,15 +92,13 @@ async def index(request: Request, query: Optional[str] = "", status: Optional[st
                                                            'current_order': order})
 
 
-# ДОБАВЛЕНО: Защита CSRF и зависимость db
 @router.post('/pages/{id}/delete', name='admin.pages.delete', dependencies=[Depends(validate_csrf)])
 async def delete_document(
         id: int,
         request: Request,
         service: AchievementService = Depends(get_achievement_service),
-        db: AsyncSession = Depends(get_db)  # ИСПРАВЛЕНО: Добавлен db
+        db: AsyncSession = Depends(get_db)
 ):
-    # ИСПРАВЛЕНО: await и передача db
     await check_access(request, db)
 
     user_id = request.session['auth_id']

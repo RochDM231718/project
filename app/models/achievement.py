@@ -16,7 +16,6 @@ class Achievement(Base):
     description = Column(Text, nullable=True)
     file_path = Column(String, nullable=False)
 
-    # Новые поля
     category = Column(Enum(AchievementCategory), default=AchievementCategory.OTHER, nullable=False)
     level = Column(Enum(AchievementLevel), default=AchievementLevel.SCHOOL, nullable=False)
     points = Column(Integer, default=0)  # Баллы за достижение
@@ -27,5 +26,4 @@ class Achievement(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Связи
     user = relationship("Users", back_populates="achievements")

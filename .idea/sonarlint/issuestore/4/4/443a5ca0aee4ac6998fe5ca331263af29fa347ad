@@ -1,8 +1,0 @@
-
-~python:S1192Ğ"YDefine a constant instead of duplicating this literal 'auth/reset-password.html' 3 times.(ûË£Åşÿÿÿÿ8ÔÖ‚­Å3
-€python:S1192”"`Define a constant instead of duplicating this literal 'admin.auth.forgot_password_page' 4 times.(´¸«—8ÔÖ‚­Å3
-zpython:S1192"VDefine a constant instead of duplicating this literal 'admin.dashboard.index' 4 times.(Ç‰á©ûÿÿÿÿ8ÔÖ‚­Å3
-rpython:S1192I"SDefine a constant instead of duplicating this literal 'auth/register.html' 3 times.(óÙ¹µ8ÔÖ‚­Å3
-qpython:S1192"RDefine a constant instead of duplicating this literal 'auth/sign-in.html' 4 times.(ˆ»ëı8ÔÖ‚­Å3
-Qpython:S1481«"1Replace the unused local variable "msg" with "_".(·™€Ğ8ÕÖ‚­Å3
-Jpython:S1481Â"%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ8ÕÖ‚­Å3

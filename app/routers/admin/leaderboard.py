@@ -15,7 +15,6 @@ router = guard_router
 @router.get('/leaderboard', response_class=HTMLResponse, name='admin.leaderboard.index')
 async def index(request: Request, db: AsyncSession = Depends(get_db)):
     user_id = request.session.get('auth_id')
-    # БЕЗОПАСНОСТЬ: Получаем пользователя из БД
     user = await db.get(Users, user_id)
 
     stmt = (

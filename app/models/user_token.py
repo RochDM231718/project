@@ -13,5 +13,4 @@ class UserToken(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
-    # ВАЖНО: Используем back_populates вместо backref, чтобы не было дублирования
     user = relationship("Users", back_populates="tokens")

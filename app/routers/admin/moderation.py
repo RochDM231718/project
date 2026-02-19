@@ -28,26 +28,22 @@ def get_achievement_service(db: AsyncSession = Depends(get_db)):
     return AchievementService(AchievementRepository(db))
 
 
-# ИСПРАВЛЕНО: Асинхронная проверка через БД
 async def check_moderator(request: Request, db: AsyncSession):
     user_id = request.session.get('auth_id')
     if not user_id:
         raise HTTPException(status_code=403, detail="Not authenticated")
 
-    # Получаем свежие данные пользователя
     user = await db.get(Users, user_id)
 
     if not user:
         raise HTTPException(status_code=403, detail="User not found")
 
-    # Проверяем роль
     if user.role not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
         raise HTTPException(status_code=403, detail="Access denied")
 
 
 @router.get('/moderation/users', response_class=HTMLResponse, name='admin.moderation.users')
 async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
-    # ИСПРАВЛЕНО: await и передача db
     await check_moderator(request, db)
 
     user = await db.get(Users, request.session.get('auth_id'))
@@ -63,7 +59,6 @@ async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
     })
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/moderation/users/{id}/approve', name='admin.moderation.users.approve', dependencies=[Depends(validate_csrf)])
 async def approve_user(
         id: int,
@@ -73,7 +68,6 @@ async def approve_user(
 ):
     await check_moderator(request, db)
 
-    # При одобрении повышаем роль до STUDENT (в базе это "STUDENT")
     await service.repository.update(id, {
         "status": UserStatus.ACTIVE,
         "role": UserRole.STUDENT
@@ -85,7 +79,6 @@ async def approve_user(
     )
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/moderation/users/{id}/reject', name='admin.moderation.users.reject', dependencies=[Depends(validate_csrf)])
 async def reject_user(
         id: int,
@@ -119,7 +112,6 @@ async def achievements_list(request: Request, page: int = Query(1, ge=1), db: As
     total_pending = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar() or 0
     achievements = (await db.execute(stmt.offset(offset).limit(limit))).scalars().all()
 
-    # Расчет баллов для отображения
     for item in achievements:
         if item.level and item.category:
             item.projected_points = calculate_points(item.level.value, item.category.value)
@@ -137,7 +129,6 @@ async def achievements_list(request: Request, page: int = Query(1, ge=1), db: As
     })
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/moderation/achievements/{id}', name='admin.moderation.achievements.update', dependencies=[Depends(validate_csrf)])
 async def update_achievement_status(
         id: int, request: Request, status: str = Form(...), rejection_reason: str = Form(None),

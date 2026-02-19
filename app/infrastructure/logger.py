@@ -11,10 +11,7 @@ from logging.handlers import TimedRotatingFileHandler, QueueHandler, QueueListen
 from structlog.types import Processor
 
 
-# --- ФУНКЦИИ ХЭШИРОВАНИЯ И РОТАЦИИ ---
-
 def calculate_sha256(file_path: str) -> str:
-    """Вычисляет SHA256 хэш файла для защиты целостности."""
     sha256 = hashlib.sha256()
     with open(file_path, 'rb') as f:
         while chunk := f.read(8192):
@@ -23,9 +20,6 @@ def calculate_sha256(file_path: str) -> str:
 
 
 def archive_and_hash_rotator(source: str, dest: str):
-    """
-    Ротатор: сжимает лог в .gz, считает хэш и удаляет оригинал.
-    """
     dest_gz = dest + ".gz"
     try:
         with open(source, 'rb') as f_in:
@@ -42,15 +36,7 @@ def archive_and_hash_rotator(source: str, dest: str):
     except Exception as e:
         sys.stderr.write(f"Error rotating logs: {e}\n")
 
-
-# --- НАСТРОЙКА ЛОГГЕРА ---
-
 def setup_logging(json_logs: bool = False, log_level: str = "INFO", log_file: str = "app.log"):
-    """
-    Настраивает асинхронное (буферизированное) логирование с ротацией и хэшированием.
-    """
-
-    # 1. Процессоры Structlog
     shared_processors: list[Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_logger_name,
@@ -71,10 +57,8 @@ def setup_logging(json_logs: bool = False, log_level: str = "INFO", log_file: st
         cache_logger_on_first_use=True,
     )
 
-    # 2. Создаем "реальные" хендлеры (Консоль + Файл)
     handlers = []
 
-    # А. Консольный хендлер (Цветной или JSON)
     if json_logs:
         console_renderer = structlog.processors.JSONRenderer()
     else:
@@ -91,7 +75,6 @@ def setup_logging(json_logs: bool = False, log_level: str = "INFO", log_file: st
     console_handler.setFormatter(console_formatter)
     handlers.append(console_handler)
 
-    # Б. Файловый хендлер (Ротация + Хэширование)
     if log_file:
         file_handler = TimedRotatingFileHandler(
             log_file,
@@ -103,7 +86,6 @@ def setup_logging(json_logs: bool = False, log_level: str = "INFO", log_file: st
         file_handler.rotator = archive_and_hash_rotator
         file_handler.namer = lambda name: name
 
-        # В файл пишем без цветов, но структурно
         if json_logs:
             file_renderer = structlog.processors.JSONRenderer()
         else:
@@ -119,30 +101,21 @@ def setup_logging(json_logs: bool = False, log_level: str = "INFO", log_file: st
         file_handler.setFormatter(file_formatter)
         handlers.append(file_handler)
 
-    # 3. Настраиваем КЭШИРОВАНИЕ (QueueListener)
-    # Создаем очередь для логов
     log_queue = queue.Queue(-1)
 
-    # QueueHandler - это то, что мы добавим в логгер. Он просто кидает лог в очередь.
     queue_handler = QueueHandler(log_queue)
 
-    # QueueListener - это отдельный поток, который забирает из очереди и пишет в реальные хендлеры
     listener = QueueListener(log_queue, *handlers, respect_handler_level=True)
     listener.start()
 
-    # Останавливаем слушатель при выходе из приложения
     atexit.register(listener.stop)
 
-    # 4. Настраиваем корневой логгер
     root_logger = logging.getLogger()
-    root_logger.handlers = []  # Удаляем старые
+    root_logger.handlers = []
     root_logger.setLevel(log_level.upper())
 
-    # Добавляем только QueueHandler!
-    # Приложение -> QueueHandler -> Queue -> [QueueListener Thread] -> Console/File
     root_logger.addHandler(queue_handler)
 
-    # Перехват логов Uvicorn
     for _log in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
         logger = logging.getLogger(_log)
         logger.handlers = []

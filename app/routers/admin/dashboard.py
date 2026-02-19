@@ -11,7 +11,6 @@ from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.enums import AchievementStatus, UserRole, UserStatus
-# Импортируем из deps, чтобы избежать Circular Import
 from app.routers.admin.deps import get_current_user
 
 router = guard_router
@@ -19,21 +18,15 @@ router = guard_router
 
 @router.get('/dashboard', response_class=HTMLResponse, name='admin.dashboard.index')
 async def index(request: Request, period: str = 'all', db: AsyncSession = Depends(get_db)):
-    # 1. Получаем пользователя
     user = await get_current_user(request, db)
 
     if not user:
         return RedirectResponse(url='/sirius.achievements/login', status_code=302)
 
-    # 2. Безопасное определение роли (строковое сравнение)
-    # Это защищает от падения, если в Enum нет значения или оно отличается регистром
     current_role = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
 
-    # Список ролей с доступом к админской статистике
     admin_roles = ["MODERATOR", "SUPER_ADMIN", "ADMIN", "moderator", "super_admin", "admin"]
 
-    # --- ПРОВЕРКА НА МОДЕРАЦИЮ ---
-    # Если пользователь не одобрен и он не админ/модер, показываем заглушку
     if user.status == UserStatus.PENDING and current_role not in admin_roles:
         return templates.TemplateResponse('dashboard/index.html', {
             'request': request,
@@ -43,7 +36,6 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
             'period': period
         })
 
-    # 3. ОПРЕДЕЛЕНИЕ ПЕРИОДА ДЛЯ СТАТИСТИКИ
     now = datetime.now()
     start_date = None
 
@@ -66,7 +58,6 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
 
     stats = {}
 
-    # --- ЛОГИКА АДМИНА/МОДЕРАТОРА ---
     if current_role in admin_roles:
         new_users = (await db.execute(
             select(func.count()).filter(Users.role == UserRole.STUDENT, Users.created_at >= start_date))).scalar()
@@ -129,7 +120,6 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
             'chart_data': json.dumps(c_data)
         }
 
-    # --- ЛОГИКА СТУДЕНТА ---
     else:
         my_points = (await db.execute(
             select(func.coalesce(func.sum(Achievement.points), 0))

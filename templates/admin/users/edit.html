@@ -110,18 +110,16 @@
                 const url = URL.createObjectURL(file);
 
                 imageToCrop.src = url;
-                cropModal.classList.remove('hidden'); // Показываем модалку
+                cropModal.classList.remove('hidden');
 
                 if (cropper) {
                     cropper.destroy();
                 }
-                // Инициализация Cropper
                 cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1, // Квадратная обрезка для аватарки
+                    aspectRatio: 1,
                     viewMode: 1,
                 });
 
-                // Очищаем value, чтобы можно было выбрать тот же файл снова
                 // e.target.value = '';
             }
         });
@@ -129,7 +127,7 @@
         document.getElementById('cancelCrop').addEventListener('click', function() {
             cropModal.classList.add('hidden');
             if (cropper) cropper.destroy();
-            avatarInput.value = ''; // Сбрасываем выбор
+            avatarInput.value = '';
         });
 
         document.getElementById('cropButton').addEventListener('click', function() {
@@ -138,15 +136,12 @@
                     width: 300,
                     height: 300,
                 }).toBlob(function (blob) {
-                    // Создаем новый файл из blob
                     const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
 
-                    // Подменяем файл в input
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
                     avatarInput.files = dataTransfer.files;
 
-                    // Обновляем превью
                     const url = URL.createObjectURL(blob);
                     if (avatarPlaceholder) avatarPlaceholder.classList.add('hidden');
                     avatarPreview.classList.remove('hidden');

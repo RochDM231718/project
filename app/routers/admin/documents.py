@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse, FileResponse
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession  # Добавили правильный тип сессии
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.infrastructure.database import get_db
 from app.services.admin.achievement_service import AchievementService
 from app.repositories.admin.achievement_repository import AchievementRepository
@@ -26,19 +26,16 @@ async def index(
         sort_by: str = "newest",
         db: AsyncSession = Depends(get_db)  # AsyncSession
 ):
-    # ВАЖНО: Добавлен await
     user = await get_current_user(request, db)
 
     if not user:
         return RedirectResponse(url="/")
 
-    # Расширенный список ролей
     allowed_roles = [
         'admin', 'moderator', 'super_admin',
         'ADMIN', 'MODERATOR', 'SUPER_ADMIN'
     ]
 
-    # Приведение роли к строке для безопасности
     user_role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
 
     if user_role_str not in allowed_roles:
@@ -76,7 +73,6 @@ async def delete(
         db: AsyncSession = Depends(get_db),
         _=Depends(validate_csrf)
 ):
-    # ВАЖНО: Добавлен await
     user = await get_current_user(request, db)
     if not user:
         return RedirectResponse(url="/", status_code=303)
@@ -105,7 +101,6 @@ async def download_document(
         request: Request,
         db: AsyncSession = Depends(get_db)
 ):
-    # ВАЖНО: Добавлен await
     user = await get_current_user(request, db)
     if not user:
         raise HTTPException(status_code=401, detail="Не авторизован")

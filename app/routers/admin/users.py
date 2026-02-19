@@ -21,20 +21,17 @@ def get_service(db: AsyncSession = Depends(get_db)):
     return UserService(UserRepository(db))
 
 
-# Вспомогательная функция проверки прав
 async def check_admin_rights(request: Request, db: AsyncSession):
     user = await get_current_user(request, db)
     if not user:
         raise HTTPException(status_code=403, detail="Not authenticated")
 
-    # Разрешаем только SUPER_ADMIN и MODERATOR
     allowed_roles = [UserRole.SUPER_ADMIN, UserRole.MODERATOR]
     if user.role not in allowed_roles:
         raise HTTPException(status_code=403, detail="Access denied")
     return user
 
 
-# Иерархия ролей для защиты от эскалации привилегий
 ROLE_HIERARCHY = {
     UserRole.STUDENT: 1,
     UserRole.MODERATOR: 2,
@@ -42,7 +39,6 @@ ROLE_HIERARCHY = {
 }
 
 
-# --- API ЖИВОГО ПОИСКА ---
 @router.get('/api/users/search', response_class=JSONResponse)
 async def api_users_search(request: Request, q: str = Query(..., min_length=1), db: AsyncSession = Depends(get_db)):
     await check_admin_rights(request, db)
@@ -57,7 +53,6 @@ async def api_users_search(request: Request, q: str = Query(..., min_length=1), 
     return [{"value": u.email, "text": f"{u.first_name} {u.last_name} ({u.email})"} for u in users]
 
 
-# --- СПИСОК ПОЛЬЗОВАТЕЛЕЙ ---
 @router.get('/users', response_class=HTMLResponse, name='admin.users.index')
 async def index(
         request: Request,
@@ -106,7 +101,6 @@ async def index(
     })
 
 
-# --- ПРОСМОТР ПРОФИЛЯ ---
 @router.get('/users/{id}', response_class=HTMLResponse, name='admin.users.show')
 async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db)):
     current_user = await check_admin_rights(request, db)
@@ -154,7 +148,6 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
     })
 
 
-# --- ОБНОВЛЕНИЕ РОЛИ ---
 @router.post('/users/{id}/role', name='admin.users.update_role', dependencies=[Depends(validate_csrf)])
 async def update_user_role(
         id: int,
@@ -175,14 +168,11 @@ async def update_user_role(
     if not target_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # ЖЕСТКАЯ ПРОВЕРКА ИЕРАРХИИ (Исключение для SUPER_ADMIN)
     if current_user.role != UserRole.SUPER_ADMIN:
         current_level = ROLE_HIERARCHY.get(current_user.role, 0)
         target_level = ROLE_HIERARCHY.get(target_user.role, 0)
         new_role_level = ROLE_HIERARCHY.get(role, 0)
 
-        # Нельзя менять роль пользователю, чья роль выше или равна текущей
-        # Нельзя назначать роль выше или равную текущей
         if target_level >= current_level or new_role_level >= current_level:
             return RedirectResponse(
                 url=f"/sirius.achievements/users/{id}?toast_msg=У вас недостаточно прав для этого действия&toast_type=error",
@@ -197,7 +187,6 @@ async def update_user_role(
     )
 
 
-# --- УДАЛЕНИЕ ---
 @router.post('/users/{id}/delete', name='admin.users.delete', dependencies=[Depends(validate_csrf)])
 async def delete_user(
         id: int,

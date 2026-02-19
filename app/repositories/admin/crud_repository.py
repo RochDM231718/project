@@ -44,7 +44,6 @@ class CrudRepository(AbstractRepository):
             update_data = obj_in.dict(exclude_unset=True)
 
         for field, value in update_data.items():
-            # ИСПРАВЛЕНИЕ: Если значение - Enum, берем его строковое представление
             if isinstance(value, Enum):
                 value = value.value
 

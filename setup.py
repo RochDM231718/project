@@ -3,7 +3,6 @@ from passlib.context import CryptContext
 from sqlalchemy import select, text
 from app.infrastructure.database import engine, Base, async_session_maker
 
-# Import all models to ensure they are registered
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.notification import Notification
@@ -15,14 +14,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 async def init_db_and_create_admin():
     print("1. RESETTING DATABASE (PostgreSQL)...")
     async with engine.begin() as conn:
-        # Forcefully drop tables with CASCADE to handle foreign keys
         print("   -> Dropping existing tables (CASCADE)...")
-        # We drop known tables in specific order or just drop public schema if needed.
-        # For safety, let's drop specific tables with cascade.
         await conn.execute(text("DROP TABLE IF EXISTS notifications CASCADE;"))
         await conn.execute(text("DROP TABLE IF EXISTS achievements CASCADE;"))
         await conn.execute(text("DROP TABLE IF EXISTS users CASCADE;"))
-        # Drop the unexpected table mentioned in the error
         await conn.execute(text("DROP TABLE IF EXISTS user_tokens CASCADE;"))
 
         print("   -> Creating new tables...")

@@ -37,7 +37,6 @@ async def login(
         service: AuthService = Depends(get_service)
 ):
     try:
-        # Передаем IP клиента для Rate Limiting
         client_ip = request.client.host if request.client else "unknown"
         user = await service.authenticate(email, password, ip=client_ip)
 

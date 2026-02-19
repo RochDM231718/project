@@ -51,5 +51,4 @@ async def auth(request: Request):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             raise HTTPException(status_code=401, detail="Unauthorized")
 
-        # ИСПРАВЛЕНО: Редирект на новый путь
         raise HTTPException(status_code=302, headers={"Location": "/sirius.achievements/login"})

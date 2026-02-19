@@ -19,12 +19,10 @@ def get_service(db: AsyncSession = Depends(get_db)):
     return AchievementService(AchievementRepository(db))
 
 
-# --- API ЖИВОГО ПОИСКА (Только свои достижения) ---
 @router.get('/api/my-achievements/search', response_class=JSONResponse)
 async def api_my_achievements_search(request: Request, q: str = Query(..., min_length=1),
                                      db: AsyncSession = Depends(get_db)):
     user_id = request.session.get('auth_id')
-    # Ищем только среди своих
     stmt = select(Achievement).filter(
         Achievement.user_id == user_id,
         or_(Achievement.title.ilike(f"%{q}%"), Achievement.description.ilike(f"%{q}%"))
@@ -34,7 +32,6 @@ async def api_my_achievements_search(request: Request, q: str = Query(..., min_l
     return [{"value": d.title, "text": d.title} for d in result.scalars().all()]
 
 
-# --- МОИ ДОСТИЖЕНИЯ ---
 @router.get('/achievements', response_class=HTMLResponse, name='admin.achievements.index')
 async def index(
         request: Request,
@@ -52,10 +49,8 @@ async def index(
     limit = 10
     offset = (page - 1) * limit
 
-    # Базовый запрос: только свои достижения
     stmt = select(Achievement).filter(Achievement.user_id == user_id)
 
-    # 1. Фильтры
     if query:
         stmt = stmt.filter(or_(Achievement.title.ilike(f"%{query}%"), Achievement.description.ilike(f"%{query}%")))
     if status and status != 'all':
@@ -65,7 +60,6 @@ async def index(
     if level and level != 'all':
         stmt = stmt.filter(Achievement.level == level)
 
-    # 2. Сортировка
     if sort_by == "newest":
         stmt = stmt.order_by(Achievement.created_at.desc())
     elif sort_by == "oldest":
@@ -73,7 +67,6 @@ async def index(
     elif sort_by == "category":
         stmt = stmt.order_by(Achievement.category)
     elif sort_by == "level":
-        # Сортировка по значимости (CASE)
         level_order = case(
             (Achievement.level == AchievementLevel.INTERNATIONAL, 5),
             (Achievement.level == AchievementLevel.FEDERAL, 4),
@@ -84,7 +77,6 @@ async def index(
         )
         stmt = stmt.order_by(level_order.desc())
 
-    # Пагинация
     total_items = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar()
     achievements = (await db.execute(stmt.offset(offset).limit(limit))).scalars().all()
 
@@ -101,7 +93,6 @@ async def index(
     })
 
 
-# --- СОЗДАНИЕ ---
 @router.get('/achievements/create', response_class=HTMLResponse, name='admin.achievements.create')
 async def create(request: Request, db: AsyncSession = Depends(get_db)):
     user = await db.get(Users, request.session.get('auth_id'))
@@ -113,7 +104,6 @@ async def create(request: Request, db: AsyncSession = Depends(get_db)):
     })
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/achievements', name='admin.achievements.store', dependencies=[Depends(validate_csrf)])
 async def store(
         request: Request,
@@ -143,14 +133,11 @@ async def store(
                                 status_code=302)
 
 
-# --- УДАЛЕНИЕ ---
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/achievements/{id}/delete', name='admin.achievements.delete', dependencies=[Depends(validate_csrf)])
 async def delete(id: int, request: Request, service: AchievementService = Depends(get_service)):
     user_id = request.session.get('auth_id')
     user_role = request.session.get('auth_role')
 
-    # 1. Получаем достижение из БД
     achievement = await service.repo.find(id)
 
     if not achievement:
@@ -159,11 +146,7 @@ async def delete(id: int, request: Request, service: AchievementService = Depend
             status_code=302
         )
 
-    # 2. Проверяем права: владелец ИЛИ модератор/админ
     is_owner = achievement.user_id == user_id
-    # Примечание: тут всё еще используется user_role из сессии,
-    # в идеале стоит использовать тот же подход с БД, что мы делали для модерации,
-    # но это уже лучше, чем было.
     is_staff = str(user_role) in [UserRole.MODERATOR.value, UserRole.SUPER_ADMIN.value, 'moderator', 'super_admin']
 
     if not is_owner and not is_staff:
@@ -172,7 +155,6 @@ async def delete(id: int, request: Request, service: AchievementService = Depend
             status_code=302
         )
 
-    # 3. Удаляем
     await service.repo.delete(id)
 
     return RedirectResponse(

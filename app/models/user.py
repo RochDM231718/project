@@ -16,7 +16,6 @@ class Users(Base):
     phone_number = Column(String, nullable=True)
     avatar_path = Column(String, nullable=True)
 
-    # ИСПРАВЛЕНО: default=UserRole.GUEST
     role = Column(Enum(UserRole), default=UserRole.GUEST)
     status = Column(Enum(UserStatus), default=UserStatus.PENDING)
 

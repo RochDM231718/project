@@ -1,7 +1,6 @@
 from enum import Enum
 
 class UserRole(str, Enum):
-    # Значения справа должны СТРОГО совпадать с тем, что в базе PostgreSQL
     GUEST = "GUEST"
     STUDENT = "STUDENT"
     MODERATOR = "MODERATOR"

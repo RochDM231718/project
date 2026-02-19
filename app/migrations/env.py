@@ -30,7 +30,6 @@ def get_url():
     DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
     DB_NAME = os.getenv("DB_NAME", "fastkit_db")
     DB_PORT = os.getenv("DB_PORT", "5432")
-    # Используем асинхронный драйвер
     return f"postgresql+asyncpg://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 

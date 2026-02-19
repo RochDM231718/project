@@ -6,8 +6,7 @@ from app.services.admin.base_crud_service import BaseCrudService
 from app.repositories.admin.user_repository import UserRepository
 from app.models.enums import UserRole
 
-# Настройки ограничений
-MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2 MB
+MAX_AVATAR_SIZE = 2 * 1024 * 1024
 ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
 
 
@@ -17,17 +16,11 @@ class UserService(BaseCrudService):
         self.repository = repository
 
     async def save_avatar(self, user_id: int, file: UploadFile) -> str:
-        """Сохраняет аватарку с проверкой типа и размера"""
-
-        # 1. Проверка типа файла
         if file.content_type not in ALLOWED_AVATAR_TYPES:
             raise ValueError("Неподдерживаемый формат. Используйте JPG, PNG или WEBP.")
 
-        # 2. Проверка размера файла
-        # Перемещаем курсор в конец файла, чтобы узнать размер
         file.file.seek(0, 2)
         file_size = file.file.tell()
-        # Возвращаем курсор в начало для сохранения
         file.file.seek(0)
 
         if file_size > MAX_AVATAR_SIZE:
@@ -38,7 +31,6 @@ class UserService(BaseCrudService):
 
         user = await self.repository.find(user_id)
 
-        # Удаляем старую
         if user and user.avatar_path:
             old_path = os.path.join("static", user.avatar_path)
             if os.path.exists(old_path) and os.path.isfile(old_path):
@@ -56,12 +48,9 @@ class UserService(BaseCrudService):
         return f"uploads/avatars/{unique_name}"
 
     async def update_role(self, user_id: int, new_role: UserRole):
-        """Обновляет роль пользователя"""
         user = await self.repository.find(user_id)
         if user:
             user.role = new_role
-            # Предполагаем, что в репозитории/сессии есть механизм коммита
-            # Если репозиторий использует flush/commit при обновлении:
             await self.repository.db.commit()
             await self.repository.db.refresh(user)
         return user
