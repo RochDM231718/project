@@ -27,11 +27,19 @@ async def check_admin_rights(request: Request, db: AsyncSession):
     if not user:
         raise HTTPException(status_code=403, detail="Not authenticated")
 
-    # Разрешаем SUPER_ADMIN, MODERATOR и ADMIN
-    allowed_roles = [UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.ADMIN]
+    # Разрешаем только SUPER_ADMIN и MODERATOR
+    allowed_roles = [UserRole.SUPER_ADMIN, UserRole.MODERATOR]
     if user.role not in allowed_roles:
         raise HTTPException(status_code=403, detail="Access denied")
     return user
+
+
+# Иерархия ролей для защиты от эскалации привилегий
+ROLE_HIERARCHY = {
+    UserRole.STUDENT: 1,
+    UserRole.MODERATOR: 2,
+    UserRole.SUPER_ADMIN: 3
+}
 
 
 # --- API ЖИВОГО ПОИСКА ---
@@ -163,6 +171,24 @@ async def update_user_role(
             status_code=302
         )
 
+    target_user = await db.get(Users, id)
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # ЖЕСТКАЯ ПРОВЕРКА ИЕРАРХИИ (Исключение для SUPER_ADMIN)
+    if current_user.role != UserRole.SUPER_ADMIN:
+        current_level = ROLE_HIERARCHY.get(current_user.role, 0)
+        target_level = ROLE_HIERARCHY.get(target_user.role, 0)
+        new_role_level = ROLE_HIERARCHY.get(role, 0)
+
+        # Нельзя менять роль пользователю, чья роль выше или равна текущей
+        # Нельзя назначать роль выше или равную текущей
+        if target_level >= current_level or new_role_level >= current_level:
+            return RedirectResponse(
+                url=f"/sirius.achievements/users/{id}?toast_msg=У вас недостаточно прав для этого действия&toast_type=error",
+                status_code=302
+            )
+
     await service.update_role(id, role)
 
     return RedirectResponse(
@@ -186,6 +212,17 @@ async def delete_user(
             url=f"/sirius.achievements/users/{id}?toast_msg=Нельзя удалить самого себя&toast_type=error",
             status_code=302
         )
+
+    target_user = await db.get(Users, id)
+    if target_user:
+        current_level = ROLE_HIERARCHY.get(current_user.role, 0)
+        target_level = ROLE_HIERARCHY.get(target_user.role, 0)
+
+        if current_user.role != UserRole.SUPER_ADMIN and target_level >= current_level:
+            return RedirectResponse(
+                url=f"/sirius.achievements/users/{id}?toast_msg=Недостаточно прав для удаления этого пользователя&toast_type=error",
+                status_code=302
+            )
 
     await service.repository.delete(id)
     return RedirectResponse(url="/sirius.achievements/users?toast_msg=Пользователь удален&toast_type=success",

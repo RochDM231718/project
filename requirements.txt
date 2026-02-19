@@ -53,6 +53,7 @@ python-jose==3.5.0
 python-multipart==0.0.20
 python-slugify==8.0.4
 PyYAML==6.0.2
+redis>=5.0.0
 requests==2.32.5
 rich==14.0.0
 rich-toolkit==0.14.8

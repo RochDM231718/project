@@ -6,7 +6,6 @@ class UserRole(str, Enum):
     STUDENT = "STUDENT"
     MODERATOR = "MODERATOR"
     SUPER_ADMIN = "SUPER_ADMIN"
-    ADMIN = "ADMIN"  # <--- ДОБАВЛЕНА ЭТА СТРОКА
 
 class UserStatus(str, Enum):
     PENDING = "pending"

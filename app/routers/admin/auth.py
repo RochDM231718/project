@@ -12,7 +12,6 @@ from app.repositories.admin.user_token_repository import UserTokenRepository
 from app.services.admin.user_token_service import UserTokenService
 from app.schemas.admin.auth import UserRegister
 
-# ИСПРАВЛЕНО: Добавлен префикс /sirius.achievements
 router = APIRouter(prefix="/sirius.achievements", tags=["Auth"])
 
 
@@ -30,7 +29,6 @@ async def login_page(request: Request):
     return templates.TemplateResponse('auth/sign-in.html', {'request': request})
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/login', name='admin.auth.login', dependencies=[Depends(validate_csrf)])
 async def login(
         request: Request,
@@ -39,7 +37,9 @@ async def login(
         service: AuthService = Depends(get_service)
 ):
     try:
-        user = await service.authenticate(email, password)
+        # Передаем IP клиента для Rate Limiting
+        client_ip = request.client.host if request.client else "unknown"
+        user = await service.authenticate(email, password, ip=client_ip)
 
         if not user:
             return templates.TemplateResponse('auth/sign-in.html', {
@@ -75,7 +75,6 @@ async def register_page(request: Request):
     return templates.TemplateResponse('auth/register.html', {'request': request})
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/register', name='admin.auth.register', dependencies=[Depends(validate_csrf)])
 async def register(
         request: Request,
@@ -122,7 +121,6 @@ async def forgot_password_page(request: Request):
     return templates.TemplateResponse('auth/forgot-password.html', {'request': request})
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/forgot-password', name='admin.auth.forgot_password', dependencies=[Depends(validate_csrf)])
 async def forgot_password(
         request: Request,
@@ -161,7 +159,6 @@ async def verify_code_page(request: Request):
     })
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/resend-code', name='admin.auth.resend_code', dependencies=[Depends(validate_csrf)])
 async def resend_code(
         request: Request,
@@ -180,7 +177,6 @@ async def resend_code(
     return RedirectResponse(url=request.url_for('admin.auth.verify_code_page'), status_code=302)
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/verify-code', name='admin.auth.verify_code', dependencies=[Depends(validate_csrf)])
 async def verify_code(
         request: Request,
@@ -213,7 +209,6 @@ async def reset_password_page(request: Request):
     return templates.TemplateResponse('auth/reset-password.html', {'request': request})
 
 
-# ДОБАВЛЕНО: Защита CSRF
 @router.post('/reset-password', name='admin.auth.reset_password', dependencies=[Depends(validate_csrf)])
 async def reset_password(
         request: Request,

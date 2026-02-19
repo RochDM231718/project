@@ -15,13 +15,17 @@ from app.infrastructure.jwt_handler import create_access_token, create_refresh_t
 import os
 import structlog
 from datetime import datetime, timedelta
+import redis.asyncio as aioredis  # Добавлен импорт redis
 
 logger = structlog.get_logger()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Инициализация Redis для Rate Limiting
+redis_client = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
+
 
 class UserBlockedException(Exception):
-    def __init__(self, message="Аккаунт временно заблокирован"):
+    def __init__(self, message="Слишком много попыток. Аккаунт временно заблокирован"):
         self.message = message
         super().__init__(self.message)
 
@@ -32,50 +36,46 @@ class AuthService:
         self.db = repository.db
         self.user_token_service = user_token_service
 
-    async def authenticate(self, email: str, password: str, role: str = None):
+    async def authenticate(self, email: str, password: str, role: str = None, ip: str = "unknown"):
+        # Логика Rate Limiting (защита от брутфорса без DoS-уязвимости базы)
+        rl_key = f"login_attempts:{ip}:{email}"
+        attempts = await redis_client.get(rl_key)
+
+        if attempts and int(attempts) >= 5:
+            ttl = await redis_client.ttl(rl_key)
+            minutes = int(ttl / 60) + 1
+            raise UserBlockedException(f"Слишком много попыток. Повторите через {minutes} мин.")
+
+        # Фиктивная задержка для защиты от User Enumeration
         user = await self.repository.get_by_email(email)
-
         if not user:
+            # Защита от атаки по времени: имитируем работу bcrypt даже если пользователя нет
+            pwd_context.hash(password)
             logger.warning("Login failed: user not found", email=email)
-            return None
-
-        if user.blocked_until:
-            if user.blocked_until > datetime.utcnow():
-                wait_time = user.blocked_until - datetime.utcnow()
-                minutes = int(wait_time.total_seconds() / 60) + 1
-                raise UserBlockedException(f"Слишком много попыток. Аккаунт заблокирован на {minutes} мин.")
-            else:
-                user.blocked_until = None
-                user.failed_attempts = 0
-                self.db.add(user)
-                await self.db.commit()
-
-        if not self.verify_password(password, user.hashed_password):
-            user.failed_attempts = (user.failed_attempts or 0) + 1
-            if user.failed_attempts >= 5:
-                user.blocked_until = datetime.utcnow() + timedelta(minutes=15)
-                logger.warning("User blocked due to too many failed attempts", email=email)
-
-            self.db.add(user)
-            await self.db.commit()
-
-            logger.warning("Login failed: wrong password", email=email)
-            if user.blocked_until and user.blocked_until > datetime.utcnow():
-                raise UserBlockedException("Слишком много попыток. Аккаунт заблокирован на 15 мин.")
+            await self._record_failed_attempt(rl_key)
             return None
 
         if user.status == UserStatus.REJECTED:
             logger.warning("Login failed: user rejected", email=email)
             return None
 
-        if (user.failed_attempts and user.failed_attempts > 0) or user.blocked_until:
-            user.failed_attempts = 0
-            user.blocked_until = None
-            self.db.add(user)
-            await self.db.commit()
+        if not self.verify_password(password, user.hashed_password):
+            logger.warning("Login failed: wrong password", email=email)
+            await self._record_failed_attempt(rl_key)
+            return None
+
+        # Успешный вход: очищаем счетчик неудачных попыток
+        await redis_client.delete(rl_key)
 
         logger.info("User logged in", user_id=user.id, email=user.email)
         return user
+
+    async def _record_failed_attempt(self, key: str):
+        """Вспомогательный метод для увеличения счетчика попыток в Redis"""
+        await redis_client.incr(key)
+        # Устанавливаем блокировку на 15 минут (900 секунд), если ключ только что создан
+        if await redis_client.ttl(key) == -1:
+            await redis_client.expire(key, 900)
 
     async def register_user(self, data: UserRegister) -> Users:
         stmt = select(Users).where(Users.email == data.email)
@@ -102,8 +102,8 @@ class AuthService:
         logger.info("New user registered", email=data.email)
         return new_user
 
-    async def api_authenticate(self, email: str, password: str, role: str = "User"):
-        user = await self.authenticate(email, password, role)
+    async def api_authenticate(self, email: str, password: str, role: str = "User", ip: str = "unknown"):
+        user = await self.authenticate(email, password, role, ip)
         if not user:
             return None
 
@@ -126,37 +126,27 @@ class AuthService:
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
 
-    # --- НОВАЯ ЛОГИКА ОТПРАВКИ ЧЕРЕЗ SMTPLIB (СТАНДАРТНАЯ) ---
-
     def _send_mail_task(self, to_email: str, subject: str, body_text: str, body_html: str):
-        """
-        Отправка письма через стандартный smtplib (самый надежный способ).
-        """
         smtp_host = os.getenv('MAIL_HOST', 'smtp.yandex.ru')
         smtp_port = int(os.getenv('MAIL_PORT', 465))
         smtp_user = os.getenv('MAIL_USERNAME')
         smtp_pass = os.getenv('MAIL_PASSWORD')
         mail_from = os.getenv('MAIL_FROM', smtp_user)
 
-        # Формируем сообщение
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = mail_from
         msg['To'] = to_email
 
-        # Добавляем текстовую и HTML версии
         part1 = MIMEText(body_text, 'plain')
         part2 = MIMEText(body_html, 'html')
         msg.attach(part1)
         msg.attach(part2)
 
         try:
-            # Выбираем протокол в зависимости от порта
             if smtp_port == 465:
-                # SSL подключение (Implicit SSL)
                 server = smtplib.SMTP_SSL(smtp_host, smtp_port)
             else:
-                # Обычное подключение + STARTTLS (для 587)
                 server = smtplib.SMTP(smtp_host, smtp_port)
                 server.starttls()
 
@@ -180,7 +170,6 @@ class AuthService:
         if retry_after > 0:
             return False, f"Повторная отправка возможна через {retry_after} сек.", retry_after
 
-        # Генерируем код
         token_data = UserTokenCreate(
             user_id=user.id,
             type=UserTokenType.RESET_PASSWORD
@@ -188,7 +177,6 @@ class AuthService:
         user_token = await self.user_token_service.create(token_data)
         code = user_token.token
 
-        # Тема и контент
         subject = "Разовый код"
 
         text_content = f"""Здравствуйте, {user.email}!
@@ -196,7 +184,6 @@ class AuthService:
 Ваш разовый код: {code}
 Вводите этот код только на официальном сайте."""
 
-        # HTML в стиле Microsoft
         html_content = f"""
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #000000; background-color: #ffffff; padding: 20px; max-width: 600px;">
             <p style="font-size: 15px; margin-bottom: 20px;">
