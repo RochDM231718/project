@@ -111,4 +111,4 @@ async def root(request: Request):
 
 @app.get("/admin")
 async def admin_root(request: Request):
-    return RedirectResponse(url=request.url_for('admin.dashboard.index'))x
+    return RedirectResponse(url=request.url_for('admin.dashboard.index'))
