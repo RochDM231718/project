@@ -1,155 +1,138 @@
-    {% extends "layout.html" %}
+{% extends "layout.html" %}
 
-    {% block content %}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-    <div class="max-w-4xl mx-auto" x-data="{ activeTab: 'profile' }">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">Редактировать профиль</h2>
-            </div>
-            <a href="/sirius.achievements/users" class="text-sm text-gray-500 hover:text-indigo-600">Назад к списку</a>
+<div class="max-w-2xl mx-auto space-y-6" x-data="{ activeTab: 'profile' }">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Редактировать профиль</h2>
+            <p class="text-sm text-slate-500 mt-1">Изменение данных пользователя</p>
         </div>
+        <a href="/sirius.achievements/users" class="text-sm text-slate-500 hover:text-indigo-600 flex items-center transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            К списку
+        </a>
+    </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div x-show="activeTab === 'profile'" class="p-5 sm:p-8">
+            <form id="editUserForm" action="/sirius.achievements/users/{{ user.id }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+                <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
 
-            <div x-show="activeTab === 'profile'" class="p-6 md:p-8">
-                <form id="editUserForm" action="/sirius.achievements/users/{{ user.id }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-
-                    <div class="flex items-center space-x-6">
-                        <div class="shrink-0 relative">
-                            {% if user.avatar_path %}
-                                <img id="avatarPreview" class="h-24 w-24 object-cover rounded-full border-2 border-gray-100" src="/static/{{ user.avatar_path }}?t={{ timestamp }}" alt="Avatar">
-                            {% else %}
-                                <div id="avatarPlaceholder" class="h-24 w-24 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-300 font-bold text-2xl">
-                                    {{ user.first_name[:1] }}
-                                </div>
-                                <img id="avatarPreview" class="h-24 w-24 object-cover rounded-full border-2 border-gray-100 hidden" src="" alt="Avatar">
-                            {% endif %}
-                        </div>
-                        <label class="block">
-                            <span class="sr-only">Выбрать фото</span>
-                            <span class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors shadow-sm inline-block">
-                                Изменить фото
-                            </span>
+                <div class="flex items-center space-x-5 pb-4 border-b border-slate-100">
+                    <div class="shrink-0 relative">
+                        {% if user.avatar_path %}
+                            <img id="avatarPreview" class="h-20 w-20 object-cover rounded-full border border-slate-200" src="/static/{{ user.avatar_path }}?t={{ timestamp }}" alt="Avatar">
+                        {% else %}
+                            <div id="avatarPlaceholder" class="h-20 w-20 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xl">
+                                {{ user.first_name[:1] }}
+                            </div>
+                            <img id="avatarPreview" class="h-20 w-20 object-cover rounded-full border border-slate-200 hidden" src="" alt="Avatar">
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="inline-block bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-colors">
+                            Изменить фото
                             <input type="file" id="avatarInput" name="avatar" accept="image/*" class="hidden">
                         </label>
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Имя</label>
-                            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Фамилия</label>
-                            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Имя</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}"
+                               class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="email" name="email" value="{{ user.email }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
-                    </div>
-                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
-                        <input type="text" name="phone_number" value="{{ user.phone_number or '' }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
-                    </div>
-
-                    <div class="pt-4 border-t border-gray-100 flex justify-end">
-                        <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                            Сохранить
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="cropModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Кадрирование изображения</h3>
-                <div class="mt-4">
-                    <div class="img-container w-full h-96 bg-gray-100">
-                        <img id="imageToCrop" src="" alt="Picture" class="max-w-full h-full object-contain">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Фамилия</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}"
+                               class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
                     </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button type="button" id="cropButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-              Обрезать и Сохранить
-            </button>
-            <button type="button" id="cancelCrop" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-              Отмена
-            </button>
-          </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email</label>
+                    <input type="email" name="email" value="{{ user.email }}"
+                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+                </div>
+                 <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Телефон</label>
+                    <input type="text" name="phone_number" value="{{ user.phone_number or '' }}"
+                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end">
+                    <button type="submit" class="w-full sm:w-auto bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                        Сохранить изменения
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="cropModal" class="fixed inset-0 z-[80] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-center justify-center min-h-screen p-4 text-center">
+    <div class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm transition-opacity" aria-hidden="true" id="cancelCropOverlay"></div>
+    <div class="relative bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all w-full max-w-lg flex flex-col">
+      <div class="p-4 border-b border-slate-100">
+          <h3 class="text-sm font-bold text-slate-800">Кадрирование изображения</h3>
+      </div>
+      <div class="p-4 bg-slate-50">
+        <div class="w-full h-80 bg-slate-200 rounded-lg overflow-hidden border border-slate-300">
+            <img id="imageToCrop" src="" alt="Picture" class="max-w-full h-full object-contain">
         </div>
       </div>
+      <div class="p-4 border-t border-slate-100 flex gap-3">
+        <button type="button" id="cancelCrop" class="flex-1 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">Отмена</button>
+        <button type="button" id="cropButton" class="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">Обрезать и Сохранить</button>
+      </div>
     </div>
+  </div>
+</div>
 
-    <script>
-        let cropper;
-        const avatarInput = document.getElementById('avatarInput');
-        const imageToCrop = document.getElementById('imageToCrop');
-        const cropModal = document.getElementById('cropModal');
-        const avatarPreview = document.getElementById('avatarPreview');
-        const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+<script>
+    let cropper;
+    const avatarInput = document.getElementById('avatarInput');
+    const imageToCrop = document.getElementById('imageToCrop');
+    const cropModal = document.getElementById('cropModal');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const avatarPlaceholder = document.getElementById('avatarPlaceholder');
 
-        avatarInput.addEventListener('change', function (e) {
-            const files = e.target.files;
-            if (files && files.length > 0) {
-                const file = files[0];
-                const url = URL.createObjectURL(file);
+    avatarInput.addEventListener('change', function (e) {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const url = URL.createObjectURL(files[0]);
+            imageToCrop.src = url;
+            cropModal.classList.remove('hidden');
 
-                imageToCrop.src = url;
-                cropModal.classList.remove('hidden');
-
-                if (cropper) {
-                    cropper.destroy();
-                }
-                cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1,
-                    viewMode: 1,
-                });
-
-                // e.target.value = '';
-            }
-        });
-
-        document.getElementById('cancelCrop').addEventListener('click', function() {
-            cropModal.classList.add('hidden');
             if (cropper) cropper.destroy();
-            avatarInput.value = '';
-        });
+            cropper = new Cropper(imageToCrop, { aspectRatio: 1, viewMode: 1, dragMode: 'move', background: false });
+        }
+    });
 
-        document.getElementById('cropButton').addEventListener('click', function() {
-            if (cropper) {
-                cropper.getCroppedCanvas({
-                    width: 300,
-                    height: 300,
-                }).toBlob(function (blob) {
-                    const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+    const closeCrop = () => { cropModal.classList.add('hidden'); if (cropper) cropper.destroy(); avatarInput.value = ''; };
+    document.getElementById('cancelCrop').addEventListener('click', closeCrop);
+    document.getElementById('cancelCropOverlay').addEventListener('click', closeCrop);
 
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    avatarInput.files = dataTransfer.files;
+    document.getElementById('cropButton').addEventListener('click', function() {
+        if (cropper) {
+            cropper.getCroppedCanvas({ width: 300, height: 300 }).toBlob(function (blob) {
+                const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                avatarInput.files = dataTransfer.files;
 
-                    const url = URL.createObjectURL(blob);
-                    if (avatarPlaceholder) avatarPlaceholder.classList.add('hidden');
-                    avatarPreview.classList.remove('hidden');
-                    avatarPreview.src = url;
+                const url = URL.createObjectURL(blob);
+                if (avatarPlaceholder) avatarPlaceholder.classList.add('hidden');
+                avatarPreview.classList.remove('hidden');
+                avatarPreview.src = url;
 
-                    cropModal.classList.add('hidden');
-                }, 'image/jpeg');
-            }
-        });
-    </script>
-    {% endblock %}
+                cropModal.classList.add('hidden');
+            }, 'image/jpeg');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,38 +1,38 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
+<div class="max-w-5xl mx-auto space-y-6">
 
     {% if pending_review %}
-        <div class="min-h-[60vh] flex flex-col items-center justify-center text-center p-6">
-            <div class="bg-white p-10 rounded-3xl shadow-lg border border-gray-100 max-w-lg w-full transform transition hover:scale-105 duration-300">
-                <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="min-h-[50vh] flex flex-col items-center justify-center text-center p-4">
+            <div class="bg-white p-8 rounded-xl border border-yellow-200 max-w-md w-full shadow-sm">
+                <div class="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <h2 class="text-2xl font-extrabold text-gray-900 mb-3">Аккаунт на проверке</h2>
-                <p class="text-gray-500 mb-6 leading-relaxed">
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Аккаунт на проверке</h2>
+                <p class="text-sm text-slate-500 mb-6 leading-relaxed">
                     Спасибо за регистрацию! Ваша учетная запись проходит модерацию.
-                    <br>Пожалуйста, подождите одобрения администратором.
+                    Пожалуйста, подождите одобрения администратором.
                 </p>
-                <div class="bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg text-sm font-medium">
+                <div class="bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg text-xs font-medium border border-yellow-100">
                     Доступ к функциям временно ограничен
                 </div>
             </div>
         </div>
     {% else %}
 
-    <div class="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-2">
         <div>
-            <h2 class="text-3xl font-bold text-gray-800">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">
                 {% if user.role.value in ['admin', 'moderator', 'super_admin', 'ADMIN', 'MODERATOR', 'SUPER_ADMIN'] %}
                     Обзор статистики
                 {% else %}
                     Мой прогресс
                 {% endif %}
             </h2>
-            <p class="text-gray-500">
+            <p class="text-sm text-slate-500 mt-1">
                 {% if period == 'day' %}Данные за последние 24 часа
                 {% elif period == 'week' %}Данные за последние 7 дней
                 {% elif period == 'month' %}Данные за последние 30 дней
@@ -40,100 +40,99 @@
             </p>
         </div>
 
-        <div class="bg-white p-1 rounded-lg border border-gray-200 flex text-sm shadow-sm">
-            <a href="?period=day" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'day' else 'text-gray-600 hover:bg-gray-50' }}">День</a>
-            <a href="?period=week" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'week' else 'text-gray-600 hover:bg-gray-50' }}">Неделя</a>
-            <a href="?period=month" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'month' else 'text-gray-600 hover:bg-gray-50' }}">Месяц</a>
-            <a href="?period=all" class="px-4 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white font-bold shadow' if period == 'all' else 'text-gray-600 hover:bg-gray-50' }}">Всё время</a>
+        <div class="w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+            <div class="bg-white p-1 rounded-lg border border-slate-200 flex text-xs font-medium inline-flex min-w-max">
+                <a href="?period=day" class="px-3 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white' if period == 'day' else 'text-slate-600 hover:bg-slate-50' }}">День</a>
+                <a href="?period=week" class="px-3 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white' if period == 'week' else 'text-slate-600 hover:bg-slate-50' }}">Неделя</a>
+                <a href="?period=month" class="px-3 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white' if period == 'month' else 'text-slate-600 hover:bg-slate-50' }}">Месяц</a>
+                <a href="?period=all" class="px-3 py-1.5 rounded-md transition-colors {{ 'bg-indigo-600 text-white' if period == 'all' else 'text-slate-600 hover:bg-slate-50' }}">Всё время</a>
+            </div>
         </div>
     </div>
 
     {% if user.role.value in ['admin', 'moderator', 'super_admin', 'ADMIN', 'MODERATOR', 'SUPER_ADMIN'] %}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Новых пользователей</p>
-                <p class="text-3xl font-bold text-indigo-600 mt-2">+{{ stats.new_users }}</p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Новых юзеров</p>
+                <p class="text-2xl font-semibold text-slate-800 mt-1">+{{ stats.new_users }}</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Загружено документов</p>
-                <p class="text-3xl font-bold text-indigo-600 mt-2">+{{ stats.total_docs }}</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Загружено док.</p>
+                <p class="text-2xl font-semibold text-slate-800 mt-1">+{{ stats.total_docs }}</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Одобрено модераторами</p>
-                <p class="text-3xl font-bold text-indigo-600 mt-2">{{ stats.approved_docs }}</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Одобрено</p>
+                <p class="text-2xl font-semibold text-indigo-600 mt-1">{{ stats.approved_docs }}</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Ожидают проверки</p>
-                <p class="text-3xl font-bold text-indigo-600 mt-2">{{ stats.pending_docs }}</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Ожидают</p>
+                <p class="text-2xl font-semibold text-yellow-600 mt-1">{{ stats.pending_docs }}</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-lg font-bold text-gray-800 mb-6">Динамика загрузки документов</h3>
-                <div class="h-80 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-800 mb-4">Динамика загрузки</h3>
+                <div class="h-64 w-full">
                     <canvas id="adminChart"></canvas>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Лидеры периода</h3>
-                <div class="overflow-y-auto max-h-80">
-                    <table class="w-full text-left">
-                        <tbody class="divide-y divide-gray-50">
-                            {% for row in stats.top_students %}
-                            <tr>
-                                <td class="py-3">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600 mr-3">
-                                            {{ loop.index }}
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-800">{{ row[0].first_name }} {{ row[0].last_name[:1] }}.</div>
-                                            <div class="text-xs text-gray-400">{{ row[0].email }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-right font-bold text-green-600 text-sm">+{{ row[1] | int }}</td>
-                            </tr>
-                            {% else %}
-                            <tr><td class="text-center text-gray-400 text-sm py-4">Нет данных</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col">
+                <h3 class="text-sm font-semibold text-slate-800 mb-4">Лидеры периода</h3>
+                <div class="overflow-y-auto flex-1 pr-2 scrollbar-thin">
+                    <div class="space-y-3">
+                        {% for row in stats.top_students %}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600 mr-3">
+                                    {{ loop.index }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-slate-800">{{ row[0].first_name }} {{ row[0].last_name[:1] }}.</div>
+                                    <div class="text-[10px] text-slate-400">{{ row[0].email }}</div>
+                                </div>
+                            </div>
+                            <div class="text-xs font-bold text-indigo-600">+{{ row[1] | int }}</div>
+                        </div>
+                        {% else %}
+                        <div class="text-center text-slate-400 text-xs py-4">Нет данных</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                <h3 class="font-bold text-gray-700">Последние загруженные документы</h3>
-                <a href="/sirius.achievements/documents" class="text-xs text-indigo-600 font-bold hover:underline">ВСЕ ДОКУМЕНТЫ →</a>
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-sm font-semibold text-slate-700">Последние документы</h3>
+                <a href="/sirius.achievements/documents" class="text-[10px] text-indigo-600 font-bold uppercase hover:underline">Все документы →</a>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white text-gray-500 border-b border-gray-100">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-white text-slate-500 border-b border-slate-100">
                         <tr>
-                            <th class="px-6 py-3 font-medium">Дата</th>
-                            <th class="px-6 py-3 font-medium">Название</th>
-                            <th class="px-6 py-3 font-medium">Пользователь</th>
-                            <th class="px-6 py-3 font-medium">Категория</th>
-                            <th class="px-6 py-3 font-medium">Уровень</th>
-                            <th class="px-6 py-3 font-medium text-right">Статус</th>
+                            <th class="px-5 py-3 font-medium text-xs">Дата</th>
+                            <th class="px-5 py-3 font-medium text-xs">Название</th>
+                            <th class="px-5 py-3 font-medium text-xs">Пользователь</th>
+                            <th class="px-5 py-3 font-medium text-xs">Категория / Уровень</th>
+                            <th class="px-5 py-3 font-medium text-xs text-right">Статус</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
+                    <tbody class="divide-y divide-slate-50">
                         {% for doc in stats.recent_docs %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-3 text-gray-500">{{ doc.created_at.strftime('%d.%m %H:%M') }}</td>
-                            <td class="px-6 py-3 font-medium text-gray-800">{{ doc.title }}</td>
-                            <td class="px-6 py-3 text-gray-600">{{ doc.user.first_name }} {{ doc.user.last_name }}</td>
-                            <td class="px-6 py-3"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">{{ doc.category.value }}</span></td>
-                            <td class="px-6 py-3"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">{{ doc.level.value }}</span></td>
-                            <td class="px-6 py-3 text-right">
-                                {% if doc.status.value == 'approved' %}<span class="text-green-600 font-bold text-xs">Одобрено</span>
-                                {% elif doc.status.value == 'rejected' %}<span class="text-red-600 font-bold text-xs">Отклонено</span>
-                                {% else %}<span class="text-yellow-600 font-bold text-xs">На проверке</span>{% endif %}
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-5 py-3 text-slate-500 text-xs">{{ doc.created_at.strftime('%d.%m %H:%M') }}</td>
+                            <td class="px-5 py-3 font-medium text-slate-800">{{ doc.title }}</td>
+                            <td class="px-5 py-3 text-slate-600 text-xs">{{ doc.user.first_name }} {{ doc.user.last_name }}</td>
+                            <td class="px-5 py-3">
+                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px]">{{ doc.category.value }}</span>
+                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px]">{{ doc.level.value }}</span>
+                            </td>
+                            <td class="px-5 py-3 text-right">
+                                {% if doc.status.value == 'approved' %}<span class="text-green-600 font-medium text-xs">Одобрено</span>
+                                {% elif doc.status.value == 'rejected' %}<span class="text-red-600 font-medium text-xs">Отклонено</span>
+                                {% else %}<span class="text-yellow-600 font-medium text-xs">Проверка</span>{% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -144,134 +143,119 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('adminChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: {{ stats.chart_labels | safe }},
-                        datasets: [{
-                            label: 'Загружено документов',
-                            data: {{ stats.chart_data | safe }},
-                            borderColor: '#4f46e5',
-                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#4f46e5',
-                            pointBorderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { borderDash: [4, 4] } },
-                            x: { grid: { display: false } }
+                const ctx = document.getElementById('adminChart');
+                if(ctx) {
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: {{ stats.chart_labels | safe }},
+                            datasets: [{
+                                label: 'Документов',
+                                data: {{ stats.chart_data | safe }},
+                                borderColor: '#4f46e5',
+                                backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                pointHoverRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: {size: 10}, color: '#94a3b8' } },
+                                x: { grid: { display: false }, ticks: { font: {size: 10}, color: '#64748b' } }
+                            }
                         }
-                    }
-                });
+                    });
+                }
             });
         </script>
 
     {% else %}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
-                <div class="relative z-10">
-                    <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Баллы за период</p>
-                    <p class="text-3xl font-extrabold text-indigo-600 mt-2">{{ stats.my_points }}</p>
-                </div>
-                <div class="absolute right-0 top-0 h-full w-20 bg-gradient-to-l from-indigo-50 to-transparent"></div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-indigo-600 p-4 rounded-xl text-white">
+                <p class="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Баллы за период</p>
+                <p class="text-3xl font-bold mt-1">{{ stats.my_points }}</p>
             </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Рейтинг за период</p>
-                <div class="flex items-center gap-2 mt-2">
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Рейтинг</p>
+                <div class="mt-1">
                     {% if stats.rank is defined and stats.rank > 0 %}
-                        <span class="text-3xl font-bold text-indigo-600">#{{ stats.rank }}</span>
-                        {% if stats.rank <= 3 %}
-                            <span class="text-yellow-500"></span>
-                        {% endif %}
+                        <span class="text-3xl font-bold text-slate-800">#{{ stats.rank }}</span>
                     {% else %}
-                        <span class="text-3xl font-bold text-gray-400">-</span>
+                        <span class="text-3xl font-bold text-slate-300">-</span>
                     {% endif %}
                 </div>
             </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Загружено</p>
-                <p class="text-3xl font-bold text-indigo-600 mt-2">{{ stats.total_docs }}</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Загружено</p>
+                <p class="text-3xl font-semibold text-slate-800 mt-1">{{ stats.total_docs }}</p>
             </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">На проверке</p>
-                <p class="text-3xl font-bold text-indigo-600 mt-2">{{ stats.pending_docs }}</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">На проверке</p>
+                <p class="text-3xl font-semibold text-slate-800 mt-1">{{ stats.pending_docs }}</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-lg font-bold text-gray-800 mb-6">Структура баллов</h3>
-                <div class="h-64 w-full flex items-center justify-center">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-5 rounded-xl border border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-800 mb-4">Структура баллов</h3>
+                <div class="h-48 w-full flex items-center justify-center">
                     {% if stats.my_points > 0 %}
                         <canvas id="studentChart"></canvas>
                     {% else %}
-                        <div class="text-center text-gray-400">
-                            <p>Нет баллов за этот период</p>
+                        <div class="text-center text-slate-400">
+                            <p class="text-xs">Нет баллов за период</p>
                             {% if period == 'all' %}
-                                <a href="/sirius.achievements/achievements/create" class="text-indigo-600 text-sm hover:underline mt-2 inline-block">Загрузить достижение</a>
+                                <a href="/sirius.achievements/achievements/create" class="text-indigo-600 text-xs font-medium hover:underline mt-2 inline-block">Загрузить достижение</a>
                             {% endif %}
                         </div>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                    <h3 class="font-bold text-gray-700">Активность за период</h3>
-                    <a href="/sirius.achievements/achievements" class="text-xs text-indigo-600 font-bold hover:underline">ВСЕ ЗАПИСИ →</a>
+            <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div class="px-5 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="text-sm font-semibold text-slate-700">Активность</h3>
+                    <a href="/sirius.achievements/achievements" class="text-[10px] text-indigo-600 font-bold uppercase hover:underline">Все записи →</a>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-white text-gray-500 border-b border-gray-100">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-white text-slate-500 border-b border-slate-100">
                             <tr>
-                                <th class="px-6 py-3 font-medium">Дата</th>
-                                <th class="px-6 py-3 font-medium">Название</th>
-                                <th class="px-6 py-3 font-medium">Категория</th>
-                                <th class="px-6 py-3 font-medium text-right">Баллы</th>
-                                <th class="px-6 py-3 font-medium text-right">Статус</th>
+                                <th class="px-5 py-3 font-medium text-xs">Дата</th>
+                                <th class="px-5 py-3 font-medium text-xs">Название</th>
+                                <th class="px-5 py-3 font-medium text-xs">Категория</th>
+                                <th class="px-5 py-3 font-medium text-xs text-right">Баллы</th>
+                                <th class="px-5 py-3 font-medium text-xs text-right">Статус</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50">
+                        <tbody class="divide-y divide-slate-50">
                             {% for doc in stats.recent_docs %}
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ doc.created_at.strftime('%d.%m.%Y') }}</td>
-                                <td class="px-6 py-3 font-medium text-gray-800">{{ doc.title }}</td>
-                                <td class="px-6 py-3">
-                                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap">
-                                        {{ doc.category.value if doc.category else '—' }}
-                                    </span>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-5 py-3 text-slate-500 text-xs">{{ doc.created_at.strftime('%d.%m.%Y') }}</td>
+                                <td class="px-5 py-3 font-medium text-slate-800">{{ doc.title }}</td>
+                                <td class="px-5 py-3">
+                                    <span class="text-slate-500 text-xs">{{ doc.category.value if doc.category else '—' }}</span>
                                 </td>
-                                <td class="px-6 py-3 text-right font-bold text-gray-700">
-                                    {% if doc.points > 0 %}+{{ doc.points }}{% else %}—{% endif %}
+                                <td class="px-5 py-3 text-right font-medium text-slate-700 text-xs">
+                                    {% if doc.points > 0 %}<span class="text-indigo-600">+{{ doc.points }}</span>{% else %}—{% endif %}
                                 </td>
-                                <td class="px-6 py-3 text-right whitespace-nowrap">
+                                <td class="px-5 py-3 text-right">
                                     {% if doc.status.value == 'approved' %}
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Одобрено</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">Одобрено</span>
                                     {% elif doc.status.value == 'rejected' %}
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Отклонено</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-700 border border-red-100">Отклонено</span>
                                     {% else %}
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Проверка</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-50 text-yellow-700 border border-yellow-100">Проверка</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center py-8 text-gray-400">
-                                    Нет загрузок за этот период
-                                </td>
-                            </tr>
+                            <tr><td colspan="5" class="text-center py-6 text-slate-400 text-xs">Нет загрузок</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -289,15 +273,16 @@
                             labels: {{ stats.chart_labels | safe }},
                             datasets: [{
                                 data: {{ stats.chart_data | safe }},
-                                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#3b82f6'],
+                                /* Монохромная палитра в тон дизайна */
+                                backgroundColor: ['#4f46e5', '#818cf8', '#c7d2fe', '#e0e7ff', '#312e81'],
                                 borderWidth: 0
                             }]
                         },
                         options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
+                            responsive: true, maintainAspectRatio: false,
+                            cutout: '70%',
                             plugins: {
-                                legend: { position: 'right', labels: { boxWidth: 12 } }
+                                legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } }
                             }
                         }
                     });
@@ -305,5 +290,6 @@
             });
         </script>
     {% endif %}
-    {% endif %} </div>
+    {% endif %}
+</div>
 {% endblock %}

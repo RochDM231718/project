@@ -1,168 +1,120 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-4xl mx-auto space-y-8">
 
-    <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-        <div class="relative">
-            <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">Рейтинг студентов</h2>
-            <p class="text-gray-500 mt-2 text-lg">Топ студентов по сумме очков опыта</p>
-            <div class="absolute -top-6 -left-6 w-24 h-24 bg-indigo-50 rounded-full blur-2xl -z-10"></div>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Рейтинг студентов</h2>
+            <p class="text-sm text-slate-500 mt-1">Лучшие студенты по баллам достижений</p>
         </div>
 
         {% if user.role.value == 'STUDENT' %}
-        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 shadow-sm flex items-center gap-6 transform transition hover:scale-[1.02] duration-300 min-w-[300px]">
-            <div class="text-center flex-1">
-                <div class="text-[10px] uppercase font-bold tracking-widest text-indigo-400 mb-1">Ваше место</div>
-                <div class="text-4xl font-black text-indigo-600">
-                    {% if my_rank > 0 %}#{{ my_rank }}{% else %}-{% endif %}
-                </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-6 w-full md:w-auto">
+            <div class="text-center flex-1 md:flex-none md:px-4">
+                <div class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-0.5">Место</div>
+                <div class="text-2xl font-bold text-indigo-600">{% if my_rank > 0 %}#{{ my_rank }}{% else %}-{% endif %}</div>
             </div>
-            <div class="w-px h-12 bg-indigo-200"></div>
-            <div class="text-center flex-1">
-                <div class="text-[10px] uppercase font-bold tracking-widest text-indigo-400 mb-1">Ваши баллы</div>
-                <div class="text-4xl font-black text-indigo-900">{{ my_points | int }}</div>
+            <div class="w-px h-8 bg-slate-200"></div>
+            <div class="text-center flex-1 md:flex-none md:px-4">
+                <div class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-0.5">Баллы</div>
+                <div class="text-2xl font-bold text-slate-800">{{ my_points | int }}</div>
             </div>
         </div>
         {% endif %}
     </div>
 
     {% if leaderboard|length > 0 %}
-    <div class="relative mb-20 mt-10">
-        <div class="flex flex-col md:flex-row items-end justify-center gap-4 md:gap-8 min-h-[320px]">
-
-            {% if leaderboard|length > 1 %}
-            {% set u2 = leaderboard[1][0] %}
-            <div class="order-2 md:order-1 flex-1 max-w-sm w-full relative group z-10">
-                <div class="bg-white rounded-3xl shadow-xl p-6 border-b-4 border-indigo-300 flex flex-col items-center relative transform transition group-hover:-translate-y-2 duration-300">
-                    <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm z-20">2</div>
-
-                    <div class="relative mb-3 mt-3">
-                        {% if u2.avatar_path %}
-                            <img src="/static/{{ u2.avatar_path }}" class="w-24 h-24 rounded-full object-cover border-4 border-indigo-100 shadow-sm">
-                        {% else %}
-                            <div class="w-24 h-24 rounded-full bg-indigo-50 flex items-center justify-center text-3xl font-bold text-indigo-400 border-4 border-indigo-100">{{ u2.first_name[:1] }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="text-center">
-                        <div class="font-bold text-lg text-gray-800 truncate w-32 md:w-auto mx-auto">{{ u2.first_name }}</div>
-                        <div class="text-sm text-gray-500 mb-3">{{ u2.last_name }}</div>
-                        <div class="inline-block bg-indigo-50 text-indigo-600 text-sm font-bold px-4 py-1.5 rounded-full">
-                            {{ leaderboard[1][1] | int }} баллов
-                        </div>
-                    </div>
-                </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
+        {% if leaderboard|length > 1 %}
+        {% set u2 = leaderboard[1][0] %}
+        <div class="order-2 md:order-1 bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center relative">
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-slate-200 text-slate-500 rounded-full flex items-center justify-center text-xs font-bold">2</div>
+            <div class="mt-2 mb-3">
+                {% if u2.avatar_path %}
+                    <img src="/static/{{ u2.avatar_path }}" class="w-16 h-16 rounded-full object-cover border border-slate-200">
+                {% else %}
+                    <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-xl font-medium text-slate-400">{{ u2.first_name[:1] }}</div>
+                {% endif %}
             </div>
-            {% endif %}
-
-            {% set u1 = leaderboard[0][0] %}
-            <div class="order-1 md:order-2 flex-1 max-w-sm w-full relative z-20 -mt-6 md:-mt-0">
-                <div class="bg-white rounded-3xl shadow-2xl p-8 border-b-8 border-indigo-600 flex flex-col items-center transform scale-110 relative z-20">
-                     <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-black border-4 border-white shadow-md z-30">1</div>
-
-                    <div class="relative mb-4 mt-4">
-                        {% if u1.avatar_path %}
-                            <img src="/static/{{ u1.avatar_path }}" class="w-32 h-32 rounded-full object-cover border-4 border-indigo-600 shadow-md">
-                        {% else %}
-                            <div class="w-32 h-32 rounded-full bg-indigo-50 flex items-center justify-center text-5xl font-bold text-indigo-600 border-4 border-indigo-600">{{ u1.first_name[:1] }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="text-center">
-                        <div class="font-extrabold text-2xl text-gray-900">{{ u1.first_name }}</div>
-                        <div class="text-base font-medium text-gray-500 mb-4">{{ u1.last_name }}</div>
-                        <div class="text-5xl font-black text-indigo-600 mb-2">
-                            {{ leaderboard[0][1] | int }}
-                        </div>
-                         <div class="text-sm font-bold text-indigo-400 uppercase tracking-wider">
-                            баллов всего
-                        </div>
-                    </div>
-                </div>
+            <div class="text-center">
+                <div class="font-semibold text-slate-800 text-sm">{{ u2.first_name }} {{ u2.last_name }}</div>
+                <div class="mt-2 inline-flex bg-slate-50 text-slate-600 text-xs font-medium px-3 py-1 rounded-md border border-slate-100">{{ leaderboard[1][1] | int }} баллов</div>
             </div>
-
-            {% if leaderboard|length > 2 %}
-            {% set u3 = leaderboard[2][0] %}
-            <div class="order-3 md:order-3 flex-1 max-w-sm w-full relative group z-10">
-                <div class="bg-white rounded-3xl shadow-xl p-6 border-b-4 border-indigo-200 flex flex-col items-center relative transform transition group-hover:-translate-y-2 duration-300">
-                     <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-indigo-50 text-indigo-400 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm z-20">3</div>
-
-                    <div class="relative mb-3 mt-3">
-                        {% if u3.avatar_path %}
-                            <img src="/static/{{ u3.avatar_path }}" class="w-24 h-24 rounded-full object-cover border-4 border-indigo-50 shadow-sm">
-                        {% else %}
-                            <div class="w-24 h-24 rounded-full bg-indigo-50 flex items-center justify-center text-3xl font-bold text-indigo-300 border-4 border-indigo-50">{{ u3.first_name[:1] }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="text-center">
-                        <div class="font-bold text-lg text-gray-800 truncate w-32 md:w-auto mx-auto">{{ u3.first_name }}</div>
-                        <div class="text-sm text-gray-500 mb-3">{{ u3.last_name }}</div>
-                        <div class="inline-block bg-indigo-50 text-indigo-600 text-sm font-bold px-4 py-1.5 rounded-full">
-                            {{ leaderboard[2][1] | int }} баллов
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
+        {% endif %}
+
+        {% set u1 = leaderboard[0][0] %}
+        <div class="order-1 md:order-2 bg-white rounded-xl border-t-4 border-indigo-600 shadow-sm p-6 flex flex-col items-center relative">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+            <div class="mt-2 mb-3">
+                {% if u1.avatar_path %}
+                    <img src="/static/{{ u1.avatar_path }}" class="w-20 h-20 rounded-full object-cover border border-slate-200">
+                {% else %}
+                    <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center text-2xl font-bold text-indigo-600 border border-indigo-100">{{ u1.first_name[:1] }}</div>
+                {% endif %}
+            </div>
+            <div class="text-center">
+                <div class="font-bold text-slate-900 text-base">{{ u1.first_name }} {{ u1.last_name }}</div>
+                <div class="mt-2 inline-flex bg-indigo-50 text-indigo-700 text-sm font-bold px-4 py-1.5 rounded-md border border-indigo-100">{{ leaderboard[0][1] | int }} баллов</div>
+            </div>
+        </div>
+
+        {% if leaderboard|length > 2 %}
+        {% set u3 = leaderboard[2][0] %}
+        <div class="order-3 bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center relative">
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-slate-200 text-slate-500 rounded-full flex items-center justify-center text-xs font-bold">3</div>
+            <div class="mt-2 mb-3">
+                {% if u3.avatar_path %}
+                    <img src="/static/{{ u3.avatar_path }}" class="w-16 h-16 rounded-full object-cover border border-slate-200">
+                {% else %}
+                    <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-xl font-medium text-slate-400">{{ u3.first_name[:1] }}</div>
+                {% endif %}
+            </div>
+            <div class="text-center">
+                <div class="font-semibold text-slate-800 text-sm">{{ u3.first_name }} {{ u3.last_name }}</div>
+                <div class="mt-2 inline-flex bg-slate-50 text-slate-600 text-xs font-medium px-3 py-1 rounded-md border border-slate-100">{{ leaderboard[2][1] | int }} баллов</div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 
     {% if leaderboard|length > 3 %}
-    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-10">
-        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="font-bold text-gray-700">Претенденты на победу</h3>
-            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Всего участников: {{ leaderboard|length }}</span>
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-slate-700">Остальные участники</h3>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Всего: {{ leaderboard|length }}</span>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-white text-xs uppercase text-gray-400 font-semibold tracking-wider">
-                    <tr>
-                        <th class="px-6 py-4 w-16 text-center">#</th>
-                        <th class="px-6 py-4">Студент</th>
-                        <th class="px-6 py-4 text-center">Достижения</th>
-                        <th class="px-6 py-4 text-right">Баллы</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-50">
+            <table class="w-full text-left whitespace-nowrap">
+                <tbody class="divide-y divide-slate-100">
                     {% for row in leaderboard[3:] %}
                     {% set is_me = (row[0].id == user.id) %}
-                    <tr class="transition-all duration-200 hover:bg-gray-50 {% if is_me %}bg-indigo-50 hover:bg-indigo-100{% endif %}">
-                        <td class="px-6 py-4 text-center">
-                            <span class="font-mono font-bold {% if is_me %}text-indigo-600{% else %}text-gray-400{% endif %}">
-                                {{ loop.index + 3 }}
-                            </span>
+                    <tr class="transition-colors {% if is_me %}bg-indigo-50/50 hover:bg-indigo-50{% else %}hover:bg-slate-50{% endif %}">
+                        <td class="px-5 py-3 w-12 text-center">
+                            <span class="text-sm font-medium {% if is_me %}text-indigo-600{% else %}text-slate-400{% endif %}">{{ loop.index + 3 }}</span>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-4">
+                        <td class="px-5 py-3">
+                            <div class="flex items-center gap-3">
                                 {% if row[0].avatar_path %}
-                                    <img src="/static/{{ row[0].avatar_path }}" class="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm">
+                                    <img src="/static/{{ row[0].avatar_path }}" class="w-8 h-8 rounded-full object-cover border border-slate-200">
                                 {% else %}
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm shadow-sm">{{ row[0].first_name[:1] }}</div>
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-medium text-xs">{{ row[0].first_name[:1] }}</div>
                                 {% endif %}
                                 <div>
-                                    <div class="font-bold text-gray-800 {% if is_me %}text-indigo-700{% endif %}">
+                                    <div class="text-sm font-medium text-slate-800 {% if is_me %}text-indigo-700{% endif %}">
                                         {{ row[0].first_name }} {{ row[0].last_name }}
-                                        {% if is_me %}
-                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-200 text-indigo-800">Вы</span>
-                                        {% endif %}
+                                        {% if is_me %}<span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-700">Вы</span>{% endif %}
                                     </div>
-                                    <div class="text-xs text-gray-400">{{ row[0].email }}</div>
+                                    <div class="text-[10px] text-slate-400">{{ row[0].email }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {{ row[2] }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <span class="font-bold text-lg {% if is_me %}text-indigo-600{% else %}text-indigo-900{% endif %}">
-                                {{ row[1] | int }}
-                            </span>
+                        <td class="px-5 py-3 text-right">
+                            <span class="text-sm font-bold {% if is_me %}text-indigo-600{% else %}text-slate-700{% endif %}">{{ row[1] | int }}</span>
+                            <span class="text-xs text-slate-400 ml-1">б.</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -173,12 +125,11 @@
     {% endif %}
 
     {% if leaderboard|length == 0 %}
-    <div class="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-50 mb-6 animate-pulse">
-            <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+    <div class="text-center py-16 bg-white rounded-xl border border-slate-200">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 mb-3">
+            <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900">Пока здесь тихо...</h3>
-        <p class="text-gray-500 mt-2 max-w-md mx-auto">Станьте первым, кто загрузит достижение и попадет на вершину рейтинга!</p>
+        <p class="text-sm text-slate-500">Пока никто не набрал баллов.</p>
     </div>
     {% endif %}
 

@@ -1,42 +1,44 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="max-w-[1400px] mx-auto">
+<div class="max-w-6xl mx-auto space-y-6">
 
-    <div class="flex justify-between items-end mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Мои достижения</h2>
-            <p class="text-sm text-gray-500">История загрузок и статусы проверки</p>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Мои достижения</h2>
+            <p class="text-sm text-slate-500">История загрузок и статусы проверки</p>
         </div>
-        <a href="/sirius.achievements/achievements/create" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <a href="/sirius.achievements/achievements/create" class="w-full sm:w-auto bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Добавить
         </a>
     </div>
 
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-8">
-        <form action="/sirius.achievements/achievements" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" x-data="autocomplete('/sirius.achievements/api/my-achievements/search')">
+    <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200">
+        <form action="/sirius.achievements/achievements" method="GET" class="flex flex-wrap gap-3 items-end" x-data="autocomplete('/sirius.achievements/api/my-achievements/search')">
 
-            <div class="md:col-span-3 relative">
-                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Поиск</label>
+            <div class="flex-grow min-w-[200px] relative">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Поиск</label>
                 <div class="relative">
-                    <div class="absolute left-3 top-2.5 text-gray-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <div class="absolute left-3 top-2.5 text-slate-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                     <input type="text" name="query" x-model="query" @input.debounce.300ms="fetchSuggestions" @keydown.escape="suggestions=[]"
                            placeholder="Название..." autocomplete="off" value="{{ query or '' }}"
-                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm text-gray-700 placeholder-gray-400 h-[42px]">
+                           class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none text-sm text-slate-800 transition-all h-[38px]">
                 </div>
-                <ul x-show="suggestions.length > 0" @click.outside="suggestions = []" class="absolute z-50 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-1 max-h-60 overflow-y-auto overflow-hidden" style="display: none;" x-cloak>
+                <ul x-show="suggestions.length > 0" @click.outside="suggestions = []" class="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto" style="display: none;" x-cloak>
                     <template x-for="item in suggestions">
-                        <li @click="selectItem(item.value)" class="px-4 py-2 hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0 flex items-center"><span x-text="item.text"></span></li>
+                        <li @click="selectItem(item.value || item.title || item.text)" class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-0">
+                            <span x-text="item.text || item.title || item.value"></span>
+                        </li>
                     </template>
                 </ul>
             </div>
 
-            <div class="md:col-span-2">
-                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Статус</label>
-                <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer h-[42px] text-gray-700">
+            <div class="w-full sm:w-[140px]">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Статус</label>
+                <select name="status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
                     <option value="">Все статусы</option>
                     {% for s in statuses %}
                         <option value="{{ s.value }}" {{ 'selected' if status == s.value else '' }}>{{ 'Одобрено' if s.value=='approved' else ('На проверке' if s.value=='pending' else 'Отклонено') }}</option>
@@ -44,25 +46,25 @@
                 </select>
             </div>
 
-            <div class="md:col-span-2">
-                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Вид</label>
-                <select name="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer h-[42px] text-gray-700">
+            <div class="w-full sm:w-[140px]">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Вид</label>
+                <select name="category" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
                     <option value="">Все виды</option>
                     {% for c in categories %}<option value="{{ c.value }}" {{ 'selected' if category == c.value else '' }}>{{ c.value }}</option>{% endfor %}
                 </select>
             </div>
 
-            <div class="md:col-span-2">
-                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Уровень</label>
-                <select name="level" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer h-[42px] text-gray-700">
+            <div class="w-full sm:w-[140px]">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Уровень</label>
+                <select name="level" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
                     <option value="">Все уровни</option>
                     {% for l in levels %}<option value="{{ l.value }}" {{ 'selected' if level == l.value else '' }}>{{ l.value }}</option>{% endfor %}
                 </select>
             </div>
 
-            <div class="md:col-span-2">
-                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1 tracking-wide">Сортировка</label>
-                <select name="sort_by" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer h-[42px] text-gray-700">
+            <div class="w-full sm:w-[150px]">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Сортировка</label>
+                <select name="sort_by" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
                     <option value="newest" {{ 'selected' if sort_by == 'newest' else '' }}>Сначала новые</option>
                     <option value="oldest" {{ 'selected' if sort_by == 'oldest' else '' }}>Сначала старые</option>
                     <option value="level" {{ 'selected' if sort_by == 'level' else '' }}>По значимости</option>
@@ -70,42 +72,57 @@
                 </select>
             </div>
 
-            <div class="md:col-span-1 flex gap-2 justify-end w-full">
-                <button type="submit" class="bg-indigo-600 text-white w-full rounded-lg font-bold text-sm hover:bg-indigo-700 shadow-sm transition-colors h-[42px] flex items-center justify-center">Найти</button>
-                <a href="/sirius.achievements/achievements" class="bg-gray-100 text-gray-500 w-[42px] rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center border border-gray-200 h-[42px]" title="Сбросить">✕</a>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button type="submit" class="flex-1 sm:flex-none px-6 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center h-[38px]">Найти</button>
+                <a href="/sirius.achievements/achievements" class="w-[38px] flex-shrink-0 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center h-[38px]" title="Сбросить">✕</a>
             </div>
         </form>
     </div>
 
-    {% include "admin/achievements/table_partial.html" ignore missing %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {% if achievements %}
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-100">
-                    <tr><th class="px-6 py-4">Файл</th><th class="px-6 py-4">Название</th><th class="px-6 py-4">Инфо</th><th class="px-6 py-4">Статус</th><th class="px-6 py-4">Баллы</th><th class="px-6 py-4 text-right"></th></tr>
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-50 text-[11px] uppercase text-slate-500 font-bold tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3 w-12 text-center">Файл</th>
+                        <th class="px-5 py-3">Название</th>
+                        <th class="px-5 py-3">Инфо</th>
+                        <th class="px-5 py-3">Статус</th>
+                        <th class="px-5 py-3">Баллы</th>
+                        <th class="px-5 py-3 text-right"></th>
+                    </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-slate-100">
                     {% for item in achievements %}
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 w-16">
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-3 text-center">
                             <button @click="$dispatch('open-preview', {src: '/static/{{ item.file_path }}', type: '{{ 'pdf' if item.file_path.endswith('.pdf') else 'image' }}'})"
-                                    class="w-10 h-10 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center shadow-sm">
-                                ⛶
+                                    class="inline-flex w-8 h-8 rounded bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                             </button>
                         </td>
-                        <td class="px-6 py-4 font-bold text-gray-800">{{ item.title }}</td>
-                        <td class="px-6 py-4">{{ item.category.value }} / {{ item.level.value }}</td>
-                        <td class="px-6 py-4">
-                            {% if item.status.value == 'approved' %}<span class="text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full text-xs">Одобрено</span>
-                            {% elif item.status.value == 'rejected' %}<span class="text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full text-xs">Отклонено</span>
-                            {% else %}<span class="text-yellow-600 font-bold bg-yellow-50 px-2 py-1 rounded-full text-xs">На проверке</span>{% endif %}
+                        <td class="px-5 py-3 font-medium text-slate-800">{{ item.title }}</td>
+                        <td class="px-5 py-3 text-slate-600 text-xs">
+                            <span class="block">{{ item.category.value }}</span>
+                            <span class="text-slate-400">{{ item.level.value }}</span>
                         </td>
-                        <td class="px-6 py-4 font-bold text-indigo-600">{{ item.points }}</td>
-                        <td class="px-6 py-4 text-right">
-                            <form action="/sirius.achievements/achievements/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Удалить?');">
+                        <td class="px-5 py-3">
+                            {% if item.status.value == 'approved' %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">Одобрено</span>
+                            {% elif item.status.value == 'rejected' %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-700 border border-red-100">Отклонено</span>
+                            {% else %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-50 text-yellow-700 border border-yellow-100">На проверке</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-3 font-bold {% if item.points > 0 %}text-indigo-600{% else %}text-slate-400{% endif %}">
+                            {{ item.points }}
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            <form action="/sirius.achievements/achievements/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Удалить этот документ навсегда?');">
                                 <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
-                                <button class="text-red-500 hover:underline">Удалить</button>
+                                <button class="text-xs font-medium text-slate-400 hover:text-red-600 transition-colors">Удалить</button>
                             </form>
                         </td>
                     </tr>
@@ -113,7 +130,14 @@
                 </tbody>
             </table>
         </div>
-        {% else %}<div class="p-10 text-center text-gray-500">Пусто</div>{% endif %}
+        {% else %}
+        <div class="py-12 text-center">
+             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 mb-3 text-slate-400">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <p class="text-sm text-slate-500">У вас пока нет загруженных достижений.</p>
+        </div>
+        {% endif %}
     </div>
 
     <script>
@@ -123,9 +147,17 @@
                 suggestions: [],
                 async fetchSuggestions() {
                     if (this.query.length < 1) { this.suggestions = []; return; }
-                    try { const res = await fetch(`${url}?q=${this.query}`); if(res.ok) this.suggestions = await res.json(); } catch(e) {}
+                    try {
+                        const res = await fetch(`${url}?q=${this.query}`);
+                        if(res.ok) {
+                            this.suggestions = await res.json();
+                        }
+                    } catch(e) { console.error("Autocomplete error:", e); }
                 },
-                selectItem(val) { this.query = val; this.suggestions = []; }
+                selectItem(val) {
+                    this.query = val;
+                    this.suggestions = [];
+                }
             }
         }
     </script>

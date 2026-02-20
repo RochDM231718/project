@@ -4,58 +4,68 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100" x-data="imageCropper()">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Добавить достижение</h2>
+<div class="max-w-2xl mx-auto bg-white p-5 sm:p-8 rounded-2xl shadow-sm border border-slate-200" x-data="imageCropper()">
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Добавить достижение</h2>
+        <p class="text-sm text-slate-500 mt-1">Заполните данные и загрузите подтверждающий документ.</p>
+    </div>
 
-    <form action="{{ url_for('admin.achievements.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6" @submit.prevent="submitForm">
+    <form action="{{ url_for('admin.achievements.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5" @submit.prevent="submitForm">
         <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
-            <input type="text" name="title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Название</label>
+            <input type="text" name="title" required
+                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-400"
+                   placeholder="Например: Победитель олимпиады...">
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Категория</label>
-                <select name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Категория</label>
+                <select name="category" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
                     {% for cat in categories %}<option value="{{cat.value}}">{{cat.value}}</option>{% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Уровень</label>
-                <select name="level" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Уровень</label>
+                <select name="level" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
                     {% for lvl in levels %}<option value="{{lvl.value}}">{{lvl.value}}</option>{% endfor %}
                 </select>
             </div>
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
-            <textarea name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Описание (необязательно)</label>
+            <textarea name="description" rows="3"
+                      class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Документ (Фото можно обрезать)</label>
-            <input type="file" id="fileInput" name="file" accept="image/*,application/pdf" @change="fileChosen"
-                   class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Документ (Фото или PDF)</label>
+            <input type="file" id="fileInput" name="file" accept="image/*,application/pdf" @change="fileChosen" required
+                   class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 transition-colors cursor-pointer border border-slate-200 rounded-lg bg-slate-50 p-1">
         </div>
 
-        <div class="pt-4 flex justify-end gap-3">
-            <a href="/sirius.achievements/achievements" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Отмена</a>
-            <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md">Сохранить</button>
+        <div class="pt-4 flex flex-col-reverse sm:flex-row justify-end gap-3 border-t border-slate-100">
+            <a href="/sirius.achievements/achievements" class="w-full sm:w-auto px-6 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 text-center transition-colors">Отмена</a>
+            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">Сохранить</button>
         </div>
     </form>
 
-    <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4" x-cloak>
-        <div class="bg-white rounded-lg p-4 w-full max-w-2xl">
-            <h3 class="text-lg font-bold mb-4">Кадрирование</h3>
-            <div class="h-96 w-full bg-gray-100 overflow-hidden rounded border">
-                <img id="imageToCrop" class="max-w-full block">
+    <div x-show="showModal" class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-xl shadow-sm w-full max-w-xl flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800">Кадрирование документа</h3>
             </div>
-            <div class="flex justify-end gap-3 mt-4">
-                <button type="button" @click="cancelCrop" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700">Отмена</button>
-                <button type="button" @click="confirmCrop" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Обрезать и Применить</button>
+            <div class="p-4 bg-slate-50">
+                <div class="h-80 w-full bg-slate-200 rounded-lg overflow-hidden border border-slate-300">
+                    <img id="imageToCrop" class="max-w-full block">
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-100 flex gap-3">
+                <button type="button" @click="cancelCrop" class="flex-1 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">Отмена</button>
+                <button type="button" @click="confirmCrop" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">Обрезать и Применить</button>
             </div>
         </div>
     </div>
@@ -75,25 +85,22 @@ function imageCropper() {
 
                 reader.onload = (event) => {
                     const imageElement = document.getElementById('imageToCrop');
-
                     imageElement.src = '';
-
                     imageElement.onload = () => {
                         this.showModal = true;
                         this.$nextTick(() => {
                             if (this.cropper) this.cropper.destroy();
                             this.cropper = new Cropper(imageElement, {
                                 viewMode: 1,
-                                autoCropArea: 1
+                                autoCropArea: 1,
+                                background: false
                             });
                         });
                     };
-
                     imageElement.onerror = () => {
                         alert("Ошибка: Файл поврежден или не является изображением.");
                         e.target.value = '';
                     };
-
                     imageElement.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
@@ -111,13 +118,11 @@ function imageCropper() {
         },
         confirmCrop() {
             if (!this.cropper) return;
-
             const canvas = this.cropper.getCroppedCanvas();
             if (!canvas) {
                 alert("Не удалось обработать изображение.");
                 return;
             }
-
             canvas.toBlob((blob) => {
                 this.croppedBlob = blob;
                 this.showModal = false;
@@ -132,21 +137,29 @@ function imageCropper() {
                 formData.set('file', this.croppedBlob, originalFile.name);
             }
 
+            // Визуально блокируем кнопку при отправке
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Сохранение...';
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+
             fetch(form.action, { method: 'POST', body: formData })
                 .then(response => {
                     if (response.redirected) {
                         window.location.href = response.url;
                     } else {
                         return response.text().then(html => {
-                            document.open();
-                            document.write(html);
-                            document.close();
+                            document.open(); document.write(html); document.close();
                         });
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert("Произошла ошибка при отправке формы.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-70', 'cursor-not-allowed');
                 });
         }
     }

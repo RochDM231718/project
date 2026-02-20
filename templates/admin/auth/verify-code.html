@@ -2,21 +2,27 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Введите код | Sirius Achievements</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Введите код | Sirius.Achievements</title>
+
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', path='icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='icon.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', path='icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 antialiased font-sans min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 space-y-6">
-        <div class="text-center">
-            <h1 class="text-2xl font-bold text-gray-900">Проверка кода</h1>
-            <p class="text-sm text-gray-500 mt-2">Код отправлен на <b>{{ email }}</b>. Письмо может быть направлено в папку спам, проверьте её.</p>
+    <div class="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Проверка кода</h1>
+            <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                Код отправлен на <span class="font-medium text-slate-800">{{ email }}</span>. Письмо может быть в папке "Спам".
+            </p>
         </div>
 
         {% if error_msg %}
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 text-sm text-red-700">
+        <div class="mb-6 bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg text-center">
             {{ error_msg }}
         </div>
         {% endif %}
@@ -25,20 +31,19 @@
             <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
 
             <div>
-                <input type="text" name="code" required placeholder="123456" maxlength="6" autofocus
-                       class="w-full px-4 py-3 text-center text-3xl tracking-[0.5em] font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                <input type="text" name="code" required placeholder="••••••" maxlength="6" autofocus autocomplete="off"
+                       class="w-full px-4 py-3 text-center text-3xl tracking-[0.4em] font-mono bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-300">
             </div>
 
-            <button type="submit" class="w-full bg-indigo-600 text-white font-medium py-3 rounded-lg hover:bg-indigo-700 transition-colors shadow-md">
-                Подтвердить код
+            <button type="submit" class="w-full bg-indigo-600 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition-colors">
+                Подтвердить
             </button>
         </form>
 
-        <form action="{{ url_for('admin.auth.resend_code') }}" method="POST" id="resendForm" class="text-center">
+        <form action="{{ url_for('admin.auth.resend_code') }}" method="POST" id="resendForm" class="mt-6 text-center">
             <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
-
             <button type="submit" id="resendBtn" disabled
-                    class="text-sm text-gray-400 cursor-not-allowed font-medium transition-colors">
+                    class="text-xs text-slate-400 cursor-not-allowed font-medium transition-colors">
                 Отправить код повторно <span id="timer">({{ seconds_left }})</span>
             </button>
         </form>
@@ -52,8 +57,8 @@
         function updateTimer() {
             if (timeLeft <= 0) {
                 resendBtn.disabled = false;
-                resendBtn.classList.remove('text-gray-400', 'cursor-not-allowed');
-                resendBtn.classList.add('text-indigo-600', 'hover:underline', 'cursor-pointer');
+                resendBtn.classList.remove('text-slate-400', 'cursor-not-allowed');
+                resendBtn.classList.add('text-indigo-600', 'hover:text-indigo-800', 'cursor-pointer');
                 resendBtn.innerHTML = "Отправить код повторно";
             } else {
                 timerSpan.textContent = `(${timeLeft})`;
