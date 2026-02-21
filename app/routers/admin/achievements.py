@@ -12,6 +12,7 @@ from app.models.user import Users
 from app.models.enums import AchievementStatus, AchievementCategory, AchievementLevel, UserRole
 from app.services.admin.achievement_service import AchievementService
 from app.repositories.admin.achievement_repository import AchievementRepository
+from app.utils.search import escape_like
 
 router = guard_router
 
@@ -26,7 +27,7 @@ async def api_my_achievements_search(request: Request, q: str = Query(..., min_l
     user_id = request.session.get('auth_id')
     stmt = select(Achievement).filter(
         Achievement.user_id == user_id,
-        or_(Achievement.title.ilike(f"%{q}%"), Achievement.description.ilike(f"%{q}%"))
+        or_(Achievement.title.ilike(f"%{escape_like(q)}%"), Achievement.description.ilike(f"%{escape_like(q)}%"))
     ).limit(5)
 
     result = await db.execute(stmt)
@@ -53,7 +54,7 @@ async def index(
     stmt = select(Achievement).filter(Achievement.user_id == user_id)
 
     if query:
-        stmt = stmt.filter(or_(Achievement.title.ilike(f"%{query}%"), Achievement.description.ilike(f"%{query}%")))
+        stmt = stmt.filter(or_(Achievement.title.ilike(f"%{escape_like(query)}%"), Achievement.description.ilike(f"%{escape_like(query)}%")))
     if status and status != 'all':
         stmt = stmt.filter(Achievement.status == status)
     if category and category != 'all':

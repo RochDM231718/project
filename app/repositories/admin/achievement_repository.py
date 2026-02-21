@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.repositories.admin.base_crud_repository import BaseCrudRepository
 from app.models.achievement import Achievement
+from app.utils.search import escape_like
 
 
 class AchievementRepository(BaseCrudRepository):
@@ -20,7 +21,7 @@ class AchievementRepository(BaseCrudRepository):
         stmt = select(self.model).options(selectinload(self.model.user))
 
         if search:
-            stmt = stmt.filter(self.model.title.ilike(f"%{search}%"))
+            stmt = stmt.filter(self.model.title.ilike(f"%{escape_like(search)}%"))
 
         if status and status != "all":
             stmt = stmt.filter(self.model.status == status)

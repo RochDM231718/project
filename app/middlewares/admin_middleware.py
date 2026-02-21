@@ -1,4 +1,5 @@
 import os
+import structlog
 import redis.asyncio as aioredis
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, HTTPException
@@ -8,6 +9,8 @@ from app.infrastructure.database.connection import db_instance
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.enums import UserStatus, AchievementStatus, UserRole
+
+logger = structlog.get_logger()
 
 redis_client = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
 CACHE_TTL = 60
@@ -51,7 +54,7 @@ class GlobalContextMiddleware(BaseHTTPMiddleware):
             request.state.pending_achievements_count = pending_ach
 
         except Exception as e:
-            print(f"Middleware DB/Cache Error: {e}")
+            logger.warning("Middleware DB/Cache error", error=str(e))
             request.state.pending_users_count = 0
             request.state.pending_achievements_count = 0
 
@@ -79,7 +82,7 @@ async def auth(request: Request):
             request.session.clear()
             raise HTTPException(status_code=302, headers={"Location": "/sirius.achievements/login"})
 
-        if user.role not in [UserRole.ADMIN, UserRole.MODERATOR]:
+        if user.role not in [UserRole.SUPER_ADMIN, UserRole.MODERATOR]:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 raise HTTPException(status_code=403, detail="Forbidden")
             raise HTTPException(status_code=403, detail="Доступ запрещен")

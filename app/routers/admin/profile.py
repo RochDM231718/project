@@ -3,14 +3,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from passlib.context import CryptContext
-import random
+import secrets
 
 from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
+from app.models.enums import UserStatus
 from app.services.admin.user_service import UserService
 from app.repositories.admin.user_repository import UserRepository
 from app.routers.admin.deps import get_current_user
+from app.schemas.admin.auth import ResetPasswordSchema
 
 # Импорты для отправки почты
 from app.services.auth_service import AuthService
@@ -80,7 +82,7 @@ async def update_profile(
             })
 
         # Генерируем 6-значный код и сохраняем в сессию
-        code = str(random.randint(100000, 999999))
+        code = ''.join(secrets.choice('0123456789') for _ in range(6))
         request.session['pending_email'] = email
         request.session['email_code'] = code
 
@@ -202,11 +204,19 @@ async def change_password(
     if not user:
         return RedirectResponse(url='/sirius.achievements/login', status_code=302)
 
-    if new_password != confirm_password:
+    try:
+        ResetPasswordSchema(password=new_password, password_confirm=confirm_password)
+    except Exception as e:
+        error_messages = []
+        if hasattr(e, 'errors'):
+            for err in e.errors():
+                error_messages.append(err.get('msg', str(err)))
+        else:
+            error_messages.append(str(e))
         return templates.TemplateResponse('profile/index.html', {
             'request': request,
             'user': user,
-            'error_msg': "Пароли не совпадают",
+            'error_msg': "; ".join(error_messages),
             'active_tab': 'security'
         })
 

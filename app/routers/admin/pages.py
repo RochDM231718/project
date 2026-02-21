@@ -12,6 +12,7 @@ from app.services.admin.achievement_service import AchievementService
 from app.repositories.admin.achievement_repository import AchievementRepository
 from app.infrastructure.tranaslations import TranslationManager
 from app.security.csrf import validate_csrf
+from app.utils.search import escape_like
 
 router = guard_router
 
@@ -43,8 +44,8 @@ async def search_documents(request: Request, query: str, status: Optional[str] =
 
     stmt = select(Achievement).options(selectinload(Achievement.user)).join(Users)
 
-    stmt = stmt.filter(or_(Achievement.title.ilike(f"%{query}%"), Users.first_name.ilike(f"%{query}%"),
-                           Users.last_name.ilike(f"%{query}%"), Users.email.ilike(f"%{query}%")))
+    stmt = stmt.filter(or_(Achievement.title.ilike(f"%{escape_like(query)}%"), Users.first_name.ilike(f"%{escape_like(query)}%"),
+                           Users.last_name.ilike(f"%{escape_like(query)}%"), Users.email.ilike(f"%{escape_like(query)}%")))
     if status: stmt = stmt.filter(Achievement.status == status)
     stmt = stmt.limit(10)
 
@@ -62,8 +63,8 @@ async def index(request: Request, query: Optional[str] = "", status: Optional[st
 
     stmt = select(Achievement).options(selectinload(Achievement.user)).join(Users)
 
-    if query: stmt = stmt.filter(or_(Achievement.title.ilike(f"%{query}%"), Users.first_name.ilike(f"%{query}%"),
-                                     Users.last_name.ilike(f"%{query}%")))
+    if query: stmt = stmt.filter(or_(Achievement.title.ilike(f"%{escape_like(query)}%"), Users.first_name.ilike(f"%{escape_like(query)}%"),
+                                     Users.last_name.ilike(f"%{escape_like(query)}%")))
     if status: stmt = stmt.filter(Achievement.status == status)
 
     if hasattr(Achievement, sort):
@@ -79,8 +80,8 @@ async def index(request: Request, query: Optional[str] = "", status: Optional[st
 
     count_stmt = select(func.count()).select_from(Achievement).join(Users)
     if query: count_stmt = count_stmt.filter(
-        or_(Achievement.title.ilike(f"%{query}%"), Users.first_name.ilike(f"%{query}%"),
-            Users.last_name.ilike(f"%{query}%")))
+        or_(Achievement.title.ilike(f"%{escape_like(query)}%"), Users.first_name.ilike(f"%{escape_like(query)}%"),
+            Users.last_name.ilike(f"%{escape_like(query)}%")))
     if status: count_stmt = count_stmt.filter(Achievement.status == status)
 
     res_count = await db.execute(count_stmt)

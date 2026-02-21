@@ -11,6 +11,8 @@ from app.routers.admin.admin import templates
 from app.routers.admin.deps import get_current_user
 from app.security.csrf import validate_csrf
 from app.models.achievement import Achievement
+from app.models.enums import UserRole
+from app.utils.search import escape_like
 
 router = APIRouter(
     prefix="/sirius.achievements/documents",
@@ -28,16 +30,13 @@ async def api_documents_search(
     if not user:
         raise HTTPException(status_code=401, detail="Не авторизован")
 
-    allowed_roles = ['admin', 'moderator', 'super_admin', 'ADMIN', 'MODERATOR', 'SUPER_ADMIN']
-    user_role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
-
-    if user_role_str not in allowed_roles:
+    if user.role not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
         raise HTTPException(status_code=403, detail="Недостаточно прав")
 
     stmt = select(Achievement).filter(
         or_(
-            Achievement.title.ilike(f"%{q}%"),
-            Achievement.description.ilike(f"%{q}%")
+            Achievement.title.ilike(f"%{escape_like(q)}%"),
+            Achievement.description.ilike(f"%{escape_like(q)}%")
         )
     ).limit(5)
 
@@ -60,14 +59,7 @@ async def index(
     if not user:
         return RedirectResponse(url="/")
 
-    allowed_roles = [
-        'admin', 'moderator', 'super_admin',
-        'ADMIN', 'MODERATOR', 'SUPER_ADMIN'
-    ]
-
-    user_role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
-
-    if user_role_str not in allowed_roles:
+    if user.role not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
         return RedirectResponse(url="/sirius.achievements/dashboard")
 
     repo = AchievementRepository(db)

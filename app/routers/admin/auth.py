@@ -2,6 +2,9 @@ from fastapi import APIRouter, Request, Depends, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import time
+import os
+import redis.asyncio as aioredis
+import structlog
 
 from app.routers.admin.deps import get_current_user
 from app.security.csrf import validate_csrf
@@ -10,8 +13,11 @@ from app.routers.admin.admin import templates, get_db
 from app.repositories.admin.user_repository import UserRepository
 from app.repositories.admin.user_token_repository import UserTokenRepository
 from app.services.admin.user_token_service import UserTokenService
-from app.schemas.admin.auth import UserRegister
+from app.schemas.admin.auth import UserRegister, ResetPasswordSchema
 from app.models.enums import EducationLevel
+
+logger = structlog.get_logger()
+redis_client = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
 
 router = APIRouter(prefix="/sirius.achievements", tags=["Auth"])
 
@@ -204,16 +210,40 @@ async def verify_code(
     retry_at = request.session.get('retry_at', 0)
     seconds_left = max(0, retry_at - int(time.time()))
 
+    if not email:
+        return RedirectResponse(url=request.url_for('admin.auth.forgot_password_page'), status_code=302)
+
+    # Rate-limit: max 5 OTP attempts per email per 15 minutes
+    rl_key = f"otp_attempts:{email}"
+    attempts = await redis_client.get(rl_key)
+    if attempts and int(attempts) >= 5:
+        return templates.TemplateResponse('auth/verify-code.html', {
+            'request': request,
+            'email': email,
+            'error_msg': "Слишком много попыток. Запросите новый код через 15 минут.",
+            'seconds_left': seconds_left
+        })
+
     try:
         await service.verify_code_only(email, code)
+        await redis_client.delete(rl_key)
         request.session['code_verified'] = True
         return RedirectResponse(url=request.url_for('admin.auth.reset_password_page'), status_code=302)
 
     except Exception as e:
+        await redis_client.incr(rl_key)
+        if await redis_client.ttl(rl_key) == -1:
+            await redis_client.expire(rl_key, 900)
+
+        remaining = 5 - (int(await redis_client.get(rl_key) or 0))
+        error_msg = "Неверный код. Попробуйте еще раз."
+        if remaining <= 2:
+            error_msg = f"Неверный код. Осталось попыток: {remaining}."
+
         return templates.TemplateResponse('auth/verify-code.html', {
             'request': request,
             'email': email,
-            'error_msg': "Неверный код. Попробуйте еще раз.",
+            'error_msg': error_msg,
             'seconds_left': seconds_left
         })
 
@@ -237,10 +267,18 @@ async def reset_password(
     if not email or not request.session.get('code_verified'):
         return RedirectResponse(url=request.url_for('admin.auth.forgot_password_page'), status_code=302)
 
-    if password != password_confirm:
+    try:
+        ResetPasswordSchema(password=password, password_confirm=password_confirm)
+    except Exception as e:
+        error_messages = []
+        if hasattr(e, 'errors'):
+            for err in e.errors():
+                error_messages.append(err.get('msg', str(err)))
+        else:
+            error_messages.append(str(e))
         return templates.TemplateResponse('auth/reset-password.html', {
             'request': request,
-            'error_msg': "Пароли не совпадают"
+            'error_msg': "; ".join(error_messages)
         })
 
     try:
@@ -255,7 +293,8 @@ async def reset_password(
             'success_msg': "Пароль успешно изменен. Войдите в систему."
         })
     except Exception as e:
+        logger.error("Password reset failed", error=str(e))
         return templates.TemplateResponse('auth/reset-password.html', {
             'request': request,
-            'error_msg': "Ошибка при смене пароля: " + str(e)
+            'error_msg': "Произошла ошибка при смене пароля"
         })

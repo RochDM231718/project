@@ -12,6 +12,7 @@ import secrets
 from dotenv import load_dotenv
 
 from app.infrastructure.database import engine, Base
+from app.middlewares.security_headers import SecurityHeadersMiddleware
 
 from app.routers.admin.auth import router as admin_auth_router
 from app.routers.admin.dashboard import router as admin_dashboard_router
@@ -59,6 +60,8 @@ if not SECRET_KEY or SECRET_KEY == "supersecretkey123":
     else:
         logger.warning("ПРЕДУПРЕЖДЕНИЕ: Не установлен SECRET_KEY! Сгенерирован временный случайный ключ для разработки.")
         SECRET_KEY = secrets.token_urlsafe(32)
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.add_middleware(CSRFContextMiddleware)
 

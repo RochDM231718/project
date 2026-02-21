@@ -14,6 +14,7 @@ from app.models.enums import UserRole, UserStatus, AchievementStatus, EducationL
 from app.services.admin.user_service import UserService
 from app.repositories.admin.user_repository import UserRepository
 from app.routers.admin.deps import get_current_user
+from app.utils.search import escape_like
 
 router = guard_router
 
@@ -46,9 +47,9 @@ async def api_users_search(request: Request, q: str = Query(..., min_length=1), 
     await check_admin_rights(request, db)
     stmt = select(Users).filter(
         or_(
-            Users.first_name.ilike(f"%{q}%"),
-            Users.last_name.ilike(f"%{q}%"),
-            Users.email.ilike(f"%{q}%")
+            Users.first_name.ilike(f"%{escape_like(q)}%"),
+            Users.last_name.ilike(f"%{escape_like(q)}%"),
+            Users.email.ilike(f"%{escape_like(q)}%")
         )
     ).limit(5)
     users = (await db.execute(stmt)).scalars().all()
@@ -75,8 +76,8 @@ async def index(
     stmt = select(Users)
 
     if query:
-        stmt = stmt.filter(or_(Users.first_name.ilike(f"%{query}%"), Users.last_name.ilike(f"%{query}%"),
-                               Users.email.ilike(f"%{query}%")))
+        stmt = stmt.filter(or_(Users.first_name.ilike(f"%{escape_like(query)}%"), Users.last_name.ilike(f"%{escape_like(query)}%"),
+                               Users.email.ilike(f"%{escape_like(query)}%")))
     if role and role != 'all':
         stmt = stmt.filter(Users.role == role)
     if status and status != 'all':

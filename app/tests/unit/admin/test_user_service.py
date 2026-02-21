@@ -1,131 +1,76 @@
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from starlette.requests import Request
-
-from app.models.user import Users
+from unittest.mock import MagicMock, AsyncMock
 from app.services.admin.user_service import UserService
-from app.schemas.admin.users import UserCreate, UserUpdate, UserOut
 from app.models.enums import UserRole
+
 
 @pytest.fixture
 def mock_repo():
-    return MagicMock()
+    repo = MagicMock()
+    repo.find = AsyncMock()
+    repo.get = AsyncMock()
+    repo.create = AsyncMock()
+    repo.update = AsyncMock()
+    repo.delete = AsyncMock()
+    repo.db = MagicMock()
+    repo.db.commit = AsyncMock()
+    repo.db.refresh = AsyncMock()
+    return repo
 
 
 @pytest.fixture
 def service(mock_repo):
-    return UserService(repo=mock_repo)
+    return UserService(repository=mock_repo)
 
-def _get_user():
-    return  Users(
-        id=1,
-        email="test@example.com",
-        first_name="John",
-        last_name="Doe",
-        is_active=True,
-        role=UserRole.ADMIN,
-        phone_number="123456"
-    )
 
-def test_get_users(service, mock_repo):
-    mock_repo.get.return_value = [_get_user()]
+@pytest.mark.asyncio
+async def test_get_users(service, mock_repo):
+    users = [MagicMock(id=1, email="a@b.com"), MagicMock(id=2, email="c@d.com")]
+    mock_repo.get.return_value = users
 
-    result = service.get()
-    assert isinstance(result[0], UserOut)
+    result = await service.get()
+    assert len(result) == 2
     mock_repo.get.assert_called_once()
 
-@patch("services.admin.user_service.asyncio.create_task")
-@patch("services.admin.user_service.UserTokenService")
-@patch("services.admin.user_service.send", new_callable=AsyncMock)
-@patch("services.admin.user_service.templates")
-def test_create_user(mock_templates, mock_send, mock_token_service, mock_create_task, service, mock_repo):
-    mock_create_task.return_value = None
-    obj_in = UserCreate(
-        email="new@example.com",
-        first_name="John",
-        last_name="Doe",
-        role=UserRole.USER,
-        hashed_password=None
-    )
 
-    user = MagicMock()
-    user.id = 1
-    user.email = "new@example.com"
-    mock_repo.create.return_value = user
+@pytest.mark.asyncio
+async def test_find_user(service, mock_repo):
+    user = MagicMock(id=1, email="a@b.com")
+    mock_repo.find.return_value = user
 
-    mock_token = MagicMock()
-    mock_token.token = "reset123"
-    mock_token_service.return_value.create.return_value = mock_token
-
-    mock_template = MagicMock()
-    mock_template.render.return_value = "html-content"
-    mock_templates.env.get_template.return_value = mock_template
-
-    request = MagicMock(spec=Request)
-    request.url_for.return_value = "http://test/reset"
-    service.set_request(request)
-
-    result = service.create(obj_in)
-
-    assert result == user
-    mock_repo.create.assert_called_once()
-    mock_token_service.return_value.create.assert_called_once()
-    mock_send.assert_called_once_with(
-        "new@example.com", "Welcome", "html-content"
-    )
-
-def test_update_user(service, mock_repo):
-    user_id = 1
-    data = UserUpdate(
-        first_name= "John",
-        last_name= "Doe",
-        email = "john.doe@example.com",
-        role= UserRole.USER
-    )
-
-    user = MagicMock()
-    user.id = user_id
-    user.email = data.email
-    user.first_name = data.first_name
-    user.last_name =data.last_name
-    user.role = data.role
-
-    mock_repo.update.return_value = user
-
-    result = service.update(user_id, data)
-
-    mock_repo.update.assert_called_once_with(user_id, data)
-    assert result.email == data.email
-    assert result.first_name == data.first_name
-    assert result.role == data.role
-
-def test_update_password(service, mock_repo):
-    user_id = 1
-    password = "test123"
-    hashed_password = "hashTest123"
-
-    with patch("services.admin.user_service.bcrypt_context.hash", return_value=hashed_password) as mock_hash:
-        service.update_password(user_id, password)
-
-        mock_hash.assert_called_once_with(password)
-        mock_repo.update_password.assert_called_once_with(user_id, hashed_password)
+    result = await service.find(1)
+    assert result.id == 1
+    mock_repo.find.assert_called_once_with(1)
 
 
-def test_delete_user_success(service, mock_repo):
+@pytest.mark.asyncio
+async def test_update_role(service, mock_repo):
+    user = MagicMock(id=1, role=UserRole.STUDENT)
+    mock_repo.find.return_value = user
 
-    user_id = 1
-    mock_repo.delete.return_value = None
+    result = await service.update_role(1, UserRole.MODERATOR)
 
-    result = service.delete(user_id)
+    assert user.role == UserRole.MODERATOR
+    mock_repo.db.commit.assert_called_once()
 
-    mock_repo.delete.assert_called_once_with(user_id)
+
+@pytest.mark.asyncio
+async def test_update_role_user_not_found(service, mock_repo):
+    mock_repo.find.return_value = None
+
+    result = await service.update_role(999, UserRole.MODERATOR)
     assert result is None
 
-def test_delete_user_not_found(service, mock_repo):
-    user_id = 999
+
+@pytest.mark.asyncio
+async def test_delete_user(service, mock_repo):
+    await service.delete(1)
+    mock_repo.delete.assert_called_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_delete_user_not_found(service, mock_repo):
     mock_repo.delete.side_effect = ValueError("User not found")
 
     with pytest.raises(ValueError, match="User not found"):
-        service.delete(user_id)
-
-    mock_repo.delete.assert_called_once_with(user_id)
+        await service.delete(999)

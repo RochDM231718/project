@@ -1,11 +1,13 @@
 import os
+import logging
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# ... (код настройки engine и sessionmaker остается тем же) ...
+_logger = logging.getLogger(__name__)
+
 DB_DRIVER = os.getenv("DB_DRIVER", "postgresql")
 DB_USER = os.getenv("DB_USERNAME", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
@@ -18,10 +20,8 @@ if DB_DRIVER == "sqlite":
 else:
     DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-print(f"--- DATABASE CONNECTION ---")
 safe_url = DATABASE_URL.replace(DB_PASSWORD, "****") if DB_PASSWORD else DATABASE_URL
-print(f"URL: {safe_url}")
-print(f"---------------------------")
+_logger.info("Database connection: %s", safe_url)
 
 engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 async_session_maker = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False, autoflush=False)

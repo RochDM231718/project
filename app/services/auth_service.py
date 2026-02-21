@@ -171,12 +171,10 @@ class AuthService:
             server.sendmail(mail_from, to_email, msg.as_string())
             server.quit()
 
-            logger.info(f"Email sent successfully via {smtp_host}:{smtp_port}", to=to_email)
-            print(f"[INFO] Email sent to {to_email}")
+            logger.info("Email sent successfully", smtp_host=smtp_host, to=to_email)
 
         except Exception as e:
             logger.error("Failed to send email via SMTP", error=str(e))
-            print(f"[ERROR] Mail send failed: {e}")
 
     async def forgot_password(self, email: str, background_tasks: BackgroundTasks = None):
         user = await self.repository.get_by_email(email)

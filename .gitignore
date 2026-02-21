@@ -19,3 +19,10 @@ __pycache__/
 *.pyc
 
 .idea/
+
+# Database backups
+*.sql
+backup.sql
+
+# Uploaded files
+static/uploads/

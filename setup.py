@@ -1,4 +1,7 @@
 import asyncio
+import secrets
+import string
+import os
 from passlib.context import CryptContext
 from sqlalchemy import select, text
 from app.infrastructure.database import engine, Base, async_session_maker
@@ -9,6 +12,17 @@ from app.models.notification import Notification
 from app.models.enums import UserRole, UserStatus
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def generate_secure_password(length: int = 16) -> str:
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    while True:
+        password = ''.join(secrets.choice(alphabet) for _ in range(length))
+        if (any(c.isupper() for c in password)
+                and any(c.islower() for c in password)
+                and any(c.isdigit() for c in password)
+                and any(c in "!@#$%^&*" for c in password)):
+            return password
 
 
 async def init_db_and_create_admin():
@@ -26,8 +40,8 @@ async def init_db_and_create_admin():
 
     print("2. CREATING SUPER ADMIN...")
     async with async_session_maker() as session:
-        email = "admin@example.com"
-        password = "admin"
+        email = os.getenv("ADMIN_EMAIL", "admin@example.com")
+        password = os.getenv("ADMIN_PASSWORD") or generate_secure_password()
 
         stmt = select(Users).where(Users.email == email)
         result = await session.execute(stmt)
@@ -45,7 +59,9 @@ async def init_db_and_create_admin():
             )
             session.add(new_admin)
             await session.commit()
-            print(f"   -> Admin created! Email: {email} / Password: {password}")
+            print(f"   -> Admin created! Email: {email}")
+            print(f"   -> Generated password: {password}")
+            print(f"   -> IMPORTANT: Change this password immediately after first login!")
 
 
 if __name__ == "__main__":

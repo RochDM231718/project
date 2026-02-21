@@ -7,7 +7,12 @@ from app.repositories.admin.user_repository import UserRepository
 from app.models.enums import UserRole
 
 MAX_AVATAR_SIZE = 2 * 1024 * 1024
-ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
+
+ALLOWED_AVATAR_SIGNATURES = {
+    "image/jpeg": (b'\xFF\xD8\xFF', "jpg"),
+    "image/png": (b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A', "png"),
+    "image/webp": (b'RIFF', "webp"),
+}
 
 
 class UserService(BaseCrudService):
@@ -16,7 +21,16 @@ class UserService(BaseCrudService):
         self.repository = repository
 
     async def save_avatar(self, user_id: int, file: UploadFile) -> str:
-        if file.content_type not in ALLOWED_AVATAR_TYPES:
+        header = await file.read(8)
+        await file.seek(0)
+
+        detected_ext = None
+        for mime, (signature, ext) in ALLOWED_AVATAR_SIGNATURES.items():
+            if header.startswith(signature):
+                detected_ext = ext
+                break
+
+        if not detected_ext:
             raise ValueError("Неподдерживаемый формат. Используйте JPG, PNG или WEBP.")
 
         file.file.seek(0, 2)
@@ -32,14 +46,14 @@ class UserService(BaseCrudService):
         user = await self.repository.find(user_id)
 
         if user and user.avatar_path:
-            old_path = os.path.join("static", user.avatar_path)
-            if os.path.exists(old_path) and os.path.isfile(old_path):
+            old_path = os.path.normpath(os.path.join("static", user.avatar_path))
+            if old_path.startswith("static") and os.path.exists(old_path) and os.path.isfile(old_path):
                 try:
                     os.remove(old_path)
                 except Exception:
                     pass
 
-        unique_name = f"avatar_{user_id}_{uuid.uuid4().hex[:8]}.jpg"
+        unique_name = f"avatar_{user_id}_{uuid.uuid4().hex[:8]}.{detected_ext}"
         file_path = os.path.join(upload_dir, unique_name)
 
         with open(file_path, "wb") as buffer:
