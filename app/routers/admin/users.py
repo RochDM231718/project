@@ -9,6 +9,7 @@ from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
 from app.models.achievement import Achievement
+from app.models.season_result import SeasonResult  # <--- Импорт новой таблицы
 from app.models.enums import UserRole, UserStatus, AchievementStatus, EducationLevel
 from app.services.admin.user_service import UserService
 from app.repositories.admin.user_repository import UserRepository
@@ -119,8 +120,16 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
     if not target_user_obj:
         raise HTTPException(status_code=404, detail="User not found")
 
-    achievements_stmt = select(Achievement).filter(Achievement.user_id == id).order_by(Achievement.created_at.desc())
+    # Текущие достижения (не архивные)
+    achievements_stmt = select(Achievement).filter(
+        Achievement.user_id == id,
+        Achievement.status != AchievementStatus.ARCHIVED
+    ).order_by(Achievement.created_at.desc())
     achievements = (await db.execute(achievements_stmt)).scalars().all()
+
+    # Загрузка истории прошлых сезонов
+    history_stmt = select(SeasonResult).filter(SeasonResult.user_id == id).order_by(SeasonResult.created_at.desc())
+    season_history = (await db.execute(history_stmt)).scalars().all()
 
     total_docs = len(achievements)
     rank = None
@@ -150,6 +159,7 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
         'user': current_user,
         'target_user': target_user_obj,
         'achievements': achievements,
+        'season_history': season_history,  # <--- Передаем историю в шаблон
         'total_docs': total_docs,
         'rank': rank,
         'total_points': total_points,
@@ -191,7 +201,6 @@ async def update_user_role(
                 status_code=302
             )
 
-    # Присвоение роли и зоны модерации
     update_data = {"role": role}
 
     if role == UserRole.MODERATOR:

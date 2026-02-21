@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from app.infrastructure.database import Base
+from app.models.season_result import SeasonResult
 from app.models.user import Users
 from app.models.user_token import UserToken
 from app.models.page import Page

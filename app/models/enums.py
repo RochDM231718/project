@@ -17,6 +17,7 @@ class AchievementStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     REVISION = "revision"
+    ARCHIVED = "archived"
 
 class UserTokenType(str, Enum):
     ACCESS = "access"
