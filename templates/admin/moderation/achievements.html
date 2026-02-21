@@ -42,10 +42,10 @@
 
                             <div class="flex flex-wrap gap-1.5 mb-2">
                                 <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100/50">
-                                    {{ item.category.value if item.category else 'Без категории' }}
+                                    {{ item.category | attr('value') | default(item.category, true) if item.category else 'Без категории' }}
                                 </span>
                                 <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/50">
-                                    {{ item.level.value if item.level else 'Без уровня' }}
+                                    {{ item.level | attr('value') | default(item.level, true) if item.level else 'Без уровня' }}
                                 </span>
                             </div>
 
@@ -65,38 +65,46 @@
                         </div>
                     </div>
 
-                    <div class="flex sm:flex-col gap-2 shrink-0 sm:w-32 justify-center border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-3">
+                    <div class="flex sm:flex-col gap-2 shrink-0 sm:w-36 justify-center border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-3">
                         <form action="/sirius.achievements/moderation/achievements/{{ item.id }}" method="POST" class="flex-1 sm:flex-none">
                             <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
                             <input type="hidden" name="status" value="approved">
-                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-2.5 px-2 rounded-lg text-xs font-medium transition-colors h-full flex flex-col items-center justify-center leading-tight shadow-sm">
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-2.5 px-2 rounded-lg text-xs font-medium transition-colors flex flex-col items-center justify-center leading-tight shadow-sm">
                                 <span>Одобрить</span>
                                 <span class="text-[9px] opacity-90 mt-0.5 font-normal">+{{ item.projected_points }} баллов</span>
                             </button>
                         </form>
 
-                        <button @click="rejectModalOpen = true" class="flex-1 sm:flex-none bg-white border border-slate-200 text-red-600 hover:bg-red-50 py-2 sm:py-2.5 px-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center">
-                            Отклонить
+                        <button @click="rejectModalOpen = true" type="button" class="flex-1 sm:flex-none w-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 py-2 sm:py-2.5 px-2 rounded-lg text-xs font-medium transition-colors flex flex-col items-center justify-center leading-tight shadow-sm">
+                            <span>Отклонить /</span>
+                            <span>Вернуть</span>
                         </button>
                     </div>
                 </div>
 
                 <div x-show="rejectModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm" x-cloak>
-                    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm flex flex-col overflow-hidden" @click.outside="rejectModalOpen = false">
-                        <div class="p-4 border-b border-slate-100">
-                            <h3 class="text-sm font-bold text-slate-800">Причина отказа</h3>
+                    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg flex flex-col overflow-hidden" @click.outside="rejectModalOpen = false">
+                        <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="text-sm font-bold text-slate-800">Решение по документу</h3>
+                            <button type="button" @click="rejectModalOpen = false" class="text-slate-400 hover:text-slate-600"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                         </div>
                         <form action="/sirius.achievements/moderation/achievements/{{ item.id }}" method="POST" class="flex flex-col flex-1">
                             <div class="p-4 bg-slate-50">
                                 <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
-                                <input type="hidden" name="status" value="rejected">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Причина или комментарий для студента <span class="text-red-500">*</span></label>
                                 <textarea name="rejection_reason" rows="3" required
-                                          class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none resize-none"
-                                          placeholder="Почему документ не подходит?"></textarea>
+                                          class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
+                                          placeholder="Например: 'Размытое фото, загрузите еще раз' или 'Документ не является дипломом'"></textarea>
                             </div>
-                            <div class="p-4 border-t border-slate-100 flex gap-3 bg-white">
-                                <button type="button" @click="rejectModalOpen = false" class="flex-1 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">Отмена</button>
-                                <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm">Отклонить</button>
+                            <div class="p-4 border-t border-slate-100 bg-white grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button type="submit" name="status" value="revision" class="w-full px-4 py-2.5 bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm font-medium rounded-lg hover:bg-yellow-100 transition-colors flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    На доработку
+                                </button>
+                                <button type="submit" name="status" value="rejected" class="w-full px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    Полный отказ
+                                </button>
                             </div>
                         </form>
                     </div>

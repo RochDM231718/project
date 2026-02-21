@@ -41,14 +41,33 @@ async def check_moderator(request: Request, db: AsyncSession):
     if user.role not in [UserRole.MODERATOR, UserRole.SUPER_ADMIN]:
         raise HTTPException(status_code=403, detail="Access denied")
 
+    return user
+
+
+def is_in_zone(moderator: Users, target_education_level) -> bool:
+    if moderator.role == UserRole.SUPER_ADMIN:
+        return True
+    if not moderator.education_level:
+        return True
+
+    mod_ed = moderator.education_level.value if hasattr(moderator.education_level,
+                                                        'value') else moderator.education_level
+    targ_ed = target_education_level.value if hasattr(target_education_level, 'value') else target_education_level
+
+    return mod_ed == targ_ed
+
 
 @router.get('/moderation/users', response_class=HTMLResponse, name='admin.moderation.users')
 async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
-    await check_moderator(request, db)
+    user = await check_moderator(request, db)
 
-    user = await db.get(Users, request.session.get('auth_id'))
+    stmt = select(Users).filter(Users.status == UserStatus.PENDING)
 
-    stmt = select(Users).filter(Users.status == UserStatus.PENDING).order_by(Users.id.desc())
+    if user.role == UserRole.MODERATOR and user.education_level:
+        mod_ed = user.education_level.value if hasattr(user.education_level, 'value') else user.education_level
+        stmt = stmt.filter(Users.education_level == mod_ed)
+
+    stmt = stmt.order_by(Users.id.desc())
     users = (await db.execute(stmt)).scalars().all()
 
     return templates.TemplateResponse('moderation/users.html', {
@@ -59,14 +78,20 @@ async def pending_users(request: Request, db: AsyncSession = Depends(get_db)):
     })
 
 
-@router.post('/moderation/users/{id}/approve', name='admin.moderation.users.approve', dependencies=[Depends(validate_csrf)])
+@router.post('/moderation/users/{id}/approve', name='admin.moderation.users.approve',
+             dependencies=[Depends(validate_csrf)])
 async def approve_user(
         id: int,
         request: Request,
         service: UserService = Depends(get_user_service),
         db: AsyncSession = Depends(get_db)
 ):
-    await check_moderator(request, db)
+    current_user = await check_moderator(request, db)
+    target_user = await db.get(Users, id)
+
+    if not target_user or not is_in_zone(current_user, target_user.education_level):
+        return RedirectResponse(url=request.url_for('admin.moderation.users').include_query_params(
+            toast_msg="У вас нет доступа к этому потоку", toast_type="error"), status_code=302)
 
     await service.repository.update(id, {
         "status": UserStatus.ACTIVE,
@@ -79,14 +104,20 @@ async def approve_user(
     )
 
 
-@router.post('/moderation/users/{id}/reject', name='admin.moderation.users.reject', dependencies=[Depends(validate_csrf)])
+@router.post('/moderation/users/{id}/reject', name='admin.moderation.users.reject',
+             dependencies=[Depends(validate_csrf)])
 async def reject_user(
         id: int,
         request: Request,
         service: UserService = Depends(get_user_service),
         db: AsyncSession = Depends(get_db)
 ):
-    await check_moderator(request, db)
+    current_user = await check_moderator(request, db)
+    target_user = await db.get(Users, id)
+
+    if not target_user or not is_in_zone(current_user, target_user.education_level):
+        return RedirectResponse(url=request.url_for('admin.moderation.users').include_query_params(
+            toast_msg="У вас нет доступа к этому потоку", toast_type="error"), status_code=302)
 
     await service.repository.update(id, {"status": UserStatus.REJECTED})
     return RedirectResponse(
@@ -98,16 +129,19 @@ async def reject_user(
 
 @router.get('/moderation/achievements', response_class=HTMLResponse, name='admin.moderation.achievements')
 async def achievements_list(request: Request, page: int = Query(1, ge=1), db: AsyncSession = Depends(get_db)):
-    await check_moderator(request, db)
-
-    user = await db.get(Users, request.session.get('auth_id'))
+    user = await check_moderator(request, db)
 
     limit = 10
     offset = (page - 1) * limit
 
-    stmt = select(Achievement).options(selectinload(Achievement.user)) \
-        .filter(Achievement.status == AchievementStatus.PENDING) \
-        .order_by(Achievement.created_at.asc())
+    stmt = select(Achievement).join(Users, Achievement.user_id == Users.id).options(selectinload(Achievement.user)) \
+        .filter(Achievement.status == AchievementStatus.PENDING)
+
+    if user.role == UserRole.MODERATOR and user.education_level:
+        mod_ed = user.education_level.value if hasattr(user.education_level, 'value') else user.education_level
+        stmt = stmt.filter(Users.education_level == mod_ed)
+
+    stmt = stmt.order_by(Achievement.created_at.asc())
 
     total_pending = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar() or 0
     achievements = (await db.execute(stmt.offset(offset).limit(limit))).scalars().all()
@@ -129,34 +163,45 @@ async def achievements_list(request: Request, page: int = Query(1, ge=1), db: As
     })
 
 
-@router.post('/moderation/achievements/{id}', name='admin.moderation.achievements.update', dependencies=[Depends(validate_csrf)])
+@router.post('/moderation/achievements/{id}', name='admin.moderation.achievements.update',
+             dependencies=[Depends(validate_csrf)])
 async def update_achievement_status(
         id: int, request: Request, status: str = Form(...), rejection_reason: str = Form(None),
         db: AsyncSession = Depends(get_db)
 ):
-    await check_moderator(request, db)
+    current_user = await check_moderator(request, db)
 
-    stmt = select(Achievement).where(Achievement.id == id)
+    stmt = select(Achievement).options(selectinload(Achievement.user)).where(Achievement.id == id)
     achievement = (await db.execute(stmt)).scalars().first()
+
     if not achievement:
         raise HTTPException(status_code=404, detail="Achievement not found")
 
+    if not is_in_zone(current_user, achievement.user.education_level):
+        return RedirectResponse(url=request.url_for('admin.moderation.achievements').include_query_params(
+            toast_msg="Вы не можете проверять чужой поток", toast_type="error"), status_code=302)
+
     achievement.status = status
 
-    if status == AchievementStatus.REJECTED:
+    if status == 'rejected' or status == AchievementStatus.REJECTED:
         achievement.rejection_reason = rejection_reason
         achievement.points = 0
-        notif_message = f"Статус документа '{achievement.title}' изменен на 'Отклонено'. Причина: {rejection_reason}"
+        notif_message = f"Окончательный отказ по документу '{achievement.title}'. Причина: {rejection_reason}"
 
-    elif status == AchievementStatus.APPROVED:
+    elif status == 'revision' or status == AchievementStatus.REVISION:
+        achievement.rejection_reason = rejection_reason
+        achievement.points = 0
+        notif_message = f"Документ '{achievement.title}' отправлен на доработку. Примечание: {rejection_reason}"
+
+    elif status == 'approved' or status == AchievementStatus.APPROVED:
         points = calculate_points(achievement.level.value, achievement.category.value)
         achievement.points = points
         achievement.rejection_reason = None
-        notif_message = f"Документ '{achievement.title}' одобрен! Вам начислено {points} баллов."
+        notif_message = f"Документ '{achievement.title}' одобрен! Начислено {points} баллов."
 
     notification = Notification(
         user_id=achievement.user_id,
-        title="Обновление статуса достижения",
+        title="Статус заявки обновлен",
         message=notif_message,
         is_read=False
     )

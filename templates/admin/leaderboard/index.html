@@ -1,18 +1,26 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-8">
+<div class="max-w-4xl mx-auto space-y-6">
 
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
             <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Рейтинг студентов</h2>
-            <p class="text-sm text-slate-500 mt-1">Лучшие студенты по баллам достижений</p>
+            <p class="text-sm text-slate-500 mt-1">
+                {% if current_education_level == 'all' and current_course == 0 %}
+                    Глобальный рейтинг (Все студенты)
+                {% elif user.role.value not in ['SUPER_ADMIN', 'MODERATOR', 'super_admin', 'moderator'] %}
+                    Ваша лига: {{ current_education_level if current_education_level != 'all' else 'Все направления' }}, {{ current_course ~ ' курс' if current_course != 0 else 'Все курсы' }}
+                {% else %}
+                    Лига: {{ current_education_level if current_education_level != 'all' else 'Все направления' }}, {{ current_course ~ ' курс' if current_course != 0 else 'Все курсы' }}
+                {% endif %}
+            </p>
         </div>
 
-        {% if user.role.value == 'STUDENT' %}
-        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-6 w-full md:w-auto">
+        {% if user.role.value not in ['SUPER_ADMIN', 'MODERATOR', 'super_admin', 'moderator'] %}
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-6 w-full md:w-auto shadow-sm">
             <div class="text-center flex-1 md:flex-none md:px-4">
-                <div class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-0.5">Место</div>
+                <div class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-0.5">Место в лиге</div>
                 <div class="text-2xl font-bold text-indigo-600">{% if my_rank > 0 %}#{{ my_rank }}{% else %}-{% endif %}</div>
             </div>
             <div class="w-px h-8 bg-slate-200"></div>
@@ -24,17 +32,43 @@
         {% endif %}
     </div>
 
+    {% if user.role.value in ['SUPER_ADMIN', 'MODERATOR', 'super_admin', 'moderator'] %}
+    <div class="bg-white p-4 rounded-xl border border-slate-200">
+        <form action="/sirius.achievements/leaderboard" method="GET" class="flex flex-wrap gap-4 items-end">
+            <div class="w-full sm:w-[200px]">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Обучение</label>
+                <select name="education_level" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px] transition-all cursor-pointer">
+                    <option value="all">Все направления</option>
+                    {% for el in education_levels %}
+                        <option value="{{ el.value }}" {{ 'selected' if current_education_level == el.value else '' }}>{{ el.value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="w-full sm:w-[140px]">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Курс</label>
+                <select name="course" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px] transition-all cursor-pointer">
+                    <option value="0">Все курсы</option>
+                    {% for i in range(1, 7) %}
+                        <option value="{{ i }}" {{ 'selected' if current_course|string == i|string else '' }}>{{ i }} курс</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
     {% if leaderboard|length > 0 %}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
         {% if leaderboard|length > 1 %}
         {% set u2 = leaderboard[1][0] %}
         <div class="order-2 md:order-1 bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center relative">
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-slate-200 text-slate-500 rounded-full flex items-center justify-center text-xs font-bold">2</div>
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-slate-200 text-slate-500 rounded-full flex items-center justify-center text-xs font-bold shadow-sm">2</div>
             <div class="mt-2 mb-3">
                 {% if u2.avatar_path %}
                     <img src="/static/{{ u2.avatar_path }}" class="w-16 h-16 rounded-full object-cover border border-slate-200">
                 {% else %}
-                    <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-xl font-medium text-slate-400">{{ u2.first_name[:1] }}</div>
+                    <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-xl font-medium text-slate-400 border border-slate-100">{{ u2.first_name[:1] }}</div>
                 {% endif %}
             </div>
             <div class="text-center">
@@ -46,7 +80,7 @@
 
         {% set u1 = leaderboard[0][0] %}
         <div class="order-1 md:order-2 bg-white rounded-xl border-t-4 border-indigo-600 shadow-sm p-6 flex flex-col items-center relative">
-            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-md">1</div>
             <div class="mt-2 mb-3">
                 {% if u1.avatar_path %}
                     <img src="/static/{{ u1.avatar_path }}" class="w-20 h-20 rounded-full object-cover border border-slate-200">
@@ -63,12 +97,12 @@
         {% if leaderboard|length > 2 %}
         {% set u3 = leaderboard[2][0] %}
         <div class="order-3 bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center relative">
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-slate-200 text-slate-500 rounded-full flex items-center justify-center text-xs font-bold">3</div>
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-slate-200 text-slate-500 rounded-full flex items-center justify-center text-xs font-bold shadow-sm">3</div>
             <div class="mt-2 mb-3">
                 {% if u3.avatar_path %}
                     <img src="/static/{{ u3.avatar_path }}" class="w-16 h-16 rounded-full object-cover border border-slate-200">
                 {% else %}
-                    <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-xl font-medium text-slate-400">{{ u3.first_name[:1] }}</div>
+                    <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-xl font-medium text-slate-400 border border-slate-100">{{ u3.first_name[:1] }}</div>
                 {% endif %}
             </div>
             <div class="text-center">
@@ -84,7 +118,7 @@
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-sm font-semibold text-slate-700">Остальные участники</h3>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Всего: {{ leaderboard|length }}</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Всего в лиге: {{ leaderboard|length }}</span>
         </div>
 
         <div class="overflow-x-auto">
@@ -108,7 +142,10 @@
                                         {{ row[0].first_name }} {{ row[0].last_name }}
                                         {% if is_me %}<span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-700">Вы</span>{% endif %}
                                     </div>
-                                    <div class="text-[10px] text-slate-400">{{ row[0].email }}</div>
+                                    <div class="text-[10px] text-slate-400">
+                                        {{ row[0].education_level | attr('value') | default(row[0].education_level, true) }}
+                                        {{ row[0].course ~ ' курс' if row[0].course else '' }}
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -129,7 +166,7 @@
         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 mb-3">
             <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         </div>
-        <p class="text-sm text-slate-500">Пока никто не набрал баллов.</p>
+        <p class="text-sm text-slate-500">В этой лиге пока никто не набрал баллов.</p>
     </div>
     {% endif %}
 

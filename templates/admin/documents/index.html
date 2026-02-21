@@ -19,7 +19,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                     <input type="text" name="query" x-model="query" @input.debounce.300ms="fetchSuggestions" @keydown.escape="suggestions=[]" placeholder="Название..." autocomplete="off" value="{{ query or '' }}"
-                           class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none text-sm transition-all h-[38px]">
+                           class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none text-sm text-slate-800 transition-all h-[38px]">
                 </div>
                 <ul x-show="suggestions.length > 0" @click.outside="suggestions = []" class="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto" style="display: none;" x-cloak>
                     <template x-for="item in suggestions">
@@ -33,10 +33,14 @@
             <div class="w-full sm:w-[130px]">
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Статус</label>
                 <select name="status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
-                    <option value="">Все</option>
+                    <option value="" class="text-slate-800 bg-white">Все</option>
                     {% for s in statuses %}
-                        <option value="{{ s.value }}" {{ 'selected' if status == s.value else '' }}>
-                            {% if s.value == 'approved' %}Одобрено{% elif s.value == 'pending' %}На проверке{% elif s.value == 'rejected' %}Отклонено{% endif %}
+                        <option value="{{ s }}" class="text-slate-800 bg-white" {{ 'selected' if status == s else '' }}>
+                            {% if s == 'approved' %}Одобрено
+                            {% elif s == 'pending' %}На проверке
+                            {% elif s == 'revision' %}На доработке
+                            {% elif s == 'rejected' %}Отклонено
+                            {% else %}{{ s }}{% endif %}
                         </option>
                     {% endfor %}
                 </select>
@@ -45,26 +49,30 @@
             <div class="w-full sm:w-[130px]">
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Вид</label>
                 <select name="category" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
-                    <option value="">Все виды</option>
-                    {% for c in categories %}<option value="{{ c.value }}" {{ 'selected' if category == c.value else '' }}>{{ c.value }}</option>{% endfor %}
+                    <option value="" class="text-slate-800 bg-white">Все виды</option>
+                    {% for c in categories %}
+                        <option value="{{ c }}" class="text-slate-800 bg-white" {{ 'selected' if category == c else '' }}>{{ c }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
             <div class="w-full sm:w-[130px]">
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Уровень</label>
                 <select name="level" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
-                    <option value="">Все уровни</option>
-                    {% for l in levels %}<option value="{{ l.value }}" {{ 'selected' if level == l.value else '' }}>{{ l.value }}</option>{% endfor %}
+                    <option value="" class="text-slate-800 bg-white">Все уровни</option>
+                    {% for l in levels %}
+                        <option value="{{ l }}" class="text-slate-800 bg-white" {{ 'selected' if level == l else '' }}>{{ l }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
             <div class="w-full sm:w-[140px]">
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Сортировка</label>
                 <select name="sort_by" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:border-indigo-600 outline-none h-[38px]">
-                    <option value="newest" {{ 'selected' if sort_by == 'newest' else '' }}>Новые</option>
-                    <option value="oldest" {{ 'selected' if sort_by == 'oldest' else '' }}>Старые</option>
-                    <option value="level" {{ 'selected' if sort_by == 'level' else '' }}>По значимости</option>
-                    <option value="category" {{ 'selected' if sort_by == 'category' else '' }}>По виду</option>
+                    <option value="newest" class="text-slate-800 bg-white" {{ 'selected' if sort_by == 'newest' else '' }}>Новые</option>
+                    <option value="oldest" class="text-slate-800 bg-white" {{ 'selected' if sort_by == 'oldest' else '' }}>Старые</option>
+                    <option value="level" class="text-slate-800 bg-white" {{ 'selected' if sort_by == 'level' else '' }}>По значимости</option>
+                    <option value="category" class="text-slate-800 bg-white" {{ 'selected' if sort_by == 'category' else '' }}>По виду</option>
                 </select>
             </div>
 
@@ -101,13 +109,20 @@
                         </td>
                         <td class="px-5 py-3 font-medium text-slate-800">{{ item.title }}</td>
                         <td class="px-5 py-3 text-slate-600 text-xs">
-                            <span class="block">{{ item.category.value }}</span>
-                            <span class="text-slate-400">{{ item.level.value }}</span>
+                            <span class="block">{{ item.category | attr('value') | default(item.category, true) }}</span>
+                            <span class="text-slate-400">{{ item.level | attr('value') | default(item.level, true) }}</span>
                         </td>
                         <td class="px-5 py-3">
-                            {% if item.status.value == 'approved' %}<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">Одобрено</span>
-                            {% elif item.status.value == 'rejected' %}<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-700 border border-red-100">Отклонено</span>
-                            {% else %}<span class="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-50 text-yellow-700 border border-yellow-100">На проверке</span>{% endif %}
+                            {% set status_val = item.status | attr('value') | default(item.status, true) %}
+                            {% if status_val == 'approved' %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-200">Одобрено</span>
+                            {% elif status_val == 'rejected' %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-700 border border-red-200">Отклонено</span>
+                            {% elif status_val == 'revision' %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-yellow-100 text-yellow-800 border border-yellow-300">На доработке</span>
+                            {% else %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">На проверке</span>
+                            {% endif %}
                         </td>
                         <td class="px-5 py-3">
                             <a href="{{ url_for('admin.users.show', id=item.user.id) }}?from=documents" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">

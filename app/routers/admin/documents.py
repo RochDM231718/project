@@ -1,19 +1,48 @@
 import os
-from fastapi import APIRouter, Depends, Request, HTTPException
-from fastapi.responses import RedirectResponse, HTMLResponse, FileResponse
+from fastapi import APIRouter, Depends, Request, HTTPException, Query
+from fastapi.responses import RedirectResponse, HTMLResponse, FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_
 from app.infrastructure.database import get_db
 from app.services.admin.achievement_service import AchievementService
 from app.repositories.admin.achievement_repository import AchievementRepository
 from app.routers.admin.admin import templates
 from app.routers.admin.deps import get_current_user
 from app.security.csrf import validate_csrf
+from app.models.achievement import Achievement
 
 router = APIRouter(
     prefix="/sirius.achievements/documents",
     tags=["admin.documents"]
 )
+
+
+@router.get("/api/documents/search", response_class=JSONResponse)
+async def api_documents_search(
+        request: Request,
+        q: str = Query(..., min_length=1),
+        db: AsyncSession = Depends(get_db)
+):
+    user = await get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    allowed_roles = ['admin', 'moderator', 'super_admin', 'ADMIN', 'MODERATOR', 'SUPER_ADMIN']
+    user_role_str = str(user.role.value) if hasattr(user.role, 'value') else str(user.role)
+
+    if user_role_str not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Недостаточно прав")
+
+    stmt = select(Achievement).filter(
+        or_(
+            Achievement.title.ilike(f"%{q}%"),
+            Achievement.description.ilike(f"%{q}%")
+        )
+    ).limit(5)
+
+    result = await db.execute(stmt)
+    return [{"value": d.title, "text": d.title} for d in result.scalars().all()]
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -24,7 +53,7 @@ async def index(
         category: str = "",
         level: str = "",
         sort_by: str = "newest",
-        db: AsyncSession = Depends(get_db)  # AsyncSession
+        db: AsyncSession = Depends(get_db)
 ):
     user = await get_current_user(request, db)
 

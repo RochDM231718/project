@@ -16,6 +16,7 @@ class AchievementStatus(str, Enum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+    REVISION = "revision"
 
 class UserTokenType(str, Enum):
     ACCESS = "access"
@@ -36,3 +37,10 @@ class AchievementLevel(str, Enum):
     REGIONAL = "Региональный"
     FEDERAL = "Федеральный"
     INTERNATIONAL = "Международный"
+
+class EducationLevel(str, Enum):
+    COLLEGE = "Колледж"
+    BACHELOR = "Бакалавриат"
+    SPECIALIST = "Специалитет"
+    MASTER = "Магистратура"
+    POSTGRADUATE = "Аспирантура"

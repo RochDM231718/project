@@ -82,8 +82,10 @@ class AuthService:
             first_name=data.first_name,
             last_name=data.last_name,
             email=data.email,
+            education_level=data.education_level,
+            course=data.course,
             hashed_password=hashed_pw,
-            role=UserRole.STUDENT,
+            role=UserRole.GUEST,
             status=UserStatus.PENDING,
             is_active=True
         )

@@ -11,6 +11,7 @@ from app.repositories.admin.user_repository import UserRepository
 from app.repositories.admin.user_token_repository import UserTokenRepository
 from app.services.admin.user_token_service import UserTokenService
 from app.schemas.admin.auth import UserRegister
+from app.models.enums import EducationLevel
 
 router = APIRouter(prefix="/sirius.achievements", tags=["Auth"])
 
@@ -71,7 +72,10 @@ async def logout(request: Request):
 async def register_page(request: Request):
     if request.session.get('auth_id'):
         return RedirectResponse(url=request.url_for('admin.dashboard.index'), status_code=302)
-    return templates.TemplateResponse('auth/register.html', {'request': request})
+    return templates.TemplateResponse('auth/register.html', {
+        'request': request,
+        'education_levels': list(EducationLevel)
+    })
 
 
 @router.post('/register', name='admin.auth.register', dependencies=[Depends(validate_csrf)])
@@ -80,15 +84,26 @@ async def register(
         first_name: str = Form(...),
         last_name: str = Form(...),
         email: str = Form(...),
+        education_level: EducationLevel = Form(...),
+        course: int = Form(...),
         password: str = Form(...),
         password_confirm: str = Form(...),
         service: AuthService = Depends(get_service)
 ):
+    form_data = {
+        'first_name': first_name,
+        'last_name': last_name,
+        'email': email,
+        'education_level': education_level.value,
+        'course': course
+    }
+
     if password != password_confirm:
         return templates.TemplateResponse('auth/register.html', {
             'request': request,
             'error_msg': "Пароли не совпадают",
-            'form_data': {'first_name': first_name, 'last_name': last_name, 'email': email}
+            'form_data': form_data,
+            'education_levels': list(EducationLevel)
         })
 
     try:
@@ -96,6 +111,8 @@ async def register(
             first_name=first_name,
             last_name=last_name,
             email=email,
+            education_level=education_level,
+            course=course,
             password=password,
             password_confirm=password_confirm
         )
@@ -111,7 +128,8 @@ async def register(
         return templates.TemplateResponse('auth/register.html', {
             'request': request,
             'error_msg': str(e),
-            'form_data': {'first_name': first_name, 'last_name': last_name, 'email': email}
+            'form_data': form_data,
+            'education_levels': list(EducationLevel)
         })
 
 

@@ -3,12 +3,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, case
 import math
+import os
 
 from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.achievement import Achievement
 from app.models.user import Users
-from app.models.enums import AchievementStatus, AchievementCategory, AchievementLevel
+from app.models.enums import AchievementStatus, AchievementCategory, AchievementLevel, UserRole
 from app.services.admin.achievement_service import AchievementService
 from app.repositories.admin.achievement_repository import AchievementRepository
 
@@ -127,10 +128,57 @@ async def store(
             "status": AchievementStatus.PENDING
         })
         return RedirectResponse(
-            url="/sirius.achievements/achievements?toast_msg=Достижение отправлено на проверку&toast_type=success", status_code=302)
+            url="/sirius.achievements/achievements?toast_msg=Достижение отправлено на проверку&toast_type=success",
+            status_code=302)
     except Exception as e:
         return RedirectResponse(url=f"/sirius.achievements/achievements/create?toast_msg=Ошибка: {e}&toast_type=error",
                                 status_code=302)
+
+
+@router.post('/achievements/{id}/revise', name='admin.achievements.revise', dependencies=[Depends(validate_csrf)])
+async def revise(
+        id: int,
+        request: Request,
+        file: UploadFile = Form(...),
+        service: AchievementService = Depends(get_service)
+):
+    user_id = request.session.get('auth_id')
+    achievement = await service.repo.find(id)
+
+    if not achievement or achievement.user_id != user_id:
+        return RedirectResponse(
+            url="/sirius.achievements/achievements?toast_msg=Достижение не найдено&toast_type=error", status_code=302)
+
+    if achievement.status != AchievementStatus.REVISION:
+        return RedirectResponse(
+            url="/sirius.achievements/achievements?toast_msg=Этот документ не требует доработки&toast_type=error",
+            status_code=302)
+
+    try:
+        new_file_path = await service.save_file(file)
+
+        old_file_full_path = os.path.join(service.upload_dir, achievement.file_path)
+        if os.path.exists(old_file_full_path):
+            try:
+                os.remove(old_file_full_path)
+            except OSError:
+                pass
+
+        await service.repo.update(id, {
+            "file_path": new_file_path,
+            "status": AchievementStatus.PENDING,
+            "rejection_reason": None
+        })
+
+        return RedirectResponse(
+            url="/sirius.achievements/achievements?toast_msg=Исправленный документ отправлен на модерацию&toast_type=success",
+            status_code=302
+        )
+    except Exception as e:
+        return RedirectResponse(
+            url=f"/sirius.achievements/achievements?toast_msg=Ошибка при загрузке: {e}&toast_type=error",
+            status_code=302
+        )
 
 
 @router.post('/achievements/{id}/delete', name='admin.achievements.delete', dependencies=[Depends(validate_csrf)])

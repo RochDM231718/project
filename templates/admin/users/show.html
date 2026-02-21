@@ -5,15 +5,26 @@
 
     <div class="flex justify-between items-center">
         <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Карточка пользователя</h2>
-        <a href="{{ '/sirius.achievements/documents' if request.query_params.get('from') == 'documents' else '/sirius.achievements/users' }}"
+
+        {% set back_url = '/sirius.achievements/users' %}
+        {% if request.query_params.get('from') == 'documents' %}
+            {% set back_url = '/sirius.achievements/documents' %}
+        {% elif request.query_params.get('from') == 'moderation' %}
+            {% set back_url = '/sirius.achievements/moderation/users' %}
+        {% endif %}
+
+        <a href="{{ back_url }}"
            class="text-sm text-slate-500 hover:text-indigo-600 flex items-center transition-colors">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             Назад
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="space-y-6">
+    {% set is_guest_or_pending = target_user.role.value in ['GUEST', 'guest'] or target_user.status.value in ['PENDING', 'pending'] %}
+
+    <div class="grid grid-cols-1 {% if not is_guest_or_pending %}lg:grid-cols-3{% endif %} gap-6">
+
+        <div class="space-y-6 {% if is_guest_or_pending %}max-w-xl mx-auto w-full{% endif %}">
             <div class="bg-white rounded-xl border border-slate-200 p-6 text-center flex flex-col items-center">
                  <div class="h-28 w-28 mb-4 relative">
                     {% if target_user.avatar_path %}
@@ -37,17 +48,28 @@
                     </span>
                 </div>
 
-                {% if user.role.value in ['super_admin', 'moderator', 'SUPER_ADMIN', 'MODERATOR'] and user.id != target_user.id %}
-                <form action="/sirius.achievements/users/{{ target_user.id }}/role" method="POST" class="w-full pt-4 border-t border-slate-100">
+                {% if user.role.value in ['super_admin', 'SUPER_ADMIN'] and user.id != target_user.id %}
+                <form action="/sirius.achievements/users/{{ target_user.id }}/role" method="POST" class="w-full pt-4 border-t border-slate-100" x-data="{ selectedRole: '{{ target_user.role.value }}' }">
                     <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
                     <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5 text-left">Изменить роль</label>
                     <div class="flex gap-2">
-                        <select name="role" class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+                        <select name="role" x-model="selectedRole" class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
                             {% for r in roles %}
                                 <option value="{{ r.value }}" {{ 'selected' if target_user.role.value == r.value else '' }}>{{ r.name }}</option>
                             {% endfor %}
                         </select>
                         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">OK</button>
+                    </div>
+
+                    <div x-show="selectedRole === 'MODERATOR' || selectedRole === 'moderator'" class="mt-3 text-left bg-indigo-50/50 p-3 rounded-lg border border-indigo-100" x-cloak>
+                        <label class="text-[10px] text-indigo-800 font-bold uppercase tracking-wider block mb-1.5">Зона проверки модератора</label>
+                        <select name="education_level" class="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all">
+                            <option value="all">Глобальный (Все направления)</option>
+                            {% for el in education_levels %}
+                                {% set el_val = target_user.education_level | attr('value') | default(target_user.education_level, true) %}
+                                <option value="{{ el.value }}" {{ 'selected' if el_val == el.value else '' }}>Только {{ el.value }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </form>
                 {% endif %}
@@ -58,6 +80,16 @@
                      <h3 class="text-sm font-bold text-slate-700">Информация</h3>
                  </div>
                  <div class="p-5 space-y-3 text-sm">
+                     {% if target_user.education_level %}
+                     <div class="flex justify-between items-center pb-2 border-b border-slate-50">
+                         <span class="text-slate-500 text-xs">Обучение / Зона</span>
+                         <span class="font-medium text-slate-800">{{ target_user.education_level | attr('value') | default(target_user.education_level, true) }}</span>
+                     </div>
+                     <div class="flex justify-between items-center pb-2 border-b border-slate-50">
+                         <span class="text-slate-500 text-xs">Курс</span>
+                         <span class="font-medium text-slate-800">{{ target_user.course ~ ' курс' if target_user.course else 'Не указан' }}</span>
+                     </div>
+                     {% endif %}
                      <div class="flex justify-between items-center pb-2 border-b border-slate-50">
                          <span class="text-slate-500 text-xs">Телефон</span>
                          <span class="font-medium text-slate-800">{{ target_user.phone_number or 'Не указан' }}</span>
@@ -70,6 +102,7 @@
             </div>
         </div>
 
+        {% if not is_guest_or_pending %}
         <div class="lg:col-span-2 space-y-6">
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white p-5 rounded-xl border border-slate-200">
@@ -80,7 +113,7 @@
                 {% if rank %}
                 <div class="bg-white p-5 rounded-xl border border-slate-200 flex justify-between items-center">
                     <div>
-                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Место</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Место в рейтинге</div>
                         <div class="text-2xl font-bold text-indigo-600 mt-1">#{{ rank }}</div>
                     </div>
                     <div class="w-px h-8 bg-slate-200"></div>
@@ -122,13 +155,14 @@
                         </div>
 
                         <div class="flex items-center gap-3 shrink-0">
+                            {% set s_val = item.status | attr('value') | default(item.status, true) %}
                             <span class="hidden sm:inline-flex px-2 py-0.5 text-[10px] rounded font-medium border
-                                {{ 'bg-green-50 text-green-700 border-green-200' if item.status.value == 'approved' else '' }}
-                                {{ 'bg-yellow-50 text-yellow-700 border-yellow-200' if item.status.value == 'pending' else '' }}
-                                {{ 'bg-red-50 text-red-700 border-red-200' if item.status.value == 'rejected' else '' }}">
-                                {% if item.status.value == 'approved' %}Одобрено
-                                {% elif item.status.value == 'pending' %}На проверке
-                                {% elif item.status.value == 'rejected' %}Отклонено
+                                {{ 'bg-green-50 text-green-700 border-green-200' if s_val == 'approved' else '' }}
+                                {{ 'bg-yellow-50 text-yellow-700 border-yellow-200' if s_val == 'pending' else '' }}
+                                {{ 'bg-red-50 text-red-700 border-red-200' if s_val == 'rejected' else '' }}">
+                                {% if s_val == 'approved' %}Одобрено
+                                {% elif s_val == 'pending' %}На проверке
+                                {% elif s_val == 'rejected' %}Отклонено
                                 {% endif %}
                             </span>
 
@@ -149,6 +183,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

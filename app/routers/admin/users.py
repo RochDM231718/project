@@ -9,7 +9,7 @@ from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
 from app.models.achievement import Achievement
-from app.models.enums import UserRole, UserStatus, AchievementStatus
+from app.models.enums import UserRole, UserStatus, AchievementStatus, EducationLevel
 from app.services.admin.user_service import UserService
 from app.repositories.admin.user_repository import UserRepository
 from app.routers.admin.deps import get_current_user
@@ -33,6 +33,7 @@ async def check_admin_rights(request: Request, db: AsyncSession):
 
 
 ROLE_HIERARCHY = {
+    UserRole.GUEST: 0,
     UserRole.STUDENT: 1,
     UserRole.MODERATOR: 2,
     UserRole.SUPER_ADMIN: 3
@@ -60,6 +61,8 @@ async def index(
         query: str = None,
         role: str = None,
         status: str = None,
+        education_level: str = None,
+        course: int = None,
         sort_by: str = "newest",
         db: AsyncSession = Depends(get_db)
 ):
@@ -77,6 +80,10 @@ async def index(
         stmt = stmt.filter(Users.role == role)
     if status and status != 'all':
         stmt = stmt.filter(Users.status == status)
+    if education_level and education_level != 'all':
+        stmt = stmt.filter(Users.education_level == education_level)
+    if course and course != 0:
+        stmt = stmt.filter(Users.course == course)
 
     if sort_by == "oldest":
         stmt = stmt.order_by(Users.created_at.asc())
@@ -94,9 +101,12 @@ async def index(
         'query': query,
         'role': role,
         'status': status,
+        'education_level': education_level,
+        'course': course,
         'sort_by': sort_by,
         'roles': list(UserRole),
         'statuses': list(UserStatus),
+        'education_levels': list(EducationLevel),
         'user': current_user
     })
 
@@ -144,6 +154,7 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
         'rank': rank,
         'total_points': total_points,
         'roles': list(UserRole),
+        'education_levels': list(EducationLevel),
         'timestamp': int(time.time())
     })
 
@@ -153,6 +164,7 @@ async def update_user_role(
         id: int,
         request: Request,
         role: UserRole = Form(...),
+        education_level: str = Form(None),
         service: UserService = Depends(get_service),
         db: AsyncSession = Depends(get_db)
 ):
@@ -179,10 +191,21 @@ async def update_user_role(
                 status_code=302
             )
 
-    await service.update_role(id, role)
+    # Присвоение роли и зоны модерации
+    update_data = {"role": role}
+
+    if role == UserRole.MODERATOR:
+        if education_level and education_level != 'all':
+            update_data["education_level"] = education_level
+        else:
+            update_data["education_level"] = None
+    elif role == UserRole.SUPER_ADMIN:
+        update_data["education_level"] = None
+
+    await service.repository.update(id, update_data)
 
     return RedirectResponse(
-        url=f"/sirius.achievements/users/{id}?toast_msg=Роль обновлена&toast_type=success",
+        url=f"/sirius.achievements/users/{id}?toast_msg=Роль и права обновлены&toast_type=success",
         status_code=302
     )
 

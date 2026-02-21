@@ -3,7 +3,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
 from app.infrastructure.database import Base
-from app.models.enums import UserRole, UserStatus
+from app.models.enums import UserRole, UserStatus, EducationLevel
 
 class Users(Base):
     __tablename__ = "users"
@@ -18,6 +18,9 @@ class Users(Base):
 
     role = Column(Enum(UserRole), default=UserRole.GUEST)
     status = Column(Enum(UserStatus), default=UserStatus.PENDING)
+
+    education_level = Column(Enum(EducationLevel), nullable=True)
+    course = Column(Integer, nullable=True)
 
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

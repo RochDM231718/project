@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+    <div class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+        </div>
+
+        <h2 class="text-xl font-bold text-slate-800 mb-2">Подтверждение почты</h2>
+        <p class="text-sm text-slate-500 mb-6 leading-relaxed">
+            Мы отправили 6-значный код на адрес <br>
+            <span class="font-bold text-slate-800">{{ pending_email }}</span>
+        </p>
+
+        {% if error_msg %}
+        <div class="mb-5 bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg text-center font-medium">
+            {{ error_msg }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('admin.profile.verify_email_submit') }}" method="POST" class="space-y-5">
+            <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+
+            <div>
+                <input type="text" name="code" required maxlength="6" pattern="\d{6}" placeholder="000000"
+                       class="w-full text-center tracking-[0.5em] text-3xl font-bold px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+                <p class="text-[10px] text-slate-400 mt-2">Код может идти до 2-х минут. Проверьте папку "Спам".</p>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 text-white px-5 py-3 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm">
+                Подтвердить
+            </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-slate-100">
+            <a href="{{ url_for('admin.profile.cancel_email') }}" class="text-xs text-slate-400 hover:text-slate-600 font-medium transition-colors">
+                Отменить и вернуться в профиль
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

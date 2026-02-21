@@ -109,6 +109,28 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
         c_labels = [row.d_date.strftime(date_fmt) for row in chart_res] if chart_res else []
         c_data = [row.cnt for row in chart_res] if chart_res else []
 
+        cohorts_stmt = (
+            select(
+                Users.education_level,
+                func.count(Achievement.id).label('total_docs'),
+                func.count(Achievement.id).filter(Achievement.status == AchievementStatus.PENDING).label('pending_docs')
+            )
+            .join(Achievement, Users.id == Achievement.user_id)
+            .filter(Achievement.created_at >= start_date, Users.education_level.isnot(None))
+            .group_by(Users.education_level)
+            .order_by(desc('total_docs'))
+        )
+        cohorts_data = (await db.execute(cohorts_stmt)).all()
+
+        processed_cohorts = []
+        for c in cohorts_data:
+            ed_level_val = c.education_level.value if hasattr(c.education_level, 'value') else c.education_level
+            processed_cohorts.append({
+                "name": ed_level_val,
+                "total": c.total_docs,
+                "pending": c.pending_docs
+            })
+
         stats = {
             'new_users': new_users,
             'pending_docs': ach_stats.pending,
@@ -117,7 +139,8 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
             'top_students': top_students,
             'recent_docs': recent_docs,
             'chart_labels': json.dumps(c_labels),
-            'chart_data': json.dumps(c_data)
+            'chart_data': json.dumps(c_data),
+            'cohorts': processed_cohorts
         }
 
     else:
@@ -177,7 +200,7 @@ async def index(request: Request, period: str = 'all', db: AsyncSession = Depend
             .group_by(Achievement.category)
         )).all()
 
-        c_labels = [row[0].value for row in cat_stats if row[0]]
+        c_labels = [row[0].value if hasattr(row[0], 'value') else row[0] for row in cat_stats if row[0]]
         c_data = [row[1] for row in cat_stats if row[0]]
 
         stats = {
