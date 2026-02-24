@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: sirius_db
+    container_name: sirius_db_new
     restart: always
     environment:
       POSTGRES_USER: ${DB_USERNAME:-sirius_user}
@@ -9,22 +9,22 @@ services:
       POSTGRES_DB: ${DB_NAME:-sirius_db}
       TZ: Europe/Moscow
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_new:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-sirius_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-sirius_user} -d ${DB_NAME:-sirius_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: sirius_redis
+    container_name: sirius_redis_new
     restart: always
     command: redis-server --requirepass ${REDIS_PASSWORD:-sirius_redis_pass}
     ports:
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-sirius_redis_pass}", "ping"]
       interval: 10s
@@ -33,10 +33,10 @@ services:
 
   web:
     build: .
-    container_name: sirius_app
+    container_name: sirius_app_new
     restart: always
     ports:
-      - "8080:8000"
+      - "8081:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -55,5 +55,5 @@ services:
       - uploads_data:/app/static/uploads
 
 volumes:
-  postgres_data:
+  postgres_data_new:
   uploads_data:

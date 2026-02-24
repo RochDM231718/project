@@ -16,10 +16,10 @@ class Users(Base):
     phone_number = Column(String, nullable=True)
     avatar_path = Column(String, nullable=True)
 
-    role = Column(Enum(UserRole), default=UserRole.GUEST)
-    status = Column(Enum(UserStatus), default=UserStatus.PENDING)
+    role = Column(Enum(UserRole, name="user_role"), default=UserRole.GUEST)
+    status = Column(Enum(UserStatus, name="userstatus"), default=UserStatus.PENDING)
+    education_level = Column(Enum(EducationLevel, name="educationlevel"), nullable=True)
 
-    education_level = Column(Enum(EducationLevel), nullable=True)
     course = Column(Integer, nullable=True)
 
     is_active = Column(Boolean, default=True)
