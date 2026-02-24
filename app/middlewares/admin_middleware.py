@@ -5,7 +5,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, HTTPException
 from sqlalchemy import select, func
 from app.infrastructure.tranaslations import current_locale
-from app.infrastructure.database.connection import db_instance
+from app.infrastructure.database import async_session_maker
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.enums import UserStatus, AchievementStatus, UserRole
@@ -30,7 +30,7 @@ class GlobalContextMiddleware(BaseHTTPMiddleware):
             pending_ach = await redis_client.get("admin:pending_achievements")
 
             if pending_users is None or pending_ach is None:
-                async with db_instance.session_factory() as db:
+                async with async_session_maker() as db:
                     query_users = select(func.count()).select_from(Users).where(Users.status == UserStatus.PENDING)
                     result_users = await db.execute(query_users)
                     pending_users_val = result_users.scalar()
@@ -73,7 +73,7 @@ async def auth(request: Request):
             raise HTTPException(status_code=401, detail="Unauthorized")
         raise HTTPException(status_code=302, headers={"Location": "/sirius.achievements/login"})
 
-    async with db_instance.session_factory() as db:
+    async with async_session_maker() as db:
         stmt = select(Users).filter(Users.id == int(auth_id))
         result = await db.execute(stmt)
         user = result.scalars().first()

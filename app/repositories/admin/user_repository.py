@@ -3,6 +3,7 @@ from app.repositories.admin.crud_repository import CrudRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, desc, asc
 from app.schemas.admin.users import UserCreate
+from app.utils.search import escape_like
 
 class UserRepository(CrudRepository):
     def __init__(self, db: AsyncSession):
@@ -18,7 +19,7 @@ class UserRepository(CrudRepository):
 
         if filters is not None:
             if 'query' in filters and filters['query'] != '':
-                like_term = f"%{filters['query']}%"
+                like_term = f"%{escape_like(filters['query'])}%"
                 stmt = stmt.filter(
                     or_(
                         self.model.first_name.ilike(like_term),

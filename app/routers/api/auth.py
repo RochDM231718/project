@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.enums import UserRole
 from app.routers.api.api import public_router as router, translation_manager
 from app.services.auth_service import AuthService
-from app.infrastructure.database.connection import get_db
+from app.infrastructure.database import get_db
 from app.repositories.admin.user_repository import UserRepository
 from app.repositories.admin.user_token_repository import UserTokenRepository
 from app.services.admin.user_token_service import UserTokenService

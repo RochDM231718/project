@@ -9,6 +9,8 @@ MAX_DOC_SIZE = 10 * 1024 * 1024
 
 
 class AchievementService(BaseCrudService):
+    upload_dir = "static"
+
     def __init__(self, repo: AchievementRepository):
         super().__init__(repo)
         self.repo = repo

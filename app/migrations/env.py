@@ -27,9 +27,9 @@ def get_url():
     from dotenv import load_dotenv
     load_dotenv()
     DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_USERNAME = os.getenv("DB_USERNAME", "user")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
-    DB_NAME = os.getenv("DB_NAME", "fastkit_db")
+    DB_USERNAME = os.getenv("DB_USERNAME", "sirius_user")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_NAME = os.getenv("DB_NAME", "sirius_db")
     DB_PORT = os.getenv("DB_PORT", "5432")
     return f"postgresql+asyncpg://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 

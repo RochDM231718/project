@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from datetime import datetime
 from app.infrastructure.database import Base
 
 class SeasonResult(Base):
@@ -11,6 +11,6 @@ class SeasonResult(Base):
     season_name = Column(String(100), nullable=False)
     points = Column(Integer, default=0)
     rank = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("Users")

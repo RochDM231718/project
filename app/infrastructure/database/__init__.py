@@ -8,17 +8,13 @@ load_dotenv()
 
 _logger = logging.getLogger(__name__)
 
-DB_DRIVER = os.getenv("DB_DRIVER", "postgresql")
 DB_USER = os.getenv("DB_USERNAME", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "sirius_db")
 
-if DB_DRIVER == "sqlite":
-    DATABASE_URL = "sqlite+aiosqlite:///./db.sqlite3"
-else:
-    DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 safe_url = DATABASE_URL.replace(DB_PASSWORD, "****") if DB_PASSWORD else DATABASE_URL
 _logger.info("Database connection: %s", safe_url)
@@ -40,5 +36,7 @@ try:
     from app.models.achievement import Achievement
     from app.models.notification import Notification
     from app.models.user_token import UserToken
+    from app.models.page import Page
+    from app.models.season_result import SeasonResult
 except ImportError:
     pass

@@ -3,7 +3,7 @@ from sqlalchemy import select
 from app.infrastructure.jwt_handler import verify_token
 from app.infrastructure.tranaslations import TranslationManager
 from app.models.user import Users
-from app.infrastructure.database.connection import db_instance
+from app.infrastructure.database import async_session_maker
 from app.models.enums import UserRole, UserStatus
 
 translation_manager = TranslationManager()
@@ -20,7 +20,7 @@ async def auth(request: Request):
     if not payload or payload.get("type") != "access":
         raise HTTPException(status_code=401, detail=translation_manager.gettext('api.auth.invalid_token'))
 
-    async with db_instance.session_factory() as db:
+    async with async_session_maker() as db:
         user_id = payload.get("sub")
         stmt = select(Users).filter(Users.id == int(user_id))
         result = await db.execute(stmt)
