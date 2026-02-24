@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 from app.infrastructure.database import engine, Base
 from app.middlewares.security_headers import SecurityHeadersMiddleware
+from app.middlewares.upload_protection import UploadProtectionMiddleware
 
 from app.routers.admin.auth import router as admin_auth_router
 from app.routers.admin.dashboard import router as admin_dashboard_router
@@ -63,9 +64,11 @@ if not SECRET_KEY or SECRET_KEY == "supersecretkey123":
 
 app.add_middleware(SecurityHeadersMiddleware)
 
+app.add_middleware(UploadProtectionMiddleware)
+
 app.add_middleware(CSRFContextMiddleware)
 
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=ENV == "production", same_site="lax")
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)

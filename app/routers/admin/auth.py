@@ -54,6 +54,8 @@ async def login(
                 'form_data': {'email': email}
             })
 
+        # Regenerate session to prevent session fixation attacks
+        request.session.clear()
         request.session['auth_id'] = user.id
         request.session['auth_name'] = f"{user.first_name} {user.last_name}"
         request.session['auth_avatar'] = user.avatar_path
@@ -125,6 +127,8 @@ async def register(
 
         user = await service.register_user(user_data)
 
+        # Regenerate session to prevent session fixation attacks
+        request.session.clear()
         request.session['auth_id'] = user.id
         request.session['auth_name'] = f"{user.first_name} {user.last_name}"
         request.session['auth_avatar'] = user.avatar_path

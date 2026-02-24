@@ -24,5 +24,9 @@ __pycache__/
 *.sql
 backup.sql
 
+# Setup/seeder credentials
+.seed_credentials
+.setup_credentials
+
 # Uploaded files
 static/uploads/

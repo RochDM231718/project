@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from passlib.context import CryptContext
 import secrets
+import os
+import redis.asyncio as aioredis
 
 from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
@@ -21,6 +23,11 @@ from app.repositories.admin.user_token_repository import UserTokenRepository
 
 router = guard_router
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+redis_client = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
+
+EMAIL_CODE_TTL = 600  # 10 minutes
+EMAIL_CODE_MAX_ATTEMPTS = 5
 
 
 def get_service(db: AsyncSession = Depends(get_db)):
@@ -81,10 +88,14 @@ async def update_profile(
                 'active_tab': 'profile'
             })
 
-        # Генерируем 6-значный код и сохраняем в сессию
+        # Store verification code in Redis (not in session cookie)
         code = ''.join(secrets.choice('0123456789') for _ in range(6))
-        request.session['pending_email'] = email
-        request.session['email_code'] = code
+        redis_key = f"email_change:{current_user.id}"
+        await redis_client.hset(redis_key, mapping={"email": email, "code": code, "attempts": "0"})
+        await redis_client.expire(redis_key, EMAIL_CODE_TTL)
+
+        # Flag in session that verification is pending (no secrets stored)
+        request.session['pending_email_change'] = True
 
         # Шаблон письма
         subject = "Подтверждение новой почты | Sirius.Achievements"
@@ -136,7 +147,9 @@ async def update_profile(
 @router.get('/profile/verify-email', response_class=HTMLResponse, name='admin.profile.verify_email_page')
 async def verify_email_page(request: Request, db: AsyncSession = Depends(get_db)):
     user = await get_current_user(request, db)
-    pending_email = request.session.get('pending_email')
+
+    redis_key = f"email_change:{user.id}"
+    pending_email = await redis_client.hget(redis_key, "email")
 
     if not pending_email:
         return RedirectResponse(url=request.url_for('admin.profile.index'), status_code=302)
@@ -156,26 +169,43 @@ async def verify_email_submit(
         db: AsyncSession = Depends(get_db)
 ):
     user = await get_current_user(request, db)
-    pending_email = request.session.get('pending_email')
-    valid_code = request.session.get('email_code')
+    redis_key = f"email_change:{user.id}"
+    data = await redis_client.hgetall(redis_key)
 
-    if not pending_email or not valid_code:
+    if not data or "email" not in data or "code" not in data:
         return RedirectResponse(url=request.url_for('admin.profile.index'), status_code=302)
 
-    if code.strip() != valid_code:
+    pending_email = data["email"]
+    valid_code = data["code"]
+    attempts = int(data.get("attempts", 0))
+
+    # Rate limit: max attempts
+    if attempts >= EMAIL_CODE_MAX_ATTEMPTS:
+        await redis_client.delete(redis_key)
+        request.session.pop('pending_email_change', None)
+        url = request.url_for('admin.profile.index').include_query_params(
+            toast_msg="Слишком много попыток. Запросите смену почты заново.", toast_type="error")
+        return RedirectResponse(url=url, status_code=302)
+
+    if not secrets.compare_digest(code.strip(), valid_code):
+        await redis_client.hincrby(redis_key, "attempts", 1)
+        remaining = EMAIL_CODE_MAX_ATTEMPTS - attempts - 1
+        error_msg = "Неверный код. Попробуйте еще раз."
+        if remaining <= 2:
+            error_msg = f"Неверный код. Осталось попыток: {remaining}."
         return templates.TemplateResponse('profile/verify-email.html', {
             'request': request,
             'user': user,
             'pending_email': pending_email,
-            'error_msg': "Неверный код. Попробуйте еще раз."
+            'error_msg': error_msg
         })
 
     # Код верный! Обновляем почту в базе
     await service.repository.update(user.id, {"email": pending_email})
 
-    # Очищаем сессию от временных данных
-    request.session.pop('pending_email', None)
-    request.session.pop('email_code', None)
+    # Очищаем Redis и сессию
+    await redis_client.delete(redis_key)
+    request.session.pop('pending_email_change', None)
 
     url = request.url_for('admin.profile.index').include_query_params(toast_msg="Email успешно изменен",
                                                                       toast_type="success")
@@ -183,10 +213,12 @@ async def verify_email_submit(
 
 
 @router.get('/profile/cancel-email-change', name='admin.profile.cancel_email')
-async def cancel_email_change(request: Request):
+async def cancel_email_change(request: Request, db: AsyncSession = Depends(get_db)):
     """Позволяет отменить смену почты, если пользователь ошибся в адресе или не дождался письма"""
-    request.session.pop('pending_email', None)
-    request.session.pop('email_code', None)
+    user = await get_current_user(request, db)
+    if user:
+        await redis_client.delete(f"email_change:{user.id}")
+    request.session.pop('pending_email_change', None)
     url = request.url_for('admin.profile.index').include_query_params(toast_msg="Смена почты отменена",
                                                                       toast_type="error")
     return RedirectResponse(url=url, status_code=302)

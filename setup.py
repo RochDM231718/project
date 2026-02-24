@@ -60,8 +60,15 @@ async def init_db_and_create_admin():
             session.add(new_admin)
             await session.commit()
             print(f"   -> Admin created! Email: {email}")
-            print(f"   -> Generated password: {password}")
-            print(f"   -> IMPORTANT: Change this password immediately after first login!")
+            if not os.getenv("ADMIN_PASSWORD"):
+                # Write generated password to file instead of stdout/logs
+                cred_file = ".setup_credentials"
+                with open(cred_file, "w") as f:
+                    f.write(f"email: {email}\npassword: {password}\n")
+                print(f"   -> Credentials saved to {cred_file} (NOT in logs)")
+                print(f"   -> IMPORTANT: Change this password immediately after first login!")
+            else:
+                print(f"   -> Password set from ADMIN_PASSWORD env variable.")
 
 
 if __name__ == "__main__":
