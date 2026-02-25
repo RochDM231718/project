@@ -126,7 +126,8 @@ async def store(
             "file_path": file_path,
             "category": category,
             "level": level,
-            "status": AchievementStatus.PENDING
+            "status": AchievementStatus.PENDING,
+            "created_at": func.now()
         })
         return RedirectResponse(
             url="/sirius.achievements/achievements?toast_msg=Достижение отправлено на проверку&toast_type=success",

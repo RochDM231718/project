@@ -20,7 +20,7 @@ router = APIRouter(
 )
 
 
-@router.get("/api/documents/search", response_class=JSONResponse)
+@router.get("/search", response_class=JSONResponse)
 async def api_documents_search(
         request: Request,
         q: str = Query(..., min_length=1),

@@ -57,7 +57,9 @@
                             </div>
 
                             <div class="mt-auto flex justify-between items-end">
-                                <span class="text-[9px] font-medium text-slate-400 uppercase tracking-wider">{{ item.created_at.strftime('%d.%m.%Y') }}</span>
+                                <span class="text-[9px] font-medium text-slate-400 uppercase tracking-wider">
+                                    {{ item.created_at.strftime('%d.%m.%Y') if item.created_at else 'Дата не указана' }}
+                                </span>
                                 {% if item.description %}
                                     <span class="text-[10px] text-slate-400 truncate max-w-[120px] italic" title="{{ item.description }}">{{ item.description }}</span>
                                 {% endif %}
