@@ -1,17 +1,17 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse, JSONResponse
 from app.security.csrf import get_csrf_token
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
 import logging
 import secrets
 from dotenv import load_dotenv
 
-from app.infrastructure.database import engine, Base
+from app.infrastructure.database import engine, async_session_maker, Base
 from app.middlewares.security_headers import SecurityHeadersMiddleware
 from app.middlewares.upload_protection import UploadProtectionMiddleware
 
@@ -108,6 +108,18 @@ async def global_exception_handler(request: Request, exc: Exception):
         "user": None,
         "error": error_msg
     }, status_code=500)
+
+
+@app.get("/health", include_in_schema=False)
+async def health_check():
+    """Health check for Docker/load balancer monitoring."""
+    try:
+        async with async_session_maker() as session:
+            from sqlalchemy import text
+            await session.execute(text("SELECT 1"))
+        return JSONResponse({"status": "ok", "database": "connected"})
+    except Exception:
+        return JSONResponse({"status": "error", "database": "unavailable"}, status_code=503)
 
 
 @app.get("/")

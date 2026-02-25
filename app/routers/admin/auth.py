@@ -59,6 +59,7 @@ async def login(
         request.session['auth_id'] = user.id
         request.session['auth_name'] = f"{user.first_name} {user.last_name}"
         request.session['auth_avatar'] = user.avatar_path
+        request.session['auth_role'] = user.role.value if hasattr(user.role, 'value') else str(user.role)
 
         return RedirectResponse(url=request.url_for('admin.dashboard.index'), status_code=302)
 
@@ -132,6 +133,7 @@ async def register(
         request.session['auth_id'] = user.id
         request.session['auth_name'] = f"{user.first_name} {user.last_name}"
         request.session['auth_avatar'] = user.avatar_path
+        request.session['auth_role'] = user.role.value if hasattr(user.role, 'value') else str(user.role)
 
         return RedirectResponse(url=request.url_for('admin.dashboard.index'), status_code=302)
     except Exception as e:

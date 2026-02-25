@@ -1,7 +1,6 @@
 import os
 from fastapi import APIRouter, Depends, Request, HTTPException, Query
 from fastapi.responses import RedirectResponse, HTMLResponse, FileResponse, JSONResponse
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from app.infrastructure.database import get_db

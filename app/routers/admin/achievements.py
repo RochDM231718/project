@@ -132,8 +132,11 @@ async def store(
         return RedirectResponse(
             url="/sirius.achievements/achievements?toast_msg=Достижение отправлено на проверку&toast_type=success",
             status_code=302)
-    except Exception as e:
-        return RedirectResponse(url=f"/sirius.achievements/achievements/create?toast_msg=Ошибка: {e}&toast_type=error",
+    except ValueError as e:
+        return RedirectResponse(url=f"/sirius.achievements/achievements/create?toast_msg={e}&toast_type=error",
+                                status_code=302)
+    except Exception:
+        return RedirectResponse(url="/sirius.achievements/achievements/create?toast_msg=Произошла ошибка при загрузке&toast_type=error",
                                 status_code=302)
 
 
@@ -176,9 +179,14 @@ async def revise(
             url="/sirius.achievements/achievements?toast_msg=Исправленный документ отправлен на модерацию&toast_type=success",
             status_code=302
         )
-    except Exception as e:
+    except ValueError as e:
         return RedirectResponse(
-            url=f"/sirius.achievements/achievements?toast_msg=Ошибка при загрузке: {e}&toast_type=error",
+            url=f"/sirius.achievements/achievements?toast_msg={e}&toast_type=error",
+            status_code=302
+        )
+    except Exception:
+        return RedirectResponse(
+            url="/sirius.achievements/achievements?toast_msg=Произошла ошибка при загрузке&toast_type=error",
             status_code=302
         )
 
