@@ -5,11 +5,13 @@ from sqlalchemy import select, func, or_, desc
 import math
 import time
 
+from app.services.admin.resume_service import ResumeService
+from app.services.admin.resume_service import ResumeService
 from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
 from app.models.achievement import Achievement
-from app.models.season_result import SeasonResult  # <--- Импорт новой таблицы
+from app.models.season_result import SeasonResult
 from app.models.enums import UserRole, UserStatus, AchievementStatus, EducationLevel
 from app.services.admin.user_service import UserService
 from app.repositories.admin.user_repository import UserRepository
@@ -121,14 +123,12 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
     if not target_user_obj:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Текущие достижения (не архивные)
     achievements_stmt = select(Achievement).filter(
         Achievement.user_id == id,
         Achievement.status != AchievementStatus.ARCHIVED
     ).order_by(Achievement.created_at.desc())
     achievements = (await db.execute(achievements_stmt)).scalars().all()
 
-    # Загрузка истории прошлых сезонов
     history_stmt = select(SeasonResult).filter(SeasonResult.user_id == id).order_by(SeasonResult.created_at.desc())
     season_history = (await db.execute(history_stmt)).scalars().all()
 
@@ -160,7 +160,7 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
         'user': current_user,
         'target_user': target_user_obj,
         'achievements': achievements,
-        'season_history': season_history,  # <--- Передаем историю в шаблон
+        'season_history': season_history,
         'total_docs': total_docs,
         'rank': rank,
         'total_points': total_points,
@@ -168,6 +168,17 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
         'education_levels': list(EducationLevel),
         'timestamp': int(time.time())
     })
+
+
+@router.get('/users/{id}/generate-resume')
+async def generate_user_resume(id: int, request: Request, db: AsyncSession = Depends(get_db)):
+    current_user_role = str(request.session.get('auth_role'))
+
+    resume_service = ResumeService(db)
+
+    resume_text = await resume_service.generate_resume(id)
+
+    return JSONResponse(content={"resume": resume_text})
 
 
 @router.post('/users/{id}/role', name='admin.users.update_role', dependencies=[Depends(validate_csrf)])
@@ -249,3 +260,17 @@ async def delete_user(
     await service.repository.delete(id)
     return RedirectResponse(url="/sirius.achievements/users?toast_msg=Пользователь удален&toast_type=success",
                             status_code=302)
+
+
+@router.post('/users/{id}/generate-resume')
+async def api_generate_resume(id: int, request: Request, db: AsyncSession = Depends(get_db)):
+    current_user_id = request.session.get('auth_id')
+    current_user_role = str(request.session.get('auth_role'))
+
+    if current_user_id != id and current_user_role not in ['moderator', 'super_admin', 'MODERATOR', 'SUPER_ADMIN']:
+        return JSONResponse({"error": "Нет прав"}, status_code=403)
+
+    service = ResumeService(db)
+    resume_text = await service.generate_resume(id, force_regenerate=True)
+
+    return JSONResponse({"resume": resume_text})

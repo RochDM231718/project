@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SqlEnum, ForeignKey, Text
 from app.infrastructure.database import Base
 from app.models.enums import UserRole, UserStatus, EducationLevel
 
@@ -32,3 +32,5 @@ class Users(Base):
     achievements = relationship("Achievement", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     tokens = relationship("UserToken", back_populates="user", cascade="all, delete-orphan")
+
+    resume_text = Column(Text, nullable=True)

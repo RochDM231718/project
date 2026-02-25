@@ -89,7 +89,56 @@
                     <button type="submit" class="w-full sm:w-auto bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">Сохранить</button>
                 </div>
             </form>
-        </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100"
+                 x-data="{
+                    loading: false,
+                    resumeText: `{{ user.resume_text or '' }}`,
+                    async generateResume() {
+                        this.loading = true;
+                        try {
+                            const res = await fetch('/sirius.achievements/users/{{ user.id }}/generate-resume', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-Token': '{{ request.session.csrf_token }}' }
+                            });
+                            const data = await res.json();
+                            if(data.resume) {
+                                this.resumeText = data.resume;
+                                showToast('Резюме успешно обновлено', 'success');
+                            } else {
+                                showToast('Не удалось сгенерировать резюме', 'error');
+                            }
+                        } catch(e) {
+                            showToast('Ошибка сети при генерации резюме', 'error');
+                        }
+                        this.loading = false;
+                    }
+                 }">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Умное Резюме (AI)
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">Автоматически генерируется нейросетью на основе ваших подтвержденных достижений.</p>
+                    </div>
+                    <button @click="generateResume()" :disabled="loading" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-md text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2 disabled:opacity-50">
+                        <svg x-show="loading" class="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none" x-cloak>
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <span x-text="resumeText ? 'Обновить' : 'Сгенерировать'"></span>
+                    </button>
+                </div>
+
+                <div x-show="resumeText" x-transition class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed" x-text="resumeText" x-cloak>
+                </div>
+
+                <div x-show="!resumeText && !loading" class="text-center py-6 bg-slate-50 border border-slate-200 border-dashed rounded-lg text-slate-400 text-xs mt-2">
+                    Здесь появится ваше профессиональное резюме.<br>Нажмите кнопку выше, чтобы ИИ проанализировал ваши грамоты.
+                </div>
+            </div>
+            </div>
 
         <div x-show="activeTab === 'security'" x-cloak class="p-5 sm:p-6">
             <form action="/sirius.achievements/profile/password" method="POST" class="space-y-5">
