@@ -26,7 +26,7 @@ class CrudRepository(AbstractRepository):
         return result.scalars().all()
 
     async def create(self, obj_in):
-        obj_data = obj_in if isinstance(obj_in, dict) else obj_in.dict()
+        obj_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump()
         db_obj = self.model(**obj_data)
         self.db.add(db_obj)
         await self.db.commit()
@@ -41,7 +41,7 @@ class CrudRepository(AbstractRepository):
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
-            update_data = obj_in.dict(exclude_unset=True)
+            update_data = obj_in.model_dump(exclude_unset=True)
 
         for field, value in update_data.items():
             if isinstance(value, Enum):

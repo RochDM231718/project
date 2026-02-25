@@ -40,10 +40,10 @@ class CSRFContextMiddleware(BaseHTTPMiddleware):
         return response
 
 
-#@app.on_event("startup")
-#async def init_tables():
-#    async with engine.begin() as conn:
-#        await conn.run_sync(Base.metadata.create_all)
+@app.on_event("shutdown")
+async def shutdown():
+    await engine.dispose()
+    logger.info("Database engine disposed. Graceful shutdown complete.")
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -140,7 +140,11 @@ async def download_document(
     if not document or not document.file_path:
         raise HTTPException(status_code=404, detail="Документ не найден")
 
-    file_full_path = os.path.join("static", document.file_path)
+    file_full_path = os.path.normpath(os.path.join("static", document.file_path))
+
+    # Prevent path traversal: ensure resolved path stays within static/
+    if not file_full_path.startswith("static" + os.sep):
+        raise HTTPException(status_code=403, detail="Недопустимый путь к файлу")
 
     if not os.path.exists(file_full_path):
         raise HTTPException(status_code=404, detail="Файл физически отсутствует на сервере")

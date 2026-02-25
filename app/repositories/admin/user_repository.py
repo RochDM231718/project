@@ -54,7 +54,7 @@ class UserRepository(CrudRepository):
         elif isinstance(obj_in, dict):
             user_data = obj_in
         else:
-            user_data = obj_in.dict(exclude={"password"})
+            user_data = obj_in.model_dump(exclude={"password"})
 
         db_obj = self.model(**user_data)
         self.db.add(db_obj)
