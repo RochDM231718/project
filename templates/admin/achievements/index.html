@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-6" x-data="{ reviseModalOpen: false, reviseId: null, reviseTitle: '' }">
+<div class="max-w-6xl mx-auto space-y-6" x-data="{ reviseModalOpen: false, reviseId: null, reviseTitle: '', showDeleteModal: false, deleteUrl: '', deleteTitle: '', deleteDesc: '' }" @confirm-delete.window="showDeleteModal = true; deleteUrl = $event.detail.url; deleteTitle = $event.detail.title; deleteDesc = $event.detail.desc">
 
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
@@ -132,9 +132,9 @@
                                 </button>
                             {% endif %}
 
-                            <form action="/sirius.achievements/achievements/{{ item.id }}/delete" method="POST" class="inline-block" onsubmit="return confirm('Удалить этот документ навсегда?');">
+                            <form action="/sirius.achievements/achievements/{{ item.id }}/delete" method="POST" class="inline-block">
                                 <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
-                                <button class="text-xs font-medium text-slate-400 hover:text-red-600 transition-colors p-1">Удалить</button>
+                                <button type="button" @click.prevent="$dispatch('confirm-delete', {url: '/sirius.achievements/achievements/{{ item.id }}/delete', title: 'Удалить документ?', desc: 'Документ «{{ item.title }}» будет удален навсегда. Отменить это действие нельзя.'})" class="text-xs font-medium text-slate-400 hover:text-red-600 transition-colors p-1">Удалить</button>
                             </form>
                         </td>
                     </tr>
@@ -184,6 +184,25 @@
                     <button type="button" @click="reviseModalOpen = false" class="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">Отмена</button>
                     <button type="submit" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">Отправить</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-4" x-cloak>
+        <div x-show="showDeleteModal" x-transition.opacity.duration.300ms class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showDeleteModal = false"></div>
+        <div x-show="showDeleteModal"
+             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+             class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-slate-100">
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-4">
+                <svg class="h-7 w-7 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2" x-text="deleteTitle"></h3>
+            <p class="text-sm text-slate-500 mb-6" x-text="deleteDesc"></p>
+            <form :action="deleteUrl" method="POST" class="flex gap-3">
+                <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+                <button @click="showDeleteModal = false" type="button" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">Отмена</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors shadow-sm shadow-red-600/30">Удалить</button>
             </form>
         </div>
     </div>

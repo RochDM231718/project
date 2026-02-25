@@ -98,7 +98,7 @@
                      </div>
                      <div class="flex justify-between items-center pb-2 border-b border-slate-50">
                          <span class="text-slate-500 text-xs">Регистрация</span>
-                         <span class="font-medium text-slate-800">{{ target_user.created_at.strftime('%d.%m.%Y') }}</span>
+                         <span class="font-medium text-slate-800">{{ target_user.created_at.strftime('%d.%m.%Y') if target_user.created_at else 'Дата не указана' }}</span>
                      </div>
                  </div>
             </div>
@@ -126,6 +126,55 @@
                     </div>
                 </div>
                 {% endif %}
+            </div>
+
+            <div class="bg-indigo-50/60 p-5 sm:p-6 rounded-xl border border-indigo-100 shadow-sm"
+                 x-data="{
+                    loading: false,
+                    resumeText: `{{ target_user.resume_text or '' }}`,
+                    async generateResume() {
+                        this.loading = true;
+                        try {
+                            const res = await fetch('/sirius.achievements/users/{{ target_user.id }}/generate-resume', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-Token': '{{ request.session.csrf_token }}' }
+                            });
+                            const data = await res.json();
+                            if(data.resume) {
+                                this.resumeText = data.resume;
+                                showToast('Сводка успешно сгенерирована', 'success');
+                            } else {
+                                showToast('Не удалось сгенерировать сводку', 'error');
+                            }
+                        } catch(e) {
+                            showToast('Ошибка сети при генерации', 'error');
+                        }
+                        this.loading = false;
+                    }
+                 }">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-indigo-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            AI-Сводка профиля
+                        </h3>
+                        <p class="text-xs text-indigo-700/70 mt-1">Быстрый анализ всех подтвержденных достижений для удобства проверяющего.</p>
+                    </div>
+                    <button @click="generateResume()" :disabled="loading" class="shrink-0 px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm">
+                        <svg x-show="loading" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" x-cloak>
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <span x-text="resumeText ? 'Обновить сводку' : 'Сгенерировать сводку'"></span>
+                    </button>
+                </div>
+
+                <div x-show="resumeText" x-transition class="bg-white border border-indigo-100/80 rounded-lg p-4 text-sm text-slate-800 whitespace-pre-wrap leading-relaxed shadow-sm" x-text="resumeText" x-cloak>
+                </div>
+
+                <div x-show="!resumeText && !loading" class="text-center py-6 bg-white/50 border border-indigo-100 border-dashed rounded-lg text-indigo-400 text-xs mt-2">
+                    Сводка еще не сгенерирована. Нажмите кнопку, чтобы ИИ проанализировал грамоты этого студента.
+                </div>
             </div>
 
             {% if season_history %}
@@ -172,7 +221,7 @@
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-medium text-slate-800 truncate">{{ item.title }}</p>
                                 <p class="text-xs text-slate-500 mt-0.5 flex items-center">
-                                    <span class="mr-2">{{ item.created_at.strftime('%d.%m.%Y') }}</span>
+                                    <span class="mr-2">{{ item.created_at.strftime('%d.%m.%Y') if item.created_at else 'Дата не указана' }}</span>
                                     {% if item.status.value == 'rejected' and item.rejection_reason %}
                                         <span class="text-red-500 truncate max-w-[200px]" title="{{ item.rejection_reason }}">• {{ item.rejection_reason }}</span>
                                     {% endif %}
@@ -197,6 +246,10 @@
                             <a href="/static/{{ item.file_path }}" target="_blank" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Открыть файл">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             </a>
+
+                            <button type="button" @click.prevent="$dispatch('confirm-delete', {url: '/sirius.achievements/documents/{{ item.id }}/delete', title: 'Удалить документ?', desc: 'Файл «{{ item.title }}» будет удален навсегда.'})" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Удалить">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
                         </div>
                     </li>
                     {% endfor %}
@@ -213,5 +266,61 @@
         </div>
         {% endif %}
     </div>
+
+    <div x-data="{ show: false, url: '', title: '', desc: '' }"
+         @confirm-delete.window="show = true; url = $event.detail.url; title = $event.detail.title; desc = $event.detail.desc"
+         x-show="show" style="display: none;" x-cloak
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+
+        <div x-show="show" x-transition.opacity.duration.300ms class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="show = false"></div>
+
+        <div x-show="show"
+             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+             class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-slate-100">
+
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-4">
+                <svg class="h-7 w-7 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </div>
+
+            <h3 class="text-lg font-bold text-slate-900 mb-2" x-text="title"></h3>
+            <p class="text-sm text-slate-500 mb-6" x-text="desc"></p>
+
+            <form :action="url" method="POST" class="flex gap-3">
+                <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+                <button @click="show = false" type="button" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                    Отмена
+                </button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors shadow-sm shadow-red-600/30">
+                    Удалить
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-20 right-4 z-[100] max-w-xs w-full bg-white border border-slate-200 rounded-xl shadow-lg flex items-center p-4 transform transition-all duration-500 translate-x-full opacity-0`;
+
+            const iconBg = type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600';
+            const iconSvg = type === 'success'
+                ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+                : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+            toast.innerHTML = `
+                <div class="flex-shrink-0 mr-3">
+                    <div class="h-8 w-8 rounded-full flex items-center justify-center ${iconBg}">
+                        ${iconSvg}
+                    </div>
+                </div>
+                <p class="text-sm font-semibold text-slate-700 flex-1">${message}</p>
+            `;
+
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-x-full', 'opacity-0'); }, 10);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => toast.remove(), 500); }, 3500);
+        }
+    </script>
 </div>
 {% endblock %}
