@@ -6,7 +6,6 @@ import math
 import time
 
 from app.services.admin.resume_service import ResumeService
-from app.services.admin.resume_service import ResumeService
 from app.security.csrf import validate_csrf
 from app.routers.admin.admin import guard_router, templates, get_db
 from app.models.user import Users
@@ -101,7 +100,7 @@ async def index(
         'request': request,
         'users': users,
         'page': page,
-        'total_pages': math.ceil(total_items / limit),
+        'total_pages': max(1, math.ceil(total_items / limit)),
         'query': query,
         'role': role,
         'status': status,
@@ -172,7 +171,11 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
 
 @router.get('/users/{id}/generate-resume')
 async def generate_user_resume(id: int, request: Request, db: AsyncSession = Depends(get_db)):
+    current_user_id = request.session.get('auth_id')
     current_user_role = str(request.session.get('auth_role'))
+
+    if current_user_id != id and current_user_role not in ['moderator', 'super_admin', 'MODERATOR', 'SUPER_ADMIN']:
+        return JSONResponse({"error": "Нет прав"}, status_code=403)
 
     resume_service = ResumeService(db)
 

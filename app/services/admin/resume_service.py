@@ -2,6 +2,8 @@ import os
 import httpx
 import asyncio
 import easyocr
+import fitz  # PyMuPDF для работы с PDF
+import structlog
 from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -9,6 +11,8 @@ from sqlalchemy import select
 from app.models.achievement import Achievement
 from app.models.user import Users
 from app.models.enums import AchievementStatus
+
+logger = structlog.get_logger()
 
 _ocr_reader = None
 
@@ -45,7 +49,6 @@ class ResumeService:
         if not achievements:
             return "У пользователя пока нет подтвержденных достижений для генерации резюме."
 
-        # Формируем имя целевого студента
         student_name = f"{user.first_name} {user.last_name}"
         combined_text = f"Студент: {student_name}\n\n"
         loop = asyncio.get_running_loop()
@@ -55,27 +58,64 @@ class ResumeService:
                 full_file_path = Path("static") / ach.file_path
                 ext = full_file_path.suffix.lower()
 
-                if full_file_path.is_file() and ext in ['.jpg', '.jpeg', '.png', '.webp']:
-                    try:
-                        reader = get_ocr_reader()
+                if full_file_path.is_file():
+                    # --- ОБРАБОТКА КАРТИНОК ---
+                    if ext in ['.jpg', '.jpeg', '.png', '.webp']:
+                        try:
+                            reader = get_ocr_reader()
+                            ocr_results = await loop.run_in_executor(
+                                None,
+                                lambda: reader.readtext(str(full_file_path), detail=0, paragraph=True)
+                            )
+                            extracted_text = "\n".join(ocr_results)
+                            text_from_ocr = f"Название: {ach.title}\nРаспознанный текст из грамоты:\n{extracted_text}"
+                        except Exception as e:
+                            logger.error("Ошибка OCR для картинки", file_path=ach.file_path, error=str(e))
+                            text_from_ocr = f"Название: {ach.title}. Уровень: {ach.level.value if hasattr(ach.level, 'value') else ach.level}."
 
-                        ocr_results = await loop.run_in_executor(
-                            None,
-                            lambda: reader.readtext(str(full_file_path), detail=0, paragraph=True)
-                        )
-                        extracted_text = "\n".join(ocr_results)
-                        text_from_ocr = f"Название: {ach.title}\nРаспознанный текст из грамоты:\n{extracted_text}"
-                    except Exception as e:
-                        print(f"Ошибка OCR для файла {ach.file_path}: {e}")
+                    # --- ОБРАБОТКА PDF ---
+                    elif ext == '.pdf':
+                        try:
+                            def process_pdf(filepath):
+                                text = ""
+                                # Открываем PDF файл
+                                with fitz.open(filepath) as doc:
+                                    for page in doc:
+                                        # 1. Пробуем вытащить вшитый текст (электронный PDF)
+                                        page_text = page.get_text().strip()
+                                        if page_text:
+                                            text += page_text + "\n"
+                                        else:
+                                            # 2. Если текста нет, значит это скан. Рендерим страницу в PNG!
+                                            # matrix=fitz.Matrix(2, 2) увеличивает разрешение в 2 раза для лучшего распознавания
+                                            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                                            img_bytes = pix.tobytes("png")
+
+                                            # Передаем байты картинки в EasyOCR
+                                            reader = get_ocr_reader()
+                                            ocr_results = reader.readtext(img_bytes, detail=0, paragraph=True)
+                                            text += "\n".join(ocr_results) + "\n"
+                                return text
+
+                            # Запускаем чтение PDF в фоновом потоке
+                            extracted_text = await loop.run_in_executor(None, process_pdf, str(full_file_path))
+                            text_from_ocr = f"Название: {ach.title}\nТекст из PDF:\n{extracted_text}"
+
+                        except Exception as e:
+                            logger.error("Ошибка чтения PDF", file_path=ach.file_path, error=str(e))
+                            text_from_ocr = f"Название: {ach.title}. Уровень: {ach.level.value if hasattr(ach.level, 'value') else ach.level}."
+
+                    # Если формат неизвестный
+                    else:
                         text_from_ocr = f"Название: {ach.title}. Уровень: {ach.level.value if hasattr(ach.level, 'value') else ach.level}."
                 else:
-                    text_from_ocr = f"Название: {ach.title}. Уровень: {ach.level.value if hasattr(ach.level, 'value') else ach.level}."
+                    text_from_ocr = f"Название: {ach.title} (файл не найден на сервере)."
             else:
                 text_from_ocr = f"Название: {ach.title} (файл отсутствует)."
 
             combined_text += f"--- Документ ---\n{text_from_ocr}\n\n"
 
-        # Передаем имя студента в ИИ
+        # Отправляем в ИИ
         resume_result = await self._call_yandex_gpt(combined_text, student_name)
 
         user.resume_text = resume_result
@@ -98,10 +138,10 @@ class ResumeService:
             )
 
         prompt = {
-            "modelUri": f"gpt://{folder_id}/yandexgpt",  # Используем более умную модель (без -lite)
+            "modelUri": f"gpt://{folder_id}/yandexgpt",
             "completionOptions": {
                 "stream": False,
-                "temperature": 0.1,  # Минимальная температура, чтобы ИИ был строгим и не фантазировал
+                "temperature": 0.1,
                 "maxTokens": "1000"
             },
             "messages": [

@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -31,19 +32,21 @@ load_dotenv()
 
 logger = logging.getLogger("uvicorn.error")
 
-app = FastAPI(root_path=os.getenv("ROOT_PATH", ""))
+
+@asynccontextmanager
+async def lifespan(app):
+    yield
+    await engine.dispose()
+    logger.info("Database engine disposed. Graceful shutdown complete.")
+
+
+app = FastAPI(root_path=os.getenv("ROOT_PATH", ""), lifespan=lifespan)
 
 class CSRFContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         get_csrf_token(request)
         response = await call_next(request)
         return response
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    await engine.dispose()
-    logger.info("Database engine disposed. Graceful shutdown complete.")
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")

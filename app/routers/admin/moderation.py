@@ -182,6 +182,7 @@ async def update_achievement_status(
             toast_msg="Вы не можете проверять чужой поток", toast_type="error"), status_code=302)
 
     achievement.status = status
+    notif_message = f"Статус документа '{achievement.title}' обновлен."
 
     if status == 'rejected' or status == AchievementStatus.REJECTED:
         achievement.rejection_reason = rejection_reason

@@ -13,6 +13,7 @@ from app.models.user import Users
 from app.models.user_token import UserToken
 from app.models.page import Page
 from app.models.achievement import Achievement
+from app.models.notification import Notification
 
 config = context.config
 

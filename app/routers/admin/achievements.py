@@ -86,7 +86,7 @@ async def index(
         'request': request,
         'achievements': achievements,
         'page': page,
-        'total_pages': math.ceil(total_items / limit),
+        'total_pages': max(1, math.ceil(total_items / limit)),
         'query': query, 'status': status, 'category': category, 'level': level, 'sort_by': sort_by,
         'statuses': list(AchievementStatus),
         'categories': list(AchievementCategory),

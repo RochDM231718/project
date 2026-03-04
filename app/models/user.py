@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SqlEnum, ForeignKey, Text
 from app.infrastructure.database import Base
 from app.models.enums import UserRole, UserStatus, EducationLevel
 
