@@ -30,3 +30,6 @@ backup.sql
 
 # Uploaded files
 static/uploads/
+
+# EasyOCR models
+models/
