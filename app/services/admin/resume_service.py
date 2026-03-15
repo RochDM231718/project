@@ -5,8 +5,9 @@ import easyocr
 import fitz  # PyMuPDF для работы с PDF
 import structlog
 from pathlib import Path
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func as sql_func
 
 from app.models.achievement import Achievement
 from app.models.user import Users
@@ -20,11 +21,24 @@ _ocr_reader = None
 def get_ocr_reader():
     global _ocr_reader
     if _ocr_reader is None:
-        _ocr_reader = easyocr.Reader(
-            ['ru', 'en'],
-            gpu=False,
-            model_storage_directory='/app/models'
-        )
+        model_dir = os.getenv('EASYOCR_MODEL_DIR', '/app/easyocr_models')
+        try:
+            _ocr_reader = easyocr.Reader(
+                ['ru', 'en'],
+                gpu=False,
+                model_storage_directory=model_dir,
+                download_enabled=True,
+                verbose=False
+            )
+        except Exception as e:
+            logger.warning("EasyOCR init with download failed, retrying offline", error=str(e))
+            _ocr_reader = easyocr.Reader(
+                ['ru', 'en'],
+                gpu=False,
+                model_storage_directory=model_dir,
+                download_enabled=False,
+                verbose=False
+            )
     return _ocr_reader
 
 
@@ -32,13 +46,52 @@ class ResumeService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def generate_resume(self, user_id: int, force_regenerate: bool = False) -> str:
+    async def can_generate(self, user_id: int) -> dict:
+        """Проверяет, может ли пользователь сгенерировать резюме."""
         user = await self.db.get(Users, user_id)
         if not user:
-            return "Пользователь не найден."
+            return {"allowed": False, "reason": "Пользователь не найден."}
+
+        # Считаем подтверждённые документы
+        count_stmt = select(sql_func.count()).select_from(Achievement).filter(
+            Achievement.user_id == user_id,
+            Achievement.status == AchievementStatus.APPROVED
+        )
+        approved_count = (await self.db.execute(count_stmt)).scalar() or 0
+
+        if approved_count == 0:
+            return {"allowed": False, "reason": "Нет подтверждённых достижений."}
+
+        # Если резюме ещё не генерировалось — можно
+        if not user.resume_generated_at:
+            return {"allowed": True, "reason": None}
+
+        # Есть ли новые подтверждённые документы после последней генерации?
+        new_stmt = select(sql_func.count()).select_from(Achievement).filter(
+            Achievement.user_id == user_id,
+            Achievement.status == AchievementStatus.APPROVED,
+            Achievement.updated_at > user.resume_generated_at
+        )
+        new_count = (await self.db.execute(new_stmt)).scalar() or 0
+
+        if new_count == 0:
+            return {"allowed": False, "reason": "Нет новых подтверждённых документов с момента последней генерации."}
+
+        return {"allowed": True, "reason": None}
+
+    async def generate_resume(self, user_id: int, force_regenerate: bool = False, bypass_check: bool = False) -> dict:
+        user = await self.db.get(Users, user_id)
+        if not user:
+            return {"success": False, "error": "Пользователь не найден."}
 
         if user.resume_text and not force_regenerate:
-            return user.resume_text
+            return {"success": True, "resume": user.resume_text}
+
+        # Проверка права на генерацию (bypass для админов)
+        if not bypass_check:
+            check = await self.can_generate(user_id)
+            if not check["allowed"]:
+                return {"success": False, "error": check["reason"], "resume": user.resume_text}
 
         stmt = select(Achievement).filter(
             Achievement.user_id == user_id,
@@ -47,7 +100,7 @@ class ResumeService:
         achievements = (await self.db.execute(stmt)).scalars().all()
 
         if not achievements:
-            return "У пользователя пока нет подтвержденных достижений для генерации резюме."
+            return {"success": False, "error": "У пользователя пока нет подтвержденных достижений для генерации резюме."}
 
         student_name = f"{user.first_name} {user.last_name}"
         combined_text = f"Студент: {student_name}\n\n"
@@ -119,23 +172,17 @@ class ResumeService:
         resume_result = await self._call_yandex_gpt(combined_text, student_name)
 
         user.resume_text = resume_result
+        user.resume_generated_at = datetime.now(timezone.utc)
         await self.db.commit()
 
-        return resume_result
+        return {"success": True, "resume": resume_result}
 
     async def _call_yandex_gpt(self, combined_text: str, target_name: str) -> str:
         api_key = os.getenv("YANDEX_API_KEY")
         folder_id = os.getenv("YANDEX_FOLDER_ID")
 
         if not api_key or not folder_id:
-            await asyncio.sleep(2)
-            return (
-                f"🤖 [Демо-режим AI]\n"
-                f"На основе {combined_text.count('--- Документ ---')} документов сгенерировано драфт-резюме:\n\n"
-                f"Студент {target_name} имеет подтвержденные достижения. Рекомендуется для участия в профильных программах.\n\n"
-                f"[ДЛЯ РАЗРАБОТЧИКА]: Распознанный текст переданный в модель:\n{combined_text}\n"
-                f"(Для реального текста настройте YANDEX_API_KEY в .env)"
-            )
+            return self._generate_local_resume(combined_text, target_name)
 
         prompt = {
             "modelUri": f"gpt://{folder_id}/yandexgpt",
@@ -172,4 +219,43 @@ class ResumeService:
                 response.raise_for_status()
                 return response.json()['result']['alternatives'][0]['message']['text']
             except Exception as e:
-                return f"Ошибка при обращении к ИИ: {str(e)}"
+                logger.error("Yandex GPT API error", error=str(e))
+                return self._generate_local_resume(combined_text, target_name)
+
+    def _generate_local_resume(self, combined_text: str, target_name: str) -> str:
+        """Generate a structured resume locally from OCR-extracted text without AI API."""
+        doc_count = combined_text.count('--- Документ ---')
+
+        # Extract document titles and texts
+        documents = []
+        for block in combined_text.split('--- Документ ---'):
+            block = block.strip()
+            if not block or block.startswith('Студент:'):
+                continue
+            lines = block.split('\n')
+            title = ""
+            text_lines = []
+            for line in lines:
+                line = line.strip()
+                if line.startswith('Название:'):
+                    title = line.replace('Название:', '').strip()
+                elif line and not line.startswith('Распознанный текст') and not line.startswith('Текст из PDF'):
+                    text_lines.append(line)
+            documents.append({'title': title, 'text': ' '.join(text_lines)})
+
+        # Build resume
+        parts = [f"{target_name}\n"]
+        parts.append(f"Подтвержденные достижения ({doc_count}):\n")
+
+        for i, doc in enumerate(documents, 1):
+            if doc['title']:
+                parts.append(f"  {i}. {doc['title']}")
+                if doc['text'] and len(doc['text']) > 20:
+                    # Truncate long OCR text to a meaningful snippet
+                    snippet = doc['text'][:200].rsplit(' ', 1)[0] if len(doc['text']) > 200 else doc['text']
+                    parts.append(f"     {snippet}")
+            parts.append("")
+
+        parts.append("Резюме составлено автоматически на основе распознанных документов.")
+
+        return '\n'.join(parts)

@@ -51,7 +51,7 @@ services:
       - TZ=Europe/Moscow
     volumes:
       - uploads_data:/app/static/uploads
-      - D:\EasyOCR_Models:/app/models
+      - ./models:/app/easyocr_models
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s

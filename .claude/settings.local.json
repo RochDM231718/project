@@ -4,7 +4,11 @@
       "Bash(docker exec -it sirius_app_new alembic revision --autogenerate -m \"add resume_text to users\")",
       "Bash(docker exec sirius_app_new alembic revision --autogenerate -m \"add resume_text to users\")",
       "Bash(docker exec sirius_app_new cat /app/app/migrations/versions/75b155daab71_add_resume_text_to_users.py)",
-      "Bash(docker exec sirius_app_new python -c \"f=open\\(''/app/app/migrations/versions/75b155daab71_add_resume_text_to_users.py''\\); print\\(f.read\\(\\)\\)\")"
+      "Bash(docker exec sirius_app_new python -c \"f=open\\(''/app/app/migrations/versions/75b155daab71_add_resume_text_to_users.py''\\); print\\(f.read\\(\\)\\)\")",
+      "Bash(xargs grep:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker restart:*)"
     ]
   }
 }

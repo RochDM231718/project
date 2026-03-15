@@ -31,5 +31,7 @@ class Users(Base):
     achievements = relationship("Achievement", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     tokens = relationship("UserToken", back_populates="user", cascade="all, delete-orphan")
+    support_tickets = relationship("SupportTicket", back_populates="user", cascade="all, delete-orphan")
 
     resume_text = Column(Text, nullable=True)
+    resume_generated_at = Column(DateTime(timezone=True), nullable=True)

@@ -9,6 +9,8 @@ from app.infrastructure.database import engine, Base, async_session_maker
 from app.models.user import Users
 from app.models.achievement import Achievement
 from app.models.notification import Notification
+from app.models.support_ticket import SupportTicket
+from app.models.support_message import SupportMessage
 from app.models.enums import UserRole, UserStatus
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

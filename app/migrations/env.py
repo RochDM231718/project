@@ -14,6 +14,8 @@ from app.models.user_token import UserToken
 from app.models.page import Page
 from app.models.achievement import Achievement
 from app.models.notification import Notification
+from app.models.support_ticket import SupportTicket
+from app.models.support_message import SupportMessage
 
 config = context.config
 

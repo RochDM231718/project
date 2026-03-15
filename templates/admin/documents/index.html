@@ -127,6 +127,7 @@
                             <a href="{{ url_for('admin.users.show', id=item.user.id) }}?from=documents" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
                                 {{ item.user.first_name }} {{ item.user.last_name }}
                             </a>
+                            <div class="text-[10px] text-slate-400">ID: {{ item.user.id }}</div>
                         </td>
                         <td class="px-5 py-3 text-right">
                             <div class="flex items-center justify-end gap-3">

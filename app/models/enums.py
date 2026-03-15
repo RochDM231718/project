@@ -45,3 +45,9 @@ class EducationLevel(str, Enum):
     SPECIALIST = "Специалитет"
     MASTER = "Магистратура"
     POSTGRADUATE = "Аспирантура"
+
+
+class SupportTicketStatus(str, Enum):
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    CLOSED = "closed"

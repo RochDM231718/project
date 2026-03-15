@@ -173,15 +173,20 @@ async def show_user(id: int, request: Request, db: AsyncSession = Depends(get_db
 async def generate_user_resume(id: int, request: Request, db: AsyncSession = Depends(get_db)):
     current_user_id = request.session.get('auth_id')
     current_user_role = str(request.session.get('auth_role'))
+    is_admin = current_user_role in ['moderator', 'super_admin', 'MODERATOR', 'SUPER_ADMIN']
 
-    if current_user_id != id and current_user_role not in ['moderator', 'super_admin', 'MODERATOR', 'SUPER_ADMIN']:
+    if current_user_id != id and not is_admin:
         return JSONResponse({"error": "Нет прав"}, status_code=403)
 
-    resume_service = ResumeService(db)
+    service = ResumeService(db)
+    check = await service.can_generate(id)
+    result = await service.generate_resume(id)
 
-    resume_text = await resume_service.generate_resume(id)
-
-    return JSONResponse(content={"resume": resume_text})
+    return JSONResponse(content={
+        "resume": result.get("resume", ""),
+        "can_generate": check["allowed"],
+        "reason": check.get("reason")
+    })
 
 
 @router.post('/users/{id}/role', name='admin.users.update_role', dependencies=[Depends(validate_csrf)])
@@ -269,11 +274,28 @@ async def delete_user(
 async def api_generate_resume(id: int, request: Request, db: AsyncSession = Depends(get_db)):
     current_user_id = request.session.get('auth_id')
     current_user_role = str(request.session.get('auth_role'))
+    is_admin = current_user_role in ['moderator', 'super_admin', 'MODERATOR', 'SUPER_ADMIN']
 
-    if current_user_id != id and current_user_role not in ['moderator', 'super_admin', 'MODERATOR', 'SUPER_ADMIN']:
+    if current_user_id != id and not is_admin:
         return JSONResponse({"error": "Нет прав"}, status_code=403)
 
     service = ResumeService(db)
-    resume_text = await service.generate_resume(id, force_regenerate=True)
 
-    return JSONResponse({"resume": resume_text})
+    # Админы могут генерировать без ограничений
+    result = await service.generate_resume(id, force_regenerate=True, bypass_check=is_admin)
+
+    if not result["success"]:
+        check = await service.can_generate(id)
+        return JSONResponse({
+            "error": result["error"],
+            "resume": result.get("resume", ""),
+            "can_generate": check["allowed"],
+            "reason": check.get("reason")
+        }, status_code=429)
+
+    check = await service.can_generate(id)
+    return JSONResponse({
+        "resume": result["resume"],
+        "can_generate": check["allowed"],
+        "reason": check.get("reason")
+    })

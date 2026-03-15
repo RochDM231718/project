@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Все обращения</h2>
+        <p class="text-sm text-slate-500 mt-1">Всего: {{ total }}</p>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col md:flex-row gap-3 items-end">
+        <div class="flex-1">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Поиск</label>
+            <input type="text" name="query" value="{{ current_query }}" placeholder="Тема, студент, email..."
+                   class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+        </div>
+        <div class="w-full md:w-40">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Статус</label>
+            <select name="status" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+                <option value="">Все</option>
+                <option value="open" {{ 'selected' if current_status == 'open' }}>Открытые</option>
+                <option value="in_progress" {{ 'selected' if current_status == 'in_progress' }}>В работе</option>
+                <option value="closed" {{ 'selected' if current_status == 'closed' }}>Закрытые</option>
+            </select>
+        </div>
+        <div class="w-full md:w-40">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Сортировка</label>
+            <select name="sort_by" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+                <option value="created_at" {{ 'selected' if sort_by == 'created_at' }}>По дате создания</option>
+                <option value="updated_at" {{ 'selected' if sort_by == 'updated_at' }}>По обновлению</option>
+            </select>
+        </div>
+        <div class="w-full md:w-32">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Порядок</label>
+            <select name="sort_order" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+                <option value="desc" {{ 'selected' if sort_order == 'desc' }}>Новые</option>
+                <option value="asc" {{ 'selected' if sort_order == 'asc' }}>Старые</option>
+            </select>
+        </div>
+        <button type="submit" class="shrink-0 bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+            Применить
+        </button>
+    </form>
+
+    {% if tickets %}
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-50 text-slate-400 border-b border-slate-100 uppercase text-[10px] tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3 font-bold">#</th>
+                        <th class="px-5 py-3 font-bold">Тема</th>
+                        <th class="px-5 py-3 font-bold">Студент</th>
+                        <th class="px-5 py-3 font-bold">Статус</th>
+                        <th class="px-5 py-3 font-bold">Сообщений</th>
+                        <th class="px-5 py-3 font-bold">Создано</th>
+                        <th class="px-5 py-3 font-bold">Обновлено</th>
+                        <th class="px-5 py-3 font-bold text-right">Действие</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for ticket in tickets %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-3 text-xs text-slate-400">{{ ticket.id }}</td>
+                        <td class="px-5 py-3">
+                            <a href="/sirius.achievements/moderation/support/{{ ticket.id }}" class="font-medium text-slate-800 hover:text-indigo-600 transition-colors">{{ ticket.subject }}</a>
+                        </td>
+                        <td class="px-5 py-3 text-slate-600 text-xs">
+                            {% if ticket.user %}
+                                <a href="/sirius.achievements/users/{{ ticket.user.id }}" class="hover:text-indigo-600 transition-colors">
+                                    {{ ticket.user.first_name }} {{ ticket.user.last_name }}
+                                </a>
+                                <div class="text-[10px] text-slate-400">ID: {{ ticket.user.id }} · {{ ticket.user.email }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-3">
+                            {% set st = ticket.status.value if ticket.status.value is defined else ticket.status %}
+                            {% if st == 'open' %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-yellow-50 text-yellow-700 border border-yellow-200">Открыто</span>
+                            {% elif st == 'in_progress' %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">В работе</span>
+                            {% else %}
+                                <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">Закрыто</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-3 text-xs text-slate-500">{{ ticket.messages | length }}</td>
+                        <td class="px-5 py-3 text-xs text-slate-500">{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td class="px-5 py-3 text-xs text-slate-500">{{ ticket.updated_at.strftime('%d.%m.%Y %H:%M') if ticket.updated_at else '-' }}</td>
+                        <td class="px-5 py-3 text-right">
+                            <a href="/sirius.achievements/moderation/support/{{ ticket.id }}" class="text-xs text-indigo-600 font-bold hover:underline">Открыть</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="flex justify-center gap-1">
+        {% for p in range(1, total_pages + 1) %}
+            <a href="?page={{ p }}&status={{ current_status }}&query={{ current_query }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}"
+               class="px-3 py-1.5 text-xs rounded-md font-medium transition-colors {{ 'bg-indigo-600 text-white' if p == page else 'text-slate-600 hover:bg-slate-100' }}">{{ p }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
+        <p class="text-sm text-slate-500">Обращений не найдено</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

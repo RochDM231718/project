@@ -14,7 +14,7 @@ from app.repositories.admin.user_repository import UserRepository
 from app.repositories.admin.user_token_repository import UserTokenRepository
 from app.services.admin.user_token_service import UserTokenService
 from app.schemas.admin.auth import UserRegister, ResetPasswordSchema
-from app.models.enums import EducationLevel
+from app.models.enums import EducationLevel, UserTokenType
 
 logger = structlog.get_logger()
 redis_client = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
@@ -54,6 +54,13 @@ async def login(
                 'form_data': {'email': email}
             })
 
+        if not user.is_active:
+            # Set session so user can access verify-email page, then redirect
+            request.session['verify_email_user_id'] = user.id
+            request.session['verify_email_address'] = user.email
+            request.session['verify_email_needs_resend'] = True
+            return RedirectResponse(url=request.url_for('admin.auth.verify_email_page'), status_code=302)
+
         # Regenerate session to prevent session fixation attacks
         request.session.clear()
         request.session['auth_id'] = user.id
@@ -90,6 +97,7 @@ async def register_page(request: Request):
 @router.post('/register', name='admin.auth.register', dependencies=[Depends(validate_csrf)])
 async def register(
         request: Request,
+        background_tasks: BackgroundTasks,
         first_name: str = Form(...),
         last_name: str = Form(...),
         email: str = Form(...),
@@ -128,14 +136,14 @@ async def register(
 
         user = await service.register_user(user_data)
 
-        # Regenerate session to prevent session fixation attacks
-        request.session.clear()
-        request.session['auth_id'] = user.id
-        request.session['auth_name'] = f"{user.first_name} {user.last_name}"
-        request.session['auth_avatar'] = user.avatar_path
-        request.session['auth_role'] = user.role.value if hasattr(user.role, 'value') else str(user.role)
+        # Send email verification code
+        await service.send_email_verification(user, background_tasks)
 
-        return RedirectResponse(url=request.url_for('admin.dashboard.index'), status_code=302)
+        request.session['verify_email_user_id'] = user.id
+        request.session['verify_email_address'] = user.email
+        request.session['verify_email_retry_at'] = int(time.time()) + 60
+
+        return RedirectResponse(url=request.url_for('admin.auth.verify_email_page'), status_code=302)
     except Exception as e:
         return templates.TemplateResponse('auth/register.html', {
             'request': request,
@@ -304,3 +312,118 @@ async def reset_password(
             'request': request,
             'error_msg': "Произошла ошибка при смене пароля"
         })
+
+
+# ─── Email verification after registration ───
+
+@router.get('/verify-email', response_class=HTMLResponse, name='admin.auth.verify_email_page')
+async def verify_email_page(
+        request: Request,
+        background_tasks: BackgroundTasks,
+        service: AuthService = Depends(get_service)
+):
+    user_id = request.session.get('verify_email_user_id')
+    email = request.session.get('verify_email_address')
+    if not user_id or not email:
+        return RedirectResponse(url=request.url_for('admin.auth.register_page'), status_code=302)
+
+    # Auto-resend code when returning user logs in with unverified email
+    info_msg = None
+    if request.session.pop('verify_email_needs_resend', None):
+        user_repo = UserRepository(service.db)
+        user = await user_repo.find(user_id)
+        if user:
+            success, msg, retry_after = await service.send_email_verification(user, background_tasks)
+            if success:
+                request.session['verify_email_retry_at'] = int(time.time()) + retry_after
+                info_msg = "Код подтверждения отправлен на вашу почту"
+
+    retry_at = request.session.get('verify_email_retry_at', 0)
+    seconds_left = max(0, retry_at - int(time.time()))
+
+    return templates.TemplateResponse('auth/verify-email-registration.html', {
+        'request': request,
+        'email': email,
+        'seconds_left': seconds_left,
+        'info_msg': info_msg
+    })
+
+
+@router.post('/verify-email', name='admin.auth.verify_email', dependencies=[Depends(validate_csrf)])
+async def verify_email(
+        request: Request,
+        code: str = Form(...),
+        service: AuthService = Depends(get_service)
+):
+    user_id = request.session.get('verify_email_user_id')
+    email = request.session.get('verify_email_address')
+    retry_at = request.session.get('verify_email_retry_at', 0)
+    seconds_left = max(0, retry_at - int(time.time()))
+
+    if not user_id or not email:
+        return RedirectResponse(url=request.url_for('admin.auth.register_page'), status_code=302)
+
+    rl_key = f"verify_email_attempts:{email}"
+    attempts = await redis_client.get(rl_key)
+    if attempts and int(attempts) >= 5:
+        return templates.TemplateResponse('auth/verify-email-registration.html', {
+            'request': request,
+            'email': email,
+            'error_msg': "Слишком много попыток. Запросите новый код.",
+            'seconds_left': seconds_left
+        })
+
+    try:
+        await service.verify_email_code(user_id, code)
+        await redis_client.delete(rl_key)
+
+        # Get user to log them in
+        user_repo = UserRepository(service.db)
+        user = await user_repo.find(user_id)
+
+        request.session.clear()
+        request.session['auth_id'] = user.id
+        request.session['auth_name'] = f"{user.first_name} {user.last_name}"
+        request.session['auth_avatar'] = user.avatar_path
+        request.session['auth_role'] = user.role.value if hasattr(user.role, 'value') else str(user.role)
+
+        return RedirectResponse(url=request.url_for('admin.dashboard.index'), status_code=302)
+
+    except Exception:
+        await redis_client.incr(rl_key)
+        if await redis_client.ttl(rl_key) == -1:
+            await redis_client.expire(rl_key, 900)
+
+        remaining = 5 - (int(await redis_client.get(rl_key) or 0))
+        error_msg = "Неверный код. Попробуйте еще раз."
+        if remaining <= 2:
+            error_msg = f"Неверный код. Осталось попыток: {remaining}."
+
+        return templates.TemplateResponse('auth/verify-email-registration.html', {
+            'request': request,
+            'email': email,
+            'error_msg': error_msg,
+            'seconds_left': seconds_left
+        })
+
+
+@router.post('/resend-verify-email', name='admin.auth.resend_verify_email', dependencies=[Depends(validate_csrf)])
+async def resend_verify_email(
+        request: Request,
+        background_tasks: BackgroundTasks,
+        service: AuthService = Depends(get_service)
+):
+    user_id = request.session.get('verify_email_user_id')
+    email = request.session.get('verify_email_address')
+    if not user_id or not email:
+        return RedirectResponse(url=request.url_for('admin.auth.register_page'), status_code=302)
+
+    user_repo = UserRepository(service.db)
+    user = await user_repo.find(user_id)
+
+    if user:
+        success, msg, retry_after = await service.send_email_verification(user, background_tasks)
+        if success:
+            request.session['verify_email_retry_at'] = int(time.time()) + retry_after
+
+    return RedirectResponse(url=request.url_for('admin.auth.verify_email_page'), status_code=302)

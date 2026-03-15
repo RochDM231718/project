@@ -1,0 +1,147 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Поддержка</h2>
+            <p class="text-sm text-slate-500 mt-1">Создайте обращение или продолжите диалог</p>
+        </div>
+        <button onclick="document.getElementById('newTicketModal').classList.remove('hidden')"
+                class="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Новое обращение
+        </button>
+    </div>
+
+    {% if tickets %}
+    <div class="space-y-3">
+        {% for ticket in tickets %}
+        <a href="/sirius.achievements/support/{{ ticket.id }}" class="block bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-200 hover:shadow-sm transition-all group">
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{{ ticket.subject }}</h3>
+                    </div>
+                    <div class="flex items-center gap-3 text-[10px] text-slate-400">
+                        <span>#{{ ticket.id }}</span>
+                        <span>{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        {% if ticket.messages %}
+                        <span>{{ ticket.messages | length }} сообщ.</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="shrink-0">
+                    {% set st = ticket.status.value if ticket.status.value is defined else ticket.status %}
+                    {% if st == 'open' %}
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-yellow-50 text-yellow-700 border border-yellow-200">Открыто</span>
+                    {% elif st == 'in_progress' %}
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">В работе</span>
+                    {% else %}
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">Закрыто</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
+        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+        </div>
+        <p class="text-sm text-slate-500 mb-4">У вас пока нет обращений</p>
+        <button onclick="document.getElementById('newTicketModal').classList.remove('hidden')"
+                class="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+            Создать обращение
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- New ticket modal -->
+<div id="newTicketModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-slate-800">Новое обращение</h3>
+            <button onclick="document.getElementById('newTicketModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form action="/sirius.achievements/support/create" method="POST" enctype="multipart/form-data" class="p-5 space-y-4"
+              onsubmit="var f=this.querySelector('input[name=file]'); if(f.files[0] && f.files[0].size > 5*1024*1024){alert('Файл слишком большой (макс. 5 МБ)'); return false;}">
+            <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Тема обращения</label>
+                <input type="text" name="subject" required maxlength="255" placeholder="Опишите проблему кратко..."
+                       class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Сообщение</label>
+                <textarea name="message" required rows="4" placeholder="Подробно опишите вашу проблему..."
+                          class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
+            </div>
+
+            <div x-data="imagePreview()">
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Прикрепить фото (необязательно)</label>
+                <input type="file" name="file" accept="image/jpeg,image/png,image/webp" x-ref="fileInput" @change="onFileSelect($event)"
+                       class="w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                <p class="text-[10px] text-slate-400 mt-1">JPG, PNG, WEBP. Макс. 5 МБ</p>
+                <template x-if="sizeError">
+                    <p class="text-xs text-red-600 mt-1 font-medium" x-text="sizeError"></p>
+                </template>
+
+                <template x-if="previewUrl">
+                    <div class="mt-3 space-y-2">
+                        <div class="bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center" style="max-height: 300px;">
+                            <img :src="previewUrl" class="max-w-full max-h-[300px] object-contain rounded-lg">
+                        </div>
+                        <button type="button" @click="removeFile()" class="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                            Удалить
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition-colors">
+                Отправить
+            </button>
+        </form>
+    </div>
+</div>
+<script>
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function imagePreview() {
+    return {
+        previewUrl: null,
+        sizeError: null,
+
+        onFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            this.sizeError = null;
+            if (file.size > MAX_FILE_SIZE) {
+                this.sizeError = `Файл слишком большой (${(file.size / 1024 / 1024).toFixed(1)} МБ). Макс. 5 МБ`;
+                this.$refs.fileInput.value = '';
+                this.previewUrl = null;
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (ev) => { this.previewUrl = ev.target.result; };
+            reader.readAsDataURL(file);
+        },
+
+        removeFile() {
+            this.previewUrl = null;
+            this.sizeError = null;
+            this.$refs.fileInput.value = '';
+        }
+    };
+}
+</script>
+{% endblock %}

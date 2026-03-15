@@ -87,7 +87,7 @@ class AuthService:
             hashed_password=hashed_pw,
             role=UserRole.GUEST,
             status=UserStatus.PENDING,
-            is_active=True
+            is_active=False
         )
 
         self.db.add(new_user)
@@ -233,6 +233,74 @@ class AuthService:
             self._send_mail_task(user.email, subject, text_content, html_content)
 
         return True, "Код успешно отправлен", 60
+
+    async def send_email_verification(self, user: Users, background_tasks: BackgroundTasks = None):
+        retry_after = await self.user_token_service.get_time_until_next_retry_by_type(
+            user.id, UserTokenType.VERIFY_EMAIL
+        )
+        if retry_after > 0:
+            return False, f"Повторная отправка возможна через {retry_after} сек.", retry_after
+
+        token_data = UserTokenCreate(
+            user_id=user.id,
+            type=UserTokenType.VERIFY_EMAIL
+        )
+        user_token = await self.user_token_service.create(token_data)
+        code = user_token.token
+
+        subject = "Подтверждение email"
+
+        text_content = f"""Здравствуйте, {user.first_name}!
+Спасибо за регистрацию в Sirius.Achievements.
+Ваш код подтверждения: {code}
+Введите его на странице верификации."""
+
+        html_content = f"""
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #000000; background-color: #ffffff; padding: 20px; max-width: 600px;">
+            <p style="font-size: 15px; margin-bottom: 20px;">
+                Здравствуйте, <strong>{user.first_name}</strong>!
+            </p>
+            <p style="font-size: 15px; margin-bottom: 20px;">
+                Спасибо за регистрацию в Sirius.Achievements. Для подтверждения вашего email введите код ниже.
+            </p>
+            <p style="font-size: 15px; margin-bottom: 5px;">
+                Ваш код подтверждения: <span style="font-weight: 600; font-size: 20px; letter-spacing: 4px;">{code}</span>
+            </p>
+            <p style="font-size: 15px; margin-top: 20px; margin-bottom: 25px;">
+                Код действителен в течение 1 часа. Не делитесь им ни с кем.
+            </p>
+            <p style="font-size: 15px; margin-bottom: 5px;">
+                С уважением,<br>
+                Служба технической поддержки Sirius.Achievements
+            </p>
+        </div>
+        """
+
+        if background_tasks:
+            background_tasks.add_task(self._send_mail_task, to_email=user.email, subject=subject,
+                                      body_text=text_content, body_html=html_content)
+        else:
+            self._send_mail_task(user.email, subject, text_content, html_content)
+
+        return True, "Код отправлен", 60
+
+    async def verify_email_code(self, user_id: int, code: str) -> bool:
+        user_token = await self.user_token_service.getVerifyEmailToken(code)
+
+        if user_token.user_id != user_id:
+            raise Exception("Неверный код подтверждения")
+
+        stmt = select(Users).where(Users.id == user_id)
+        result = await self.db.execute(stmt)
+        user = result.scalars().first()
+        if not user:
+            raise Exception("Пользователь не найден")
+
+        user.is_active = True
+        self.db.add(user)
+        await self.db.commit()
+
+        return True
 
     async def verify_code_only(self, email: str, code: str) -> bool:
         user = await self.repository.get_by_email(email)

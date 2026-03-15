@@ -37,14 +37,23 @@
                     Дашборд
                 </a>
 
-                {% if user and user.status.value == 'active' %}
+                {% if user and user.status.value == 'active' and user.role.value not in ['MODERATOR', 'SUPER_ADMIN'] %}
                 <a href="/sirius.achievements/achievements" class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-slate-50 hover:text-indigo-600 text-slate-700">
                     <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     Мои достижения
                 </a>
+                {% endif %}
+                {% if user and user.status.value == 'active' %}
                 <a href="/sirius.achievements/leaderboard" class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-slate-50 hover:text-indigo-600 text-slate-700">
                     <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
                     Рейтинг
+                </a>
+                {% endif %}
+
+                {% if user and user.role.value not in ['MODERATOR', 'SUPER_ADMIN'] %}
+                <a href="/sirius.achievements/support" class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-slate-50 hover:text-indigo-600 text-slate-700">
+                    <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    Поддержка
                 </a>
                 {% endif %}
 
@@ -60,7 +69,11 @@
                     <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                     Документы
                 </a>
-                <div x-data="{ open: {{ 'true' if '/moderation/' in request.url.path else 'false' }} }">
+                <a href="/sirius.achievements/moderation/support/all" class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-slate-50 hover:text-indigo-600 text-slate-700">
+                    <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    Все обращения
+                </a>
+                <div x-data="{ open: {{ 'true' if '/moderation/' in request.url.path and '/moderation/support/all' not in request.url.path else 'false' }} }">
                     <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-slate-50 hover:text-indigo-600 text-slate-700">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
@@ -70,7 +83,8 @@
                     </button>
                     <div x-show="open" class="pl-10 pr-2 space-y-1 mt-1" x-collapse x-cloak>
                         <a href="/sirius.achievements/moderation/users" class="block px-2 py-1.5 text-sm rounded-md transition-colors {{ 'text-indigo-600 font-medium' if '/moderation/users' in request.url.path else 'text-slate-500 hover:text-indigo-600' }}">Новые пользователи</a>
-                        <a href="/sirius.achievements/moderation/achievements" class="block px-2 py-1.5 text-sm rounded-md transition-colors {{ 'text-indigo-600 font-medium' if '/moderation/achievements' in request.url.path else 'text-slate-500 hover:text-indigo-600' }}">Документы</a>
+                        <a href="/sirius.achievements/moderation/achievements" class="block px-2 py-1.5 text-sm rounded-md transition-colors {{ 'text-indigo-600 font-medium' if '/moderation/achievements' in request.url.path else 'text-slate-500 hover:text-indigo-600' }}">Новые документы</a>
+                        <a href="/sirius.achievements/moderation/support" class="block px-2 py-1.5 text-sm rounded-md transition-colors {{ 'text-indigo-600 font-medium' if '/moderation/support' in request.url.path and '/all' not in request.url.path else 'text-slate-500 hover:text-indigo-600' }}">Новые обращения</a>
                     </div>
                 </div>
                 {% endif %}
@@ -165,17 +179,19 @@
                 <span class="text-[10px] font-medium">Главная</span>
             </a>
 
-            {% if user and user.status.value == 'active' %}
+            {% if user and user.status.value == 'active' and user.role.value not in ['MODERATOR', 'SUPER_ADMIN'] %}
             <a href="/sirius.achievements/achievements" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ 'text-indigo-600' if '/achievements' in request.url.path and not '/moderation' in request.url.path else 'text-slate-400 hover:text-slate-600' }}">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 <span class="text-[10px] font-medium">Мои док.</span>
             </a>
             {% endif %}
 
-            <a href="/sirius.achievements/leaderboard" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ 'text-indigo-600' if '/leaderboard' in request.url.path else 'text-slate-400 hover:text-slate-600' }}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
-                <span class="text-[10px] font-medium">Рейтинг</span>
+            {% if user and user.role.value not in ['MODERATOR', 'SUPER_ADMIN'] %}
+            <a href="/sirius.achievements/support" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ 'text-indigo-600' if '/support' in request.url.path and '/moderation' not in request.url.path else 'text-slate-400 hover:text-slate-600' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                <span class="text-[10px] font-medium">Поддержка</span>
             </a>
+            {% endif %}
 
             <button @click="mobileMenuOpen = true" class="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 hover:text-slate-600 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -207,7 +223,9 @@
 
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-4 mb-2 pl-2">Модерация</p>
                         <a href="/sirius.achievements/moderation/users" class="block py-3 px-2 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700">Входящие: Пользователи</a>
-                        <a href="/sirius.achievements/moderation/achievements" class="block py-3 px-2 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700">Входящие: Документы</a>
+                        <a href="/sirius.achievements/moderation/achievements" class="block py-3 px-2 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700">Входящие: Новые документы</a>
+                        <a href="/sirius.achievements/moderation/support" class="block py-3 px-2 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700">Входящие: Новые обращения</a>
+                        <a href="/sirius.achievements/moderation/support/all" class="block py-3 px-2 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700">Все обращения</a>
                     {% endif %}
 
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-4 mb-2 pl-2">Аккаунт</p>
